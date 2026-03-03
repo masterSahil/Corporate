@@ -31,7 +31,7 @@ const Dashboard = () => {
         </div>
 
         {/* Dashboard Content area (Ideally, this would be an <Outlet /> if using nested routes) */}
-        <div className="p-4 lg:p-8">
+        <div className="p-6">
           <div className="mb-8">
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">Overview</h1>
             <p className={`text-sm ${theme.textMuted} mt-1`}>Manage your enterprise platform metrics</p>
@@ -57,7 +57,7 @@ const Dashboard = () => {
             ))}
             
             {/* Highlight Card */}
-            <div className={`bg-gradient-to-br from-zinc-800 to-black rounded-xl p-5 text-white shadow-lg shadow-black/20 relative overflow-hidden`}>
+            <div className={`bg-linear-to-br from-zinc-800 to-black rounded-xl p-5 text-white shadow-lg shadow-black/20 relative overflow-hidden`}>
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
               <h3 className="text-xs font-bold uppercase text-zinc-400 mb-3 relative z-10">Pending Approvals</h3>
               <div className="flex justify-between items-end relative z-10">

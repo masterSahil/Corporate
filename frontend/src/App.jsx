@@ -11,6 +11,12 @@ import AddAdmin from "./pages/Admins/AddAdmins";
 import AddProduct from "./pages/Products/AddProducts";
 import AddReward from "./pages/Rewards/AddRewards";
 import AddEmployee from "./pages/Employees/AddEmployee";
+import Settings from "./components/Setting";
+import ViewAdmins from "./pages/Admins/ViewAdmins";
+import ViewEmployees from "./pages/Employees/ViewEmployee";
+import SoftDeleted from "./pages/Employees/SoftDeleted";
+import ViewProducts from "./pages/Products/ViewProducts";
+import ViewRewards from "./pages/Rewards/ViewRewards";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -41,30 +47,30 @@ export default function App() {
           <Route path="/admins/add" 
                  element={loggedIn && role === "super_admin" && <AddAdmin /> } />
           <Route path="/admins/manage" 
-                 element={loggedIn && role === "super_admin" && <SA_Dashboard />} />
+                 element={loggedIn && role === "super_admin" && <ViewAdmins />} />
 
           {/* Employees Manage - Super Admin & Admin */}
           <Route path="/employees/add" 
-                element={loggedIn && (role === "super_admin" || role === "admin") ? <AddEmployee /> : 
-                <Navigate to="/" />} />
+                element={loggedIn && (role === "super_admin" || role === "admin") && <AddEmployee />} />
           <Route path="/employees/manage" 
-                element={loggedIn && (role === "super_admin" || role === "admin") ? <SA_Dashboard /> : <Navigate to="/" />} />
+                element={loggedIn && (role === "super_admin" || role === "admin") && <ViewEmployees />} />
           <Route path="/employees/deleted"
-                element={loggedIn && (role === "super_admin" || role === "admin") ? <SA_Dashboard /> : <Navigate to="/" />} />
+                element={loggedIn && (role === "super_admin" || role === "admin") && <SoftDeleted/> } />
 
           {/* Products Manage - Super Admin & Admin */}
           <Route path="/products/add"
-                element={loggedIn && (role === "super_admin" || role === "admin") ? <AddProduct /> : 
-                <Navigate to="/" />} />
+                element={loggedIn && (role === "super_admin" || role === "admin") && <AddProduct />}/>
           <Route path="/products/manage"
-                element={loggedIn && (role === "super_admin" || role === "admin") ? <SA_Dashboard /> : <Navigate to="/" />} />
+                element={loggedIn && (role === "super_admin" || role === "admin") && <ViewProducts />} />
 
           {/* Rewards Manage - Super Admin & Admin */}
           <Route path="/rewards/add"
-                element={loggedIn && (role === "super_admin" || role === "admin") ? <AddReward /> : 
-                <Navigate to="/" />} />
+                element={loggedIn && (role === "super_admin" || role === "admin") && <AddReward />} />
           <Route path="/rewards/manage"
-                element={ loggedIn && (role === "super_admin" || role === "admin") ? <SA_Dashboard /> : <Navigate to="/" />} />
+                element={ loggedIn && (role === "super_admin" || role === "admin") && <ViewRewards />} />
+
+          {/* Settings */}
+          <Route path="/settings" element={<Settings />} />
 
           {/* Not Found */}
           <Route path="*" element={<NotFound />} />

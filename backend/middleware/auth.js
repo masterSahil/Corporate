@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const { findOne } = require("../model/user");
 
 module.exports.verifyUser = (req, res) => {
     const token = req.cookies.corporate_token;
@@ -15,7 +14,5 @@ module.exports.verifyUser = (req, res) => {
         return res.status(401).json({ authenticated: false });
     }
 };
-
-
 
 // used in userRoutes.js 

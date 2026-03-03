@@ -4,3 +4,11 @@ body{
     margin: 0;
     overflow: hidden;
 }
+textarea{
+    resize: none;
+}
+*::selection{
+    background: #000;
+    color: white;
+}
+
