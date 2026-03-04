@@ -8,3 +8,5 @@ router.get('/health', (req, res) => {
         message: "Backend is Running",
     })
 })
+
+module.exports = router;

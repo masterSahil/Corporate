@@ -28,4 +28,4 @@ app.use(cookieParser());
 app.use('/', userRoutes); 
 app.use('/', rewardRoutes); 
 app.use('/', productRoutes); 
-app.use('/', healthRoutes); 
+app.use('/', healthRoutes);
