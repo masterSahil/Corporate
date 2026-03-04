@@ -1,6 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controller/productController");
+const multer = require("multer");
+const {CloudinaryStorage} = require("multer-storage-cloudinary");
+const cloudinary = require("../config/Cloudinary");
+
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "corporate_products",
+    } 
+})
+
+const upload = multer({storage});
 
 router.get("/product", productController.getProduct);
 router.get("/product-all", productController.getAllProduct);

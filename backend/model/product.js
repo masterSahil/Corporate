@@ -1,14 +1,18 @@
 const {Schema, model} = require("mongoose")
 
 const productSchema = new Schema({
-    name: {type: String},
+    name: { type: String, trim: true },
     category: {type: String},
     brand: {type: String},
-    price: {type: Number},
-    discount: {type: Number},
-    quantity: {type: Number},
+    price: {type: Number, min: 0},
+    quantity: {type: Number, min: 0},
+    discount: {type: Number },
     description: {type: String},
-    createdAt: {type: Date, default: Date.now()},
+    gallery: {
+        imageUrl: { type: String },
+        imagePublicId: { type: String }
+    },
+    createdAt: {type: Date, default: Date.now},
     isDeleted: {type: Boolean, default: false},
 
 });

@@ -45,7 +45,7 @@ module.exports.FetchUser = async (req, res) => {
 
 module.exports.CreateUser = async (req, res) => {
     try {
-        const {username, email, password, gender, phoneNumber, role} = req.body;
+        const {username, email, password, gender, phoneNumber, role, profile, department, employment} = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -58,10 +58,17 @@ module.exports.CreateUser = async (req, res) => {
         if(user) return res.status(409).json({success: false, message: "User Already Exists"});
 
         const hash_password = await bcrypt.hash(password, 10);
-        const created = new UserSchema({username, email, password:hash_password, gender, phoneNumber, role});
+
+        const userData = { username, email, password: hash_password, gender, phoneNumber, role, department, employment, profile};
+
+        if (req.file) {
+            userData.profile = { imageUrl: req.file.path, imagePublicId: req.file.filename };
+        }
+
+        const created = new UserSchema(userData);
         await created.save();
 
-        res.status(200).json({
+        res.status(201).json({
             success: true,
             users: created,
         })
@@ -75,12 +82,19 @@ module.exports.CreateUser = async (req, res) => {
 
 module.exports.UpdatedUser = async (req, res) => {
     try {
-        const {id} = req.params;
-        const {username, email, password, gender, phoneNumber, role} = req.body;
-        
-        const hash_password = await bcrypt.hash(password, 10);
-        const updatedUser = await UserSchema.findByIdAndUpdate(id, 
-            {username, email, password:hash_password, gender, phoneNumber, role}, { returnDocument: 'after' });
+        const {username, email, password, gender, phoneNumber, role, department, employment, profile} = req.body;
+        const userData = {username, email, gender, phoneNumber, role, department, employment, profile};
+
+        if (password) {
+            userData.password = await bcrypt.hash(password, 10);
+        }
+
+        if (req.file) {
+            userData.profile = { imageUrl: req.file.path, imagePublicId: req.file.filename };
+        }
+
+        const updatedUser = await UserSchema.findByIdAndUpdate(req.params.id, userData, 
+            { returnDocument: 'after' });
 
         if (!updatedUser) {
             return res.status(404).json({
@@ -88,11 +102,31 @@ module.exports.UpdatedUser = async (req, res) => {
                 message: "User not found",
             });
         }
-        
+
         res.status(200).json({
             success: true,
             users: updatedUser,
-        })
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+module.exports.DeleteImage = async (req, res) => {
+    try {
+        const user = await UserSchema.findById(req.params.id);
+
+        if (user?.profile?.imagePublicId) {
+            await cloudinary.uploader.destroy(user.profile.imagePublicId);
+        }
+
+        res.status(200).json({
+            success: true,
+            users: user,
+        });
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -103,8 +137,8 @@ module.exports.UpdatedUser = async (req, res) => {
 
 module.exports.SoftDeletedUser = async (req, res) => {
     try {
-        const {id} = req.params;
-        const softDelete = await UserSchema.findByIdAndUpdate(id, {isDeleted: true}, {returnDocument: 'after'});
+        const softDelete = await UserSchema.findByIdAndUpdate(req.params.id, {isDeleted: true}, 
+            {returnDocument: 'after'});
 
         if (!softDelete) {
             return res.status(404).json({
@@ -127,8 +161,7 @@ module.exports.SoftDeletedUser = async (req, res) => {
 
 module.exports.DeleteUser = async (req, res) => {
     try {
-        const {id} = req.params;
-        const removed = await UserSchema.findByIdAndDelete(id);
+        const removed = await UserSchema.findByIdAndDelete(req.params.id);
 
         if (!removed) {
             return res.status(404).json({
@@ -245,10 +278,8 @@ module.exports.verifyRole = async (req, res) => {
 
     try {
         const decoded = jwt.verify(token, process.env.SECRET);
-        console.log(decoded.email);
 
         const user = await UserSchema.findOne({email: decoded.email});
-        console.log(user.role)
         res.status(200).json({
             success: true,
             user: user,

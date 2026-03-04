@@ -1,12 +1,9 @@
 import React, { useState } from "react";
-import { Menu, ShieldCheck, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, Users } from "lucide-react";
+import { Menu, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, Users } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 
-/* ================================
-   Reusable Components
-================================ */
-
+/* Reusable Components */
 const Card = ({ title, icon: Icon, children, className = "" }) => (
   <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm ${className}`}>
     {title && (
@@ -18,40 +15,6 @@ const Card = ({ title, icon: Icon, children, className = "" }) => (
     {children}
   </div>
 );
-
-const Input = ({ label, type = "text", icon: Icon, rightElement, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted}`} />}
-      <input
-        type={type}
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} ${rightElement ? 'pr-11' : 'pr-4'} py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-        {...props}
-      />
-      {rightElement && <div className="absolute right-4">{rightElement}</div>}
-    </div>
-  </div>
-);
-
-const PasswordInput = ({ label, ...props }) => {
-  const [show, setShow] = useState(false);
-  return (
-    <Input
-      label={label}
-      type={show ? "text" : "password"}
-      icon={Lock}
-      rightElement={
-        <button type="button" onClick={() => setShow(!show)} className={`${theme.textMuted} hover:text-black transition-colors`}>
-          {show ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
-      }
-      {...props}
-    />
-  );
-};
 
 const ImageDropzone = ({ onFileSelect }) => {
   const [preview, setPreview] = useState(null);
@@ -84,34 +47,11 @@ const ImageDropzone = ({ onFileSelect }) => {
   );
 };
 
-const Select = ({ label, icon: Icon, options, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <select
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-        {...props}
-      >
-        <option value="" disabled hidden>Select an option</option>
-        {options.map((opt, i) => (
-          <option key={i} value={opt}>{opt}</option>
-        ))}
-      </select>
-      <div className="absolute right-4 pointer-events-none text-slate-400">
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-);
-
 /* Main Component */
 const AddAdmin = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Added state for password toggle
+  
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -172,18 +112,109 @@ const AddAdmin = () => {
               
               <Card title="Personal Information" icon={User}>
                 <div className="grid md:grid-cols-2 gap-x-8">
-                  <Input label="Full Name" icon={User} value={formData.fullName} onChange={handleChange("fullName")} placeholder="e.g. Alex Morgan" />
-                  <Input label="Email Address" type="email" icon={Mail} value={formData.email} onChange={handleChange("email")} placeholder="alex@enterprise.com" />
-                  <Input label="Phone Number" icon={Phone} value={formData.phone} onChange={handleChange("phone")} placeholder="+1 (555) 000-0000" />
-                  <PasswordInput label="Secure Password" value={formData.password} onChange={handleChange("password")} placeholder="••••••••" />
+                  
+                  {/* Full Name Input */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Full Name
+                    </label>
+                    <div className="relative flex items-center">
+                      <User size={18} className={`absolute left-4 ${theme.textMuted}`} />
+                      <input
+                        type="text"
+                        value={formData.fullName}
+                        onChange={handleChange("fullName")}
+                        placeholder="e.g. Alex Morgan"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Address Input */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Email Address
+                    </label>
+                    <div className="relative flex items-center">
+                      <Mail size={18} className={`absolute left-4 ${theme.textMuted}`} />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange("email")}
+                        placeholder="alex@enterprise.com"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Number Input */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Phone Number
+                    </label>
+                    <div className="relative flex items-center">
+                      <Phone size={18} className={`absolute left-4 ${theme.textMuted}`} />
+                      <input
+                        type="text"
+                        value={formData.phone}
+                        onChange={handleChange("phone")}
+                        placeholder="+1 (555) 000-0000"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Secure Password Input */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Secure Password
+                    </label>
+                    <div className="relative flex items-center">
+                      <Lock size={18} className={`absolute left-4 ${theme.textMuted}`} />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={handleChange("password")}
+                        placeholder="••••••••"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-11 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                      <div className="absolute right-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setShowPassword(!showPassword)} 
+                          className={`${theme.textMuted} hover:text-black transition-colors`}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gender Select */}
                   <div className="md:col-span-1">
-                    <Select 
-                      label="Gender" 
-                      icon={Users} 
-                      value={formData.gender} 
-                      onChange={handleChange("gender")} 
-                      options={["Male", "Female", "Non-binary", "Prefer not to say"]} 
-                    />
+                    <div className="flex flex-col gap-2 mb-6">
+                      <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                        Gender
+                      </label>
+                      <div className="relative flex items-center">
+                        <Users size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                        <select
+                          value={formData.gender}
+                          onChange={handleChange("gender")}
+                          className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                        >
+                          <option value="" disabled hidden>Select an option</option>
+                          {["Male", "Female", "Non-binary", "Prefer not to say"].map((opt, i) => (
+                            <option key={i} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                        <div className="absolute right-4 pointer-events-none text-slate-400">
+                          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Card>

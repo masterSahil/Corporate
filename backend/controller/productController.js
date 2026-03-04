@@ -34,12 +34,31 @@ module.exports.getAllProduct = async(req, res) => {
 
 module.exports.createProduct = async(req, res) => {
     try {
-        const {name, category, brand, price, discount, quantity, description} = req.body;
-        const newProduct = new productSchema({name, category, brand, price, discount, quantity, description});
+        const {name, category, brand, price, discount, quantity, description, gallery} = req.body;
+        const productData = {name, category, brand, price, discount, quantity, description, gallery};
 
+        if (price < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Price cannot be negative"
+            });
+        }
+
+        if (discount && (discount < 0 || discount > 100)) {
+            return res.status(400).json({
+                success: false,
+                message: "Discount must be between 0 and 100"
+            });
+        }
+
+        if (req.file) {
+            productData.gallery = {imageUrl: req.file.path, imagePublicId: req.file.filename};
+        }
+
+        const newProduct = new productSchema(productData);
         await newProduct.save();
 
-        res.status(200).json({
+        res.status(201).json({
             success: true,
             product: newProduct,
         })
@@ -53,10 +72,36 @@ module.exports.createProduct = async(req, res) => {
 
 module.exports.updateProduct = async(req, res) => {
     try {
-        const {name, category, brand, price, discount, quantity, description, isDeleted} = req.body;
-        const updated = await productSchema.findByIdAndUpdate(req.params.id, 
-            {name, category, brand, price, discount, quantity, description, isDeleted}, 
+        const {name, category, brand, price, discount, quantity, description, isDeleted, gallery} = req.body;
+        const productData = {name, category, brand, price, discount, quantity, description, gallery, isDeleted};
+
+        if (price !== undefined && price < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Price cannot be negative"
+            });
+        }
+
+        if (discount !== undefined && (discount < 0 || discount > 100)) {
+            return res.status(400).json({
+                success: false,
+                message: "Discount must be between 0 and 100"
+            });
+        }
+
+        if (req.file) {
+            productData.gallery = {imageUrl: req.file.path, imagePublicId: req.file.filename};
+        }
+
+        const updated = await productSchema.findByIdAndUpdate(req.params.id, productData, 
             {returnDocument: 'after'});
+
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
 
         res.status(200).json({
             success: true,
