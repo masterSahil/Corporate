@@ -109,7 +109,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                           onClick={() => handleNavigation(sub.path)}
                           className={`w-full flex items-center justify-between text-left px-3 py-2 text-[13px] rounded-md group font-medium transition ${
                             isSubActive 
-                              ? 'border-black shadow-sm border' 
+                              ? 'border-l-2 shadow-md' 
                               : `${theme.textMuted} hover:border-l-2 hover:shadow-md`
                           }`}
                         >
