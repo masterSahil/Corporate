@@ -107,10 +107,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         <button 
                           key={idx} 
                           onClick={() => handleNavigation(sub.path)}
-                          className={`w-full flex items-center justify-between text-left px-3 py-2 text-[13px] rounded-md group font-medium transition-all ${
+                          className={`w-full flex items-center justify-between text-left px-3 py-2 text-[13px] rounded-md group font-medium transition ${
                             isSubActive 
-                              ? 'bg-black text-white shadow-sm' 
-                              : `${theme.textMuted} hover:bg-black hover:text-white`
+                              ? 'border-black shadow-sm border' 
+                              : `${theme.textMuted} hover:border-l-2 hover:shadow-md`
                           }`}
                         >
                           <span>{sub.label}</span>

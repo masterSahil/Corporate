@@ -1,0 +1,12 @@
+const {Schema, model} = require("mongoose")
+
+const rewardSchema = new Schema({
+    title: {type: String},
+    category: {type: String},
+    description: {type: String},
+    email: {type: String},
+    isDeleted: {type: Boolean, default: false},
+    createdAt: {type: Date, default: Date.now()},
+});
+
+module.exports = model("Reward_Schema", rewardSchema);

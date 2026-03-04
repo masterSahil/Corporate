@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 
 // routes
 const userRoutes = require("./Routes/userRoutes")
+const rewardRoutes = require("./Routes/rewardRoutes")
 
 connectDB();
 
@@ -21,3 +22,4 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use('/', userRoutes); 
+app.use('/', rewardRoutes); 

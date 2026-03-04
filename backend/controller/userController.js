@@ -104,7 +104,7 @@ module.exports.UpdatedUser = async (req, res) => {
 module.exports.SoftDeletedUser = async (req, res) => {
     try {
         const {id} = req.params;
-        const softDelete = await UserSchema.findByIdAndUpdate(id, {isDeleted: true}, {new: true});
+        const softDelete = await UserSchema.findByIdAndUpdate(id, {isDeleted: true}, {returnDocument: 'after'});
 
         if (!softDelete) {
             return res.status(404).json({

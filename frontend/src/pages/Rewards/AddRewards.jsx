@@ -178,7 +178,7 @@ const AddReward = () => {
                   icon={Hash} 
                   value={formData.emailId} 
                   onChange={handleChange("emailId")} 
-                  placeholder="e.g. EMP-8493" 
+                  placeholder="e.g. employee@gmail.com" 
                 />
               </Card>
 
