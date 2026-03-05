@@ -3,82 +3,27 @@ import { Menu, Box, UploadCloud, Tag, DollarSign, Package, LayoutGrid, AlignLeft
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 
-/* ================================
-   Reusable Components
-================================ */
-
-const Card = ({ title, icon: Icon, children, className = "" }) => (
-  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm ${className}`}>
-    {title && (
-      <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
-        {Icon && <Icon size={20} className="text-slate-900" />}
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-      </div>
-    )}
-    {children}
-  </div>
-);
-
-const Input = ({ label, type = "text", icon: Icon, rightElement, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <input
-        type={type}
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} ${rightElement ? 'pr-11' : 'pr-4'} py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-        {...props}
-      />
-      {rightElement && <div className="absolute right-4">{rightElement}</div>}
-    </div>
-  </div>
-);
-
-const Select = ({ label, icon: Icon, options, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <select
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-        {...props}
-      >
-        <option value="" disabled hidden>Select category</option>
-        {options.map((opt, i) => (
-          <option key={i} value={opt}>{opt}</option>
-        ))}
-      </select>
-      <div className="absolute right-4 pointer-events-none text-slate-400">
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-);
-
-const TextArea = ({ label, icon: Icon, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative">
-      {Icon && <Icon size={18} className={`absolute left-4 top-3.5 ${theme.textMuted} pointer-events-none`} />}
-      <textarea
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-30 resize-y`}
-        {...props}
-      />
-    </div>
-  </div>
-);
-
-const MultiImageDropzone = ({ images, setImages }) => {
+const AddProduct = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [images, setImages] = useState([]);
   const fileInputRef = useRef(null);
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    brand: "",
+    price: "",
+    discountPrice: "",
+    stock: "",
+    description: "",
+  });
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Image Upload Logic
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
@@ -94,74 +39,6 @@ const MultiImageDropzone = ({ images, setImages }) => {
   const removeImage = (idToRemove) => {
     setImages(prev => prev.filter(img => img.id !== idToRemove));
   };
-
-  return (
-    <Card title="Product Gallery" icon={ImageIcon}>
-      <div className="space-y-4">
-        {/* Image Grid */}
-        {images.length > 0 && (
-          <div className="grid grid-cols-2 gap-4">
-            {images.map((img, index) => (
-              <div key={img.id} className={`relative group rounded-xl overflow-hidden border ${theme.border} aspect-square`}>
-                <img src={img.preview} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 opacity-100 transition-opacity flex items-center justify-center">
-                  <button 
-                    onClick={() => removeImage(img.id)}
-                    className="bg-white text-rose-600 p-2 rounded-full hover:scale-110 transition-transform shadow-lg"
-                  >
-                    <X size={16} strokeWidth={3} />
-                  </button>
-                </div>
-                {index === 0 && (
-                  <span className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
-                    Primary
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Upload Button */}
-        <label className={`border-2 border-dashed ${images.length > 0 ? 'border-zinc-300 py-6' : `border-zinc-300 py-12`} rounded-xl flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group`}>
-          <div className={`bg-slate-100 rounded-full group-hover:scale-110 transition-transform ${images.length > 0 ? 'p-3 mb-2' : 'p-4 mb-4'}`}>
-            <UploadCloud size={images.length > 0 ? 20 : 28} className="text-slate-600" />
-          </div>
-          <p className={`${images.length > 0 ? 'text-sm' : 'text-base'} font-bold text-slate-900 mb-1`}>
-            {images.length > 0 ? 'Add more images' : 'Click to upload images'}
-          </p>
-          {!images.length && <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB each</p>}
-          <input 
-            type="file" 
-            accept="image/*" 
-            multiple 
-            onChange={handleFileChange} 
-            className="hidden" 
-            ref={fileInputRef}
-          />
-        </label>
-      </div>
-    </Card>
-  );
-};
-
-/* Main Component */
-
-const AddProduct = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [images, setImages] = useState([]);
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    brand: "",
-    price: "",
-    discountPrice: "",
-    stock: "",
-    description: "",
-  });
-
-  const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
 
   const handleSubmit = () => {
     const payload = {
@@ -188,7 +65,7 @@ const AddProduct = () => {
           </button>
         </div>
 
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 max-w-7xl mx-auto pb-12">
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10">
@@ -212,49 +89,209 @@ const AddProduct = () => {
             {/* Left Column: Form Fields */}
             <div className="xl:col-span-2 space-y-8">
               
-              {/* Basic Details */}
-              <Card title="Basic Details" icon={Box}>
+              {/* Basic Details Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Box size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Basic Details</h2>
+                </div>
+                
                 <div className="grid md:grid-cols-2 gap-x-8">
-                  <div className="md:col-span-2">
-                    <Input label="Product Name" icon={Box} value={formData.name} onChange={handleChange("name")} placeholder="e.g. Sony Noise Cancelling Headphones" />
+                  {/* Product Name */}
+                  <div className="md:col-span-2 flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Product Name</label>
+                    <div className="relative flex items-center">
+                      <Box size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="e.g. Sony Noise Cancelling Headphones"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
                   </div>
-                  <Select 
-                    label="Product Category" 
-                    icon={LayoutGrid} 
-                    value={formData.category} 
-                    onChange={handleChange("category")} 
-                    options={["Electronics & Audio", "Apparel & Fashion", "Home & Furniture", "Beauty & Personal Care", "Sports & Outdoors"]} 
-                  />
-                  <Input label="Brand" icon={Tag} value={formData.brand} onChange={handleChange("brand")} placeholder="e.g. Sony" />
-                </div>
-              </Card>
 
-              {/* Pricing & Inventory */}
-              <Card title="Pricing & Inventory" icon={DollarSign}>
+                  {/* Product Category */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Product Category</label>
+                    <div className="relative flex items-center">
+                      <LayoutGrid size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                      >
+                        <option value="" disabled hidden>Select category</option>
+                        {["Electronics & Audio", "Apparel & Fashion", "Home & Furniture", "Beauty & Personal Care", "Sports & Outdoors"].map((opt, i) => (
+                          <option key={i} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 pointer-events-none text-slate-400">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Brand */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Brand</label>
+                    <div className="relative flex items-center">
+                      <Tag size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="text"
+                        name="brand"
+                        value={formData.brand}
+                        onChange={handleChange}
+                        placeholder="e.g. Sony"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing & Inventory Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <DollarSign size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Pricing & Inventory</h2>
+                </div>
+
                 <div className="grid md:grid-cols-3 gap-x-6">
-                  <Input label="Regular Price" type="number" icon={DollarSign} value={formData.price} onChange={handleChange("price")} placeholder="0.00" />
-                  <Input label="Discount Price" type="number" icon={DollarSign} value={formData.discountPrice} onChange={handleChange("discountPrice")} placeholder="0.00" />
-                  <Input label="Stock Quantity" type="number" icon={Package} value={formData.stock} onChange={handleChange("stock")} placeholder="0" />
-                </div>
-              </Card>
+                  {/* Regular Price */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Regular Price</label>
+                    <div className="relative flex items-center">
+                      <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="number"
+                        name="price"
+                        value={formData.price}
+                        onChange={handleChange}
+                        placeholder="0.00"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
 
-              {/* Description */}
-              <Card title="Description" icon={AlignLeft}>
-                <TextArea
-                  label="Product Description"
-                  icon={AlignLeft}
-                  value={formData.description}
-                  onChange={handleChange("description")}
-                  placeholder="Provide a detailed description of the product, including key features and specifications..."
-                />
-              </Card>
+                  {/* Discount Price */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Discount Price</label>
+                    <div className="relative flex items-center">
+                      <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="number"
+                        name="discountPrice"
+                        value={formData.discountPrice}
+                        onChange={handleChange}
+                        placeholder="0.00"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Stock Quantity */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Stock Quantity</label>
+                    <div className="relative flex items-center">
+                      <Package size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="number"
+                        name="stock"
+                        value={formData.stock}
+                        onChange={handleChange}
+                        placeholder="0"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <AlignLeft size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Description</h2>
+                </div>
+                
+                <div className="flex flex-col gap-2 mb-6">
+                  <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Product Description</label>
+                  <div className="relative">
+                    <AlignLeft size={18} className={`absolute left-4 top-3.5 ${theme.textMuted} pointer-events-none`} />
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder="Provide a detailed description of the product, including key features and specifications..."
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-30 resize-y`}
+                    />
+                  </div>
+                </div>
+              </div>
 
             </div>
 
             {/* Right Column: Gallery & Visibility */}
             <div className="space-y-8">
               
-              <MultiImageDropzone images={images} setImages={setImages} />
+              {/* Product Gallery Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <ImageIcon size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Product Gallery</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Image Grid */}
+                  {images.length > 0 && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {images.map((img, index) => (
+                        <div key={img.id} className={`relative group rounded-xl overflow-hidden border ${theme.border} aspect-square`}>
+                          <img src={img.preview} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button 
+                              onClick={() => removeImage(img.id)}
+                              className="bg-white text-rose-600 p-2 rounded-full hover:scale-110 transition-transform shadow-lg cursor-pointer"
+                            >
+                              <X size={16} strokeWidth={3} />
+                            </button>
+                          </div>
+                          {index === 0 && (
+                            <span className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <label className={`border-2 border-dashed ${images.length > 0 ? 'border-zinc-300 py-6' : 'border-zinc-300 py-12'} rounded-xl flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group`}>
+                    <div className={`bg-slate-100 rounded-full group-hover:scale-110 transition-transform ${images.length > 0 ? 'p-3 mb-2' : 'p-4 mb-4'}`}>
+                      <UploadCloud size={images.length > 0 ? 20 : 28} className="text-slate-600" />
+                    </div>
+                    <p className={`${images.length > 0 ? 'text-sm' : 'text-base'} font-bold text-slate-900 mb-1`}>
+                      {images.length > 0 ? 'Add more images' : 'Click to upload images'}
+                    </p>
+                    {!images.length && <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB each</p>}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple 
+                      onChange={handleFileChange} 
+                      className="hidden" 
+                      ref={fileInputRef}
+                    />
+                  </label>
+                </div>
+              </div>
 
               {/* Premium Storefront Badge */}
               <div className="bg-linear-to-br from-zinc-800 to-black rounded-xl p-8 text-white shadow-xl shadow-black/20 relative overflow-hidden flex flex-col justify-center min-h-35">

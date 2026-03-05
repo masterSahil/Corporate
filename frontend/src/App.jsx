@@ -30,26 +30,26 @@ export default function App() {
   // }
 
   const verifyLogin_Role = async () => {
-  try {
-    const login_result = await checkLoginApi();
+    try {
+      const login_result = await checkLoginApi();
 
-    if (!login_result) {
-      setLoggedIn(false); 
-      return;
-    }
-    setLoggedIn(true);
+      if (!login_result) {
+        setLoggedIn(false); 
+        return;
+      }
+      setLoggedIn(true);
 
-    const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {withCredentials: true});
-    setRole(role_check.data.role);
-  } catch (error) {
-    if (error.response?.status === 401) {
-      setLoggedIn(false);
-      setRole(null);
-    } else {
-      console.log(error);
+      const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {withCredentials: true});
+      setRole(role_check.data.role);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setLoggedIn(false);
+        setRole(null);
+      } else {
+        console.log(error);
+      }
     }
-  }
-};
+  };
 
   useEffect(() => {
     verifyLogin_Role();

@@ -3,79 +3,6 @@ import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2 
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 
-/* Reusable Components */
-
-const Card = ({ title, icon: Icon, children, className = "" }) => (
-  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm ${className}`}>
-    {title && (
-      <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
-        {Icon && <Icon size={20} className="text-slate-900" />}
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-      </div>
-    )}
-    {children}
-  </div>
-);
-
-const Input = ({ label, type = "text", icon: Icon, rightElement, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <input
-        type={type}
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} ${rightElement ? 'pr-11' : 'pr-4'} py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-        {...props}
-      />
-      {rightElement && <div className="absolute right-4">{rightElement}</div>}
-    </div>
-  </div>
-);
-
-const Select = ({ label, icon: Icon, options, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <select
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-        {...props}
-      >
-        <option value="" disabled hidden>Select an option</option>
-        {options.map((opt, i) => (
-          <option key={i} value={opt}>{opt}</option>
-        ))}
-      </select>
-      <div className="absolute right-4 pointer-events-none text-slate-400">
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-);
-
-const TextArea = ({ label, icon: Icon, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative">
-      {Icon && <Icon size={18} className={`absolute left-4 top-3.5 ${theme.textMuted} pointer-events-none`} />}
-      <textarea
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-35 resize-y`}
-        {...props}
-      />
-    </div>
-  </div>
-);
-
-/* Main Component */
-
 const AddReward = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -132,36 +59,73 @@ const AddReward = () => {
             {/* Left Column: Form Fields */}
             <div className="xl:col-span-2 space-y-8">
               
-              <Card title="Reward Details" icon={Gift}>
+              {/* Reward Details Card */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Gift size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Reward Details</h2>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-x-8">
-                  <div className="md:col-span-2">
-                    <Input 
-                      label="Reward Title" 
-                      icon={Gift} 
-                      value={formData.title} 
-                      onChange={handleChange("title")} 
-                      placeholder="e.g. $100 Amazon Gift Card, Weekend Getaway..." 
-                    />
+                  {/* Title Input */}
+                  <div className="md:col-span-2 flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Reward Title
+                    </label>
+                    <div className="relative flex items-center">
+                      <Gift size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={handleChange("title")}
+                        placeholder="e.g. $100 Amazon Gift Card, Weekend Getaway..."
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
                   </div>
-                  <div className="md:col-span-2">
-                    <Select 
-                      label="Reward Category" 
-                      icon={Tag} 
-                      value={formData.category} 
-                      onChange={handleChange("category")} 
-                      options={["Gift Card", "Merchandise", "Experience", "Digital", "Travel", "Bonus"]} 
-                    />
+
+                  {/* Category Select */}
+                  <div className="md:col-span-2 flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Reward Category
+                    </label>
+                    <div className="relative flex items-center">
+                      <Tag size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <select
+                        value={formData.category}
+                        onChange={handleChange("category")}
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                      >
+                        <option value="" disabled hidden>Select an option</option>
+                        {["Gift Card", "Merchandise", "Experience", "Digital", "Travel", "Bonus"].map((opt, i) => (
+                          <option key={i} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 pointer-events-none text-slate-400">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <TextArea
-                  label="Short Description"
-                  icon={AlignLeft}
-                  value={formData.description}
-                  onChange={handleChange("description")}
-                  placeholder="Briefly describe the reward, redemption rules, and value..."
-                />
-              </Card>
+                {/* Description Textarea */}
+                <div className="flex flex-col gap-2 mb-6">
+                  <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                    Short Description
+                  </label>
+                  <div className="relative">
+                    <AlignLeft size={18} className={`absolute left-4 top-3.5 ${theme.textMuted} pointer-events-none`} />
+                    <textarea
+                      value={formData.description}
+                      onChange={handleChange("description")}
+                      placeholder="Briefly describe the reward, redemption rules, and value..."
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-35 resize-y`}
+                    />
+                  </div>
+                </div>
+              </div>
 
             </div>
 
@@ -169,18 +133,31 @@ const AddReward = () => {
             <div className="space-y-8">
               
               {/* Assignment Card */}
-              <Card title="Recipient Assignment" icon={UserCheck}>
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <UserCheck size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Recipient Assignment</h2>
+                </div>
                 <p className={`text-sm ${theme.textMuted} mb-6`}>
                   Enter the unique Email ID of the employee who will receive this reward.
                 </p>
-                <Input 
-                  label="Reward Email ID" 
-                  icon={Hash} 
-                  value={formData.emailId} 
-                  onChange={handleChange("emailId")} 
-                  placeholder="e.g. employee@gmail.com" 
-                />
-              </Card>
+                
+                <div className="flex flex-col gap-2 mb-6">
+                  <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                    Reward Email ID
+                  </label>
+                  <div className="relative flex items-center">
+                    <Hash size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                    <input
+                      type="text"
+                      value={formData.emailId}
+                      onChange={handleChange("emailId")}
+                      placeholder="e.g. employee@company.com"
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                    />
+                  </div>
+                </div>
+              </div>
 
               {/* Premium Issuance Badge */}
               <div className="bg-linear-to-br from-zinc-800 to-black rounded-xl p-8 text-white shadow-xl shadow-black/20 relative overflow-hidden flex flex-col justify-center min-h-65">

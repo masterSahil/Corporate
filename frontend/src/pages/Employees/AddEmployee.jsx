@@ -3,98 +3,10 @@ import { Menu, ShieldCheck, User, UploadCloud, Mail, Phone, Calendar, Briefcase,
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 
-/*  Reusable Components  */
-
-const Card = ({ title, icon: Icon, children, className = "" }) => (
-  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm ${className}`}>
-    {title && (
-      <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
-        {Icon && <Icon size={20} className="text-slate-900" />}
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-      </div>
-    )}
-    {children}
-  </div>
-);
-
-const Input = ({ label, type = "text", icon: Icon, rightElement, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <input
-        type={type}
-        placeholder="******"
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} ${rightElement ? 'pr-11' : 'pr-4'} py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-        {...props}
-      />
-      {rightElement && <div className="absolute right-4">{rightElement}</div>}
-    </div>
-  </div>
-);
-
-const Select = ({ label, icon: Icon, options, ...props }) => (
-  <div className="flex flex-col gap-2 mb-6">
-    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      {Icon && <Icon size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />}
-      <select
-        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-        {...props}
-      >
-        <option value="" disabled hidden>Select an option</option>
-        {options.map((opt, i) => (
-          <option key={i} value={opt}>{opt}</option>
-        ))}
-      </select>
-      <div className="absolute right-4 pointer-events-none text-slate-400">
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-);
-
-const ImageDropzone = ({ onFileSelect }) => {
-  const [preview, setPreview] = useState(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-      onFileSelect(file);
-    }
-  };
-
-  return (
-    <Card title="Profile Photo" icon={Camera}>
-      <label className={`border-2 border-dashed ${preview ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-62.5`}>
-        {preview ? (
-          <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
-        ) : (
-          <>
-            <div className="bg-slate-100 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
-              <UploadCloud size={28} className="text-slate-600" />
-            </div>
-            <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
-            <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
-          </>
-        )}
-        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-      </label>
-    </Card>
-  );
-};
-
-/* Main Component */
-
 const AddEmployee = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [preview, setPreview] = useState(null);
+  
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -106,8 +18,22 @@ const AddEmployee = () => {
     profileImage: null,
   });
 
-  const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
-  const handleTypeSelect = (type) => setFormData({ ...formData, employmentType: type });
+  // Unified change handler
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTypeSelect = (type) => setFormData(prev => ({ ...prev, employmentType: type }));
+
+  // Image upload handler
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+      setFormData(prev => ({ ...prev, profileImage: file }));
+    }
+  };
 
   const handleSubmit = () => {
     console.log("Submitting employee:", formData);
@@ -130,7 +56,7 @@ const AddEmployee = () => {
           </button>
         </div>
 
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 max-w-7xl mx-auto pb-12">
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10">
@@ -154,38 +80,135 @@ const AddEmployee = () => {
             {/* Left Column: Form Fields & Details */}
             <div className="xl:col-span-2 space-y-8">
               
-              <Card title="Personal Information" icon={User}>
+              {/* Personal Information Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <User size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Personal Information</h2>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-x-8">
-                  <Input label="Full Name" icon={User} value={formData.fullName} onChange={handleChange("fullName")} placeholder="e.g. Jonathan Smith" />
-                  <Input label="Email Address" type="email" icon={Mail} value={formData.email} onChange={handleChange("email")} placeholder="j.smith@enterprise.com" />
-                  <Input label="Phone Number" icon={Phone} value={formData.phone} onChange={handleChange("phone")} placeholder="+1 (555) 000-0000" />
-                  <Input label="Password" type="password" icon={Shield} value={formData.password} onChange={handleChange("password")} />
+                  {/* Full Name */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Full Name</label>
+                    <div className="relative flex items-center">
+                      <User size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        placeholder="e.g. Jonathan Smith"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Email Address</label>
+                    <div className="relative flex items-center">
+                      <Mail size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="j.smith@enterprise.com"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Phone Number</label>
+                    <div className="relative flex items-center">
+                      <Phone size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="text"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+1 (555) 000-0000"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Password</label>
+                    <div className="relative flex items-center">
+                      <Shield size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="******"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                      />
+                    </div>
+                  </div>
                   
                   {/* Gender spans 1 column in md view */}
-                  <div className="md:col-span-1">
-                    <Select 
-                      label="Gender" 
-                      icon={Users} 
-                      value={formData.gender} 
-                      onChange={handleChange("gender")} 
-                      options={["Male", "Female", "Non-binary", "Prefer not to say"]} 
-                    />
+                  <div className="md:col-span-1 flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Gender</label>
+                    <div className="relative flex items-center">
+                      <Users size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <select
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                      >
+                        <option value="" disabled hidden>Select an option</option>
+                        {["Male", "Female", "Non-binary", "Prefer not to say"].map((opt, i) => (
+                          <option key={i} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 pointer-events-none text-slate-400">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card title="Employment Details" icon={Briefcase}>
-                <div className="mb-2">
-                  <Select 
-                    label="Department" 
-                    icon={Briefcase} 
-                    value={formData.department} 
-                    onChange={handleChange("department")} 
-                    options={["Engineering", "Human Resources", "Marketing", "Sales", "Operations", "Finance"]} 
-                  />
+              {/* Employment Details Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Briefcase size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Employment Details</h2>
                 </div>
 
-                <div className="mt-2">
+                <div className="mb-2 flex flex-col gap-2">
+                  <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Department</label>
+                  <div className="relative flex items-center">
+                    <Briefcase size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                    <select
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                    >
+                      <option value="" disabled hidden>Select an option</option>
+                      {["Engineering", "Human Resources", "Marketing", "Sales", "Operations", "Finance"].map((opt, i) => (
+                        <option key={i} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 pointer-events-none text-slate-400">
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
                   <label className={`block text-[11px] font-bold uppercase tracking-wide ${theme.textMuted} mb-3`}>
                     Employment Type
                   </label>
@@ -204,14 +227,34 @@ const AddEmployee = () => {
                     ))}
                   </div>
                 </div>
-              </Card>
+              </div>
 
             </div>
 
             {/* Right Column: Image & Security Info */}
             <div className="space-y-8">
               
-              <ImageDropzone onFileSelect={(file) => setFormData({ ...formData, profileImage: file })} />
+              {/* Profile Photo Block */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Camera size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Profile Photo</h2>
+                </div>
+                <label className={`border-2 border-dashed ${preview ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-62.5`}>
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
+                  ) : (
+                    <>
+                      <div className="bg-slate-100 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                        <UploadCloud size={28} className="text-slate-600" />
+                      </div>
+                      <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
+                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
+                    </>
+                  )}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                </label>
+              </div>
 
               {/* Premium Onboarding Badge */}
               <div className="bg-linear-to-br from-zinc-800 to-black rounded-xl p-8 text-white shadow-xl shadow-black/20 relative overflow-hidden flex flex-col justify-center">
