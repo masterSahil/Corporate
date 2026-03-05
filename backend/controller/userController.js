@@ -1,6 +1,7 @@
 const UserSchema = require("../model/user")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const cloudinary = require("../config/Cloudinary")
 
 module.exports.FetchSingleUser = async (req, res) => {
     try {
@@ -81,38 +82,46 @@ module.exports.CreateUser = async (req, res) => {
 }
 
 module.exports.UpdatedUser = async (req, res) => {
-    try {
-        const {username, email, password, gender, phoneNumber, role, department, employment, profile} = req.body;
-        const userData = {username, email, gender, phoneNumber, role, department, employment, profile};
+  try {
+    const { username, email, password, gender, phoneNumber, role, department, employment, profile } = req.body;
 
-        if (password) {
-            userData.password = await bcrypt.hash(password, 10);
-        }
+    const user = await UserSchema.findById(req.params.id);
 
-        if (req.file) {
-            userData.profile = { imageUrl: req.file.path, imagePublicId: req.file.filename };
-        }
-
-        const updatedUser = await UserSchema.findByIdAndUpdate(req.params.id, userData, 
-            { returnDocument: 'after' });
-
-        if (!updatedUser) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            users: updatedUser,
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
+
+    const userData = { username, email, gender, phoneNumber, role, department, employment };
+
+    // password update
+    if (password) {
+      userData.password = await bcrypt.hash(password, 10);
+    }
+
+    // image update
+    if (req.file) {
+        if (user.profile?.imagePublicId) {
+            await cloudinary.uploader.destroy(user.profile.imagePublicId);
+        }
+        userData.profile = { imageUrl: req.file.path, imagePublicId: req.file.filename };
+    }
+
+    const updatedUser = await UserSchema.findByIdAndUpdate(req.params.id,userData,{returnDocument: 'after'});
+
+    res.status(200).json({
+      success: true,
+      users: updatedUser,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 module.exports.DeleteImage = async (req, res) => {

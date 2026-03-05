@@ -12,6 +12,7 @@ const Settings = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [role, setRole] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
+  const [loading, setLoading] = useState(false)
   
   const [formData, setFormData] = useState({
     profile: null,
@@ -36,11 +37,14 @@ const Settings = () => {
 
   // Profile photo handler
   const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, profilePhoto: URL.createObjectURL(file) }));
-    }
-  };
+  const file = e.target.files[0];
+  if (file) {
+    setFormData((prev) => ({ 
+      ...prev, 
+      profile: { file: file, imageUrl: URL.createObjectURL(file), imagePublicId: file.name } 
+    }));
+  }
+};
 
   const getData = async() => {
     try {
@@ -71,16 +75,36 @@ const Settings = () => {
 
   const submit = async () => {
     try {
+       if (loading) return;
       if (formData.phoneNumber.length !== 10) {
         console.log("Phone number must be exactly 10 digits");
         return;
       }
 
-      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, {withCredentials: true});
-      console.log(formData);
-      console.log(res);
+      setLoading(true);
+
+      const data = new FormData();
+      data.append("username", formData.username);
+      data.append("email", formData.email);
+      data.append("phoneNumber", formData.phoneNumber);
+      data.append("gender", formData.gender);
+      data.append("department", formData.department);
+      data.append("employment", formData.employment);
+      // data.append("currentPassword", formData.currentPassword);
+      // data.append("newPassword", formData.newPassword);
+
+      if (formData.profile?.file) {
+        data.append("file", formData.profile.file);
+      }
+
+      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, {withCredentials: true, });
+
+      console.log(res.data);
+      getData();  
     } catch (error) {
       console.log(error);
+    } finally{
+      setLoading(false);
     }
   }
 
@@ -100,7 +124,9 @@ const Settings = () => {
 
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
-      
+      {loading && (
+  <div className="fixed top-0 left-0 w-full h-[3px] bg-black z-50 animate-pulse"></div>
+)}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 flex flex-col bg-slate-50 ${customScrollbarClasses}`}>
@@ -135,7 +161,8 @@ const Settings = () => {
               <div className="flex items-center gap-5 mb-8">
                 <div className="relative w-20 h-20 rounded-full bg-zinc-200 border border-zinc-300 overflow-hidden shrink-0 flex items-center justify-center group cursor-pointer shadow-sm">
                   {formData.profile ? (
-                    <img src={formData.profile} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={formData.profile?.imageUrl }
+                        alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User size={32} className="text-zinc-400" />
                   )}
@@ -259,9 +286,18 @@ const Settings = () => {
                 }
 
                 <div className="pt-6">
-                <button onClick={submit} className="flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white text-sm font-bold py-3 px-6 rounded-lg shadow-md transition-colors w-full">
-                  <Save size={16} />
-                  Save Changes
+                <button
+                  onClick={submit}
+                  disabled={loading}
+                  className={`flex items-center justify-center gap-2 text-white text-sm font-bold py-3 px-6 rounded-lg shadow-md transition-colors w-full
+                  ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-black hover:bg-zinc-800"}`}
+                >
+                  {loading ? "Saving..." : (
+                    <>
+                      <Save size={16} />
+                      Save Changes
+                    </>
+                  )}
                 </button>
               </div>
               </div>
