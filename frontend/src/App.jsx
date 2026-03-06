@@ -19,7 +19,8 @@ import ViewRewards from "./pages/Rewards/ViewRewards";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [role, setRole] = useState("employee");
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // const verifyLogin_Role = async () => {
   //   const login_result = await checkLoginApi();
@@ -35,6 +36,7 @@ export default function App() {
 
       if (!login_result) {
         setLoggedIn(false); 
+        setLoading(false);
         return;
       }
       setLoggedIn(true);
@@ -48,6 +50,8 @@ export default function App() {
       } else {
         console.log(error);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,8 +59,12 @@ export default function App() {
     verifyLogin_Role();
   }, [])
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <AuthContext.Provider value={{ loggedIn, setLoggedIn }}>
+    <AuthContext.Provider value={{ loggedIn, setLoggedIn, role, setRole }}>
       <Router>
         <Routes>
           <Route path="/" element={loggedIn ? <Navigate to="/dashboard" /> : <AuthPage />} />

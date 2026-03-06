@@ -75,7 +75,7 @@ const Settings = () => {
 
   const submit = async () => {
     try {
-       if (loading) return;
+      if (loading) return;
       if (formData.phoneNumber.length !== 10) {
         console.log("Phone number must be exactly 10 digits");
         return;
@@ -90,8 +90,6 @@ const Settings = () => {
       data.append("gender", formData.gender);
       data.append("department", formData.department);
       data.append("employment", formData.employment);
-      // data.append("currentPassword", formData.currentPassword);
-      // data.append("newPassword", formData.newPassword);
 
       if (formData.profile?.file) {
         data.append("file", formData.profile.file);

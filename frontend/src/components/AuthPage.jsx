@@ -55,6 +55,7 @@ const CorporateLogin = () => {
       console.log(res.data.users.role);
       setFormData({ email: '', password: '' })
       auth_context.setLoggedIn(true);
+      auth_context.setRole(res.data.users.role);
       navigate('/dashboard')
     } catch (error) {
       showToast(

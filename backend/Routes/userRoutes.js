@@ -27,6 +27,9 @@ router.get('/check-auth', verifyUser);
 // Logout
 router.get('/remove-auth', userController.LogOut);
 
+// Change Password
+router.patch('/password-change', userController.changePassword);
+
 router.get('/', userController.FetchUser); // fetch all users
 router.post('/fetch-user', userController.FetchSingleUser); // fetch single user
 

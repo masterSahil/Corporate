@@ -191,7 +191,7 @@ module.exports.DeleteUser = async (req, res) => {
     }
 }
 
-// Register, Login, Authorization, Logout
+// Register, Login, Authorization, Logout, New Password
 module.exports.RegisterUser = async (req, res) => {
     try {
         const {email, password, role} = req.body;
@@ -320,3 +320,37 @@ module.exports.LogOut = async (req, res) => {
         });
     }
 }
+
+module.exports.changePassword = async (req, res) => {
+    try {
+        const { email, currentPassword, newPassword } = req.body;
+        const user = await UserSchema.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid password",
+            });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await UserSchema.findByIdAndUpdate(user._id, { password: hashedPassword });
+
+        res.status(200).json({
+            success: true,
+            message: "Password changed successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
