@@ -96,7 +96,7 @@ export default function App() {
           <Route path="/rewards/manage" element={loggedIn && (role === "super_admin" || role === "admin") ? <ViewRewards /> : <Navigate to="/" />} />
 
           {/* Settings */}
-          <Route path="/settings" element={loggedIn ? <Settings /> : <NotFound />} />
+          <Route path="/settings" element={loggedIn ? <Settings /> : <Navigate to="/" />} />
 
           {/* Not Found */}
           <Route path="*" element={<NotFound />} />

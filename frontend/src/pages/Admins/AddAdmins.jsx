@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Menu, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, Users } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
+import axios from "axios";
 
 /* Reusable Components */
 const Card = ({ title, icon: Icon, children, className = "" }) => (
@@ -53,21 +54,54 @@ const AddAdmin = () => {
   const [showPassword, setShowPassword] = useState(false); // Added state for password toggle
   
   const [formData, setFormData] = useState({
-    fullName: "",
+    username: "",
     email: "",
-    phone: "",
     gender: "",
+    phoneNumber: "",
     password: "",
-    role: "Admin",
+    role: "admin",
     profileImage: null,
   });
 
+  const validateForm = () => {
+  if (!formData.username.trim()) return "Full name is required";
+  if (!formData.email.trim()) return "Email is required";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
+  if (!formData.phoneNumber.trim()) return "Phone number is required";
+  if (!/^[0-9]{10}$/.test(formData.phoneNumber)) return "Phone number must be 10 digits";
+  if (!formData.password) return "Password is required";
+  if (formData.password.length < 6) return "Password must be at least 6 characters";
+  if (!formData.gender) return "Please select gender";
+  if (!formData.role) return "Please select role";
+  if (!formData.profileImage) return "Profile image is required";
+
+  return null; 
+};
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
   const handleRoleSelect = (role) => setFormData({ ...formData, role });
 
-  const handleSubmit = () => {
-    console.log("Submitting admin:", formData);
-    // TODO: connect to backend API
+  const handleSubmit = async() => {
+    try {
+      const error = validateForm();
+      if (error) {
+        alert(error); return;
+      }
+
+      const data = new FormData();
+      data.append("username", formData.username);
+      data.append("email", formData.email);
+      data.append("password", formData.password);
+      data.append("gender", formData.gender);
+      data.append("phoneNumber", formData.phoneNumber);
+      data.append("role", formData.role);
+      data.append("file", formData.profileImage);
+
+      await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
+      alert("success");
+    } catch (error) {
+      console.log(error);
+    }
+
   };
 
   // Tailwind arbitrary variants to style the scrollbar
@@ -122,8 +156,8 @@ const AddAdmin = () => {
                       <User size={18} className={`absolute left-4 ${theme.textMuted}`} />
                       <input
                         type="text"
-                        value={formData.fullName}
-                        onChange={handleChange("fullName")}
+                        value={formData.username}
+                        onChange={handleChange("username")}
                         placeholder="e.g. Alex Morgan"
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                       />
@@ -156,8 +190,8 @@ const AddAdmin = () => {
                       <Phone size={18} className={`absolute left-4 ${theme.textMuted}`} />
                       <input
                         type="text"
-                        value={formData.phone}
-                        onChange={handleChange("phone")}
+                        value={formData.phoneNumber}
+                        onChange={handleChange("phoneNumber")}
                         placeholder="+1 (555) 000-0000"
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                       />
@@ -223,27 +257,27 @@ const AddAdmin = () => {
                 <div className="grid sm:grid-cols-2 gap-6">
                   {/* Role Card: Admin */}
                   <div 
-                    onClick={() => handleRoleSelect("Admin")}
-                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "Admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}
+                    onClick={() => handleRoleSelect("admin")}
+                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-base font-bold text-slate-900">Admin</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.role === "Admin" ? 'border-black' : theme.border}`}>
-                        {formData.role === "Admin" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.role === "admin" ? 'border-black' : theme.border}`}>
+                        {formData.role === "admin" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
                       </div>
                     </div>
                     <p className={`text-sm ${theme.textMuted} leading-relaxed`}>Standard access to manage users, view analytics, and update general content.</p>
                   </div>
 
-                  {/* Role Card: Superadmin */}
+                  {/* Role Card: super_admin */}
                   <div 
-                    onClick={() => handleRoleSelect("Superadmin")}
-                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "Superadmin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}
+                    onClick={() => handleRoleSelect("super_admin")}
+                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "super_admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-base font-bold text-slate-900">Superadmin</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.role === "Superadmin" ? 'border-black' : theme.border}`}>
-                        {formData.role === "Superadmin" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
+                      <span className="text-base font-bold text-slate-900">Super Admin</span>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.role === "super_admin" ? 'border-black' : theme.border}`}>
+                        {formData.role === "super_admin" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
                       </div>
                     </div>
                     <p className={`text-sm ${theme.textMuted} leading-relaxed`}>Unrestricted access. Can manage billing, security settings, and other admins.</p>

@@ -38,7 +38,7 @@ const CorporateLogin = () => {
       return false;
     }
 
-    if (formData.password.length <= 5) {
+    if (formData.password.length < 6) {
       showToast("Please enter 6 Digits Password");
       return false;
     }
