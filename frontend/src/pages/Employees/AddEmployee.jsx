@@ -79,23 +79,6 @@ const AddEmployee = () => {
     return null;
   };
 
-  // const handleSubmit = () => {
-  //   const error = validateForm();
-  //   if (error) return alert(error);
-
-  //   setIsSubmitting(true);
-
-  //   console.log("Submitted:", formData);
-  //   alert("Employee added successfully!");
-  //   setFormData({
-  //     username: "", email: "", gender: "", phoneNumber: "",
-  //     password: "", profileImage: null, department: "",
-  //     employment: "Full-time", role: "employee"
-  //   });
-  //   setPreview(null);
-  //   setIsSubmitting(false);
-  // };
-
   const handleSubmit = async() => {
     try {
       const error = validateForm();
