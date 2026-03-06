@@ -49,8 +49,6 @@ const Settings = () => {
   const getData = async() => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {withCredentials: true});
-      // console.log(res.data.user);
-      // console.log(formData);
       setFormData({
         profile: res.data.user.profile ?? null,
         username: res.data.user.username ?? "",
@@ -80,7 +78,6 @@ const Settings = () => {
         console.log("Phone number must be exactly 10 digits");
         return;
       }
-
       setLoading(true);
 
       const data = new FormData();
@@ -94,15 +91,32 @@ const Settings = () => {
       if (formData.profile?.file) {
         data.append("file", formData.profile.file);
       }
+      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, {withCredentials: true, });
 
-      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, {withCredentials: true, });
-
-      console.log(res.data);
       getData();  
     } catch (error) {
       console.log(error);
     } finally{
       setLoading(false);
+    }
+  }
+
+  const updatePassword = async () => {
+    try {
+      if (!formData.currentPassword || !formData.newPassword) {
+        alert("Please fill both password fields");
+        return;
+      }
+
+      await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`, 
+        {email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword},
+        {withCredentials: true});
+
+      alert("Updated Successfully ...");
+      setFormData({newPassword: "", currentPassword: ""});
+    } catch (error) {
+      alert(error?.response?.data?.message || "Something Went Wrong");
+      console.log(error);
     }
   }
 
@@ -113,7 +127,6 @@ const Settings = () => {
       loggedIn.setLoggedIn(false);
       alert("Logged out successfully");
     } catch (error) {
-      console.error(error);
       alert(error.message);
     }    
   };
@@ -350,7 +363,7 @@ const Settings = () => {
                 </div>
 
                 <div className="pt-2">
-                  <button className={`flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-slate-900 border ${theme.border} text-sm font-bold py-3 px-6 rounded-xl transition-colors w-full sm:w-auto`}>
+                  <button onClick={updatePassword} className={`flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-slate-900 border ${theme.border} text-sm font-bold py-3 px-6 rounded-xl transition-colors w-full sm:w-auto`}>
                     <Lock size={16} />
                     Update Password
                   </button>
