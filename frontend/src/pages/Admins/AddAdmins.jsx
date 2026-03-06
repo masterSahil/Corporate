@@ -17,14 +17,13 @@ const Card = ({ title, icon: Icon, children, className = "" }) => (
   </div>
 );
 
-const ImageDropzone = ({ onFileSelect }) => {
-  const [preview, setPreview] = useState(null);
-
+const ImageDropzone = ({ preview, setPreview, onFileSelect }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPreview(URL.createObjectURL(file));
-      onFileSelect(file);
+      const imageUrl = URL.createObjectURL(file);
+      setPreview(imageUrl);   // <-- now this works, comes from parent
+      onFileSelect(file);     // <-- set the file in formData
     }
   };
 
@@ -51,8 +50,10 @@ const ImageDropzone = ({ onFileSelect }) => {
 /* Main Component */
 const AddAdmin = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Added state for password toggle
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -64,19 +65,19 @@ const AddAdmin = () => {
   });
 
   const validateForm = () => {
-  if (!formData.username.trim()) return "Full name is required";
-  if (!formData.email.trim()) return "Email is required";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
-  if (!formData.phoneNumber.trim()) return "Phone number is required";
-  if (!/^[0-9]{10}$/.test(formData.phoneNumber)) return "Phone number must be 10 digits";
-  if (!formData.password) return "Password is required";
-  if (formData.password.length < 6) return "Password must be at least 6 characters";
-  if (!formData.gender) return "Please select gender";
-  if (!formData.role) return "Please select role";
-  if (!formData.profileImage) return "Profile image is required";
+    if (!formData.username.trim()) return "Full name is required";
+    if (!formData.email.trim()) return "Email is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
+    if (!formData.phoneNumber.trim()) return "Phone number is required";
+    if (!/^[0-9]{10}$/.test(formData.phoneNumber)) return "Phone number must be 10 digits";
+    if (!formData.password) return "Password is required";
+    if (formData.password.length < 6) return "Password must be at least 6 characters";
+    if (!formData.gender) return "Please select gender";
+    if (!formData.role) return "Please select role";
+    if (!formData.profileImage) return "Profile image is required";
 
-  return null; 
-};
+    return null; 
+  };
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
   const handleRoleSelect = (role) => setFormData({ ...formData, role });
 
@@ -86,6 +87,7 @@ const AddAdmin = () => {
       if (error) {
         alert(error); return;
       }
+      setIsSubmitting(true);
 
       const data = new FormData();
       data.append("username", formData.username);
@@ -98,10 +100,22 @@ const AddAdmin = () => {
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
       alert("success");
+
+      setFormData({
+        username: "",
+        email: "",
+        gender: "",
+        phoneNumber: "",
+        password: "",
+        role: "admin",
+        profileImage: null,
+      });
+      setPreview(null);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsSubmitting(false);
     }
-
   };
 
   // Tailwind arbitrary variants to style the scrollbar
@@ -132,8 +146,9 @@ const AddAdmin = () => {
               <button className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Cancel
               </button>
-              <button onClick={handleSubmit} className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors">
-                Save Admin
+              <button onClick={handleSubmit} disabled={isSubmitting} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-zinc-800'} shadow-lg transition-colors`}
+              >
+                {isSubmitting ? "Saving..." : "Save Admin"}
               </button>
             </div>
           </div>
@@ -289,7 +304,7 @@ const AddAdmin = () => {
 
             {/* Right Column: Image & Security Info */}
             <div className="space-y-8">
-              <ImageDropzone onFileSelect={(file) => setFormData({ ...formData, profileImage: file })} />
+              <ImageDropzone preview={preview} setPreview={setPreview} onFileSelect={(file) => setFormData({ ...formData, profileImage: file })} />
             </div>
           </div>
         </div>
