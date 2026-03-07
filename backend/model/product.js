@@ -8,10 +8,13 @@ const productSchema = new Schema({
     quantity: {type: Number, min: 0},
     discount: {type: Number },
     description: {type: String},
-    gallery: {
-        imageUrl: { type: String },
-        imagePublicId: { type: String }
-    },
+    gallery: [
+        {
+            fileUrl: { type: String },             // updated to match controller
+            filePublicId: { type: String },        // updated
+            fileType: { type: String, enum: ['image', 'video'], default: 'image' } // updated
+        }
+    ],
     createdAt: {type: Date, default: Date.now},
     isDeleted: {type: Boolean, default: false},
 

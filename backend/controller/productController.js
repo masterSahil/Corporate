@@ -51,8 +51,12 @@ module.exports.createProduct = async(req, res) => {
             });
         }
 
-        if (req.file) {
-            productData.gallery = {imageUrl: req.file.path, imagePublicId: req.file.filename};
+        if (req.files && req.files.length > 0) {
+            productData.gallery = req.files.map(file => ({
+                fileUrl: file.path,
+                filePublicId: file.filename,
+                fileType: file.mimetype.startsWith("video/") ? "video" : "image"
+            }));
         }
 
         const newProduct = new productSchema(productData);
@@ -89,8 +93,12 @@ module.exports.updateProduct = async(req, res) => {
             });
         }
 
-        if (req.file) {
-            productData.gallery = {imageUrl: req.file.path, imagePublicId: req.file.filename};
+        if (req.files && req.files.length > 0) {
+            productData.gallery = req.files.map(file => ({
+                fileUrl: file.path,
+                filePublicId: file.filename,
+                fileType: file.mimetype.startsWith("video/") ? "video" : "image"
+            }));
         }
 
         const updated = await productSchema.findByIdAndUpdate(req.params.id, productData, 

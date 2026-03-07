@@ -2,20 +2,23 @@ import React, { useState, useRef } from "react";
 import { Menu, Box, UploadCloud, Tag, DollarSign, Package, LayoutGrid, AlignLeft, X, ImageIcon, Globe } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
+import axios from "axios"
 
 const AddProduct = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [images, setImages] = useState([]);
   const fileInputRef = useRef(null);
+  const [files, setFiles] = useState([]);
   
   const [formData, setFormData] = useState({
     name: "",
     category: "",
     brand: "",
-    price: "",
-    discountPrice: "",
-    stock: "",
+    price: 0,
+    discount: 0,
+    quantity: 0,
     description: "",
+    gallery: null,
   });
 
   const handleChange = (e) => {
@@ -23,31 +26,68 @@ const AddProduct = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Image Upload Logic
+  // for single files
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+
+  //   if (file) {
+  //     setFiles(file);
+  //     const preview = URL.createObjectURL(file);
+
+  //     setImages([{ id: Date.now(), preview }]);
+  //   }
+  // };
+
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 0) {
-      const newImages = files.map(file => ({
-        file,
-        preview: URL.createObjectURL(file),
-        id: Math.random().toString(36).substring(7)
-      }));
-      setImages(prev => [...prev, ...newImages]);
-    }
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+
+    const previews = selectedFiles.map(file => ({
+      id: Date.now() + Math.random(),
+      preview: URL.createObjectURL(file)
+    }));
+    setImages(previews);
   };
 
   const removeImage = (idToRemove) => {
     setImages(prev => prev.filter(img => img.id !== idToRemove));
   };
 
-  const handleSubmit = () => {
-    const payload = {
-      ...formData,
-      images: images.map(img => img.file)
-    };
-    console.log("Submitting product:", payload);
-    // TODO: connect to backend API
-  };
+  const handleSubmit = async () => {
+  try {
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("category", formData.category);
+    data.append("brand", formData.brand);
+    data.append("price", formData.price);
+    data.append("discount", formData.discount);
+    data.append("quantity", formData.quantity);
+    data.append("description", formData.description);
+
+    if (files.length > 0) {
+      files.forEach(file => {
+        data.append("gallery", file);
+      });
+    }
+
+    await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {withCredentials: true});
+    setFormData({
+      name: "",
+      category: "",
+      brand: "",
+      price: 0,
+      discount: 0,
+      quantity: 0,
+      description: "",
+      gallery: null,
+    })
+    setImages([]);
+    setFiles([]);
+    if (fileInputRef.current) fileInputRef.current.value = null;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   // Tailwind arbitrary variants for the custom scrollbar
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
@@ -172,7 +212,7 @@ const AddProduct = () => {
                         type="number"
                         name="price"
                         value={formData.price}
-                        onChange={handleChange}
+                        onChange={(e) => setFormData(prev =>({ ...prev, price: Number(e.target.value)}))}
                         placeholder="0.00"
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                       />
@@ -186,9 +226,9 @@ const AddProduct = () => {
                       <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
                       <input
                         type="number"
-                        name="discountPrice"
-                        value={formData.discountPrice}
-                        onChange={handleChange}
+                        name="discount"
+                        value={formData.discount}
+                        onChange={(e) =>setFormData(prev =>({...prev, discount: Number(e.target.value)}))}
                         placeholder="0.00"
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                       />
@@ -202,9 +242,9 @@ const AddProduct = () => {
                       <Package size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
                       <input
                         type="number"
-                        name="stock"
-                        value={formData.stock}
-                        onChange={handleChange}
+                        name="quantity"
+                        value={formData.quantity}
+                        onChange={(e) =>setFormData(prev =>({...prev, quantity: Number(e.target.value)}))}
                         placeholder="0"
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                       />
@@ -250,25 +290,37 @@ const AddProduct = () => {
                 <div className="space-y-4">
                   {/* Image Grid */}
                   {images.length > 0 && (
-                    <div className="grid grid-cols-2 gap-4">
-                      {images.map((img, index) => (
-                        <div key={img.id} className={`relative group rounded-xl overflow-hidden border ${theme.border} aspect-square`}>
-                          <img src={img.preview} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button 
-                              onClick={() => removeImage(img.id)}
-                              className="bg-white text-rose-600 p-2 rounded-full hover:scale-110 transition-transform shadow-lg cursor-pointer"
-                            >
-                              <X size={16} strokeWidth={3} />
-                            </button>
-                          </div>
-                          {index === 0 && (
-                            <span className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
-                              Primary
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {images.map((fileObj, index) => {
+                        const isVideo = fileObj.preview.match(/\.(mp4|webm|ogg)$/i);
+
+                        return (
+                          <div key={fileObj.id} className={`relative group rounded-xl overflow-hidden border ${theme.border} aspect-square bg-zinc-50`} >
+                            {isVideo ? (
+                              <video src={fileObj.preview} className="w-full h-full object-cover" controls />
+                            ) : (
+                              <img src={fileObj.preview} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                            )}
+
+                            {/* Overlay & Remove Button */}
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <button onClick={() => removeImage(fileObj.id)} className="bg-white text-rose-600 p-2 rounded-full hover:scale-110 transition-transform shadow-lg cursor-pointer" >
+                                <X size={16} strokeWidth={3} />
+                              </button>
+                            </div>
+
+                            {/* Primary Badge */}
+                            {index === 0 && (
+                              <span className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md"> Primary </span>
+                            )}
+
+                            {/* Type Badge */}
+                            <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
+                              {isVideo ? "Video" : "Image"}
                             </span>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -283,7 +335,7 @@ const AddProduct = () => {
                     {!images.length && <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB each</p>}
                     <input 
                       type="file" 
-                      accept="image/*" 
+                      // accept="image/*" 
                       multiple 
                       onChange={handleFileChange} 
                       className="hidden" 
@@ -309,9 +361,7 @@ const AddProduct = () => {
                   </span>
                 </div>
               </div>
-
             </div>
-
           </div>
         </div>
       </main>
