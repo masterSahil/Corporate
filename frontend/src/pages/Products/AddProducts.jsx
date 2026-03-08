@@ -53,41 +53,36 @@ const AddProduct = () => {
     setImages(prev => prev.filter(img => img.id !== idToRemove));
   };
 
-  const handleSubmit = async () => {
-  try {
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("category", formData.category);
-    data.append("brand", formData.brand);
-    data.append("price", formData.price);
-    data.append("discount", formData.discount);
-    data.append("quantity", formData.quantity);
-    data.append("description", formData.description);
-
-    if (files.length > 0) {
-      files.forEach(file => {
-        data.append("gallery", file);
-      });
-    }
-
-    await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {withCredentials: true});
-    setFormData({
-      name: "",
-      category: "",
-      brand: "",
-      price: 0,
-      discount: 0,
-      quantity: 0,
-      description: "",
-      gallery: null,
-    })
-    setImages([]);
-    setFiles([]);
+  const resetForm = () => {
+    setFormData({ name: "", category: "", brand: "", price: 0, discount: 0, quantity: 0,
+      description: "", gallery: null })
+    setImages([]); setFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = null;
-  } catch (error) {
-    console.log(error);
   }
-};
+
+  const handleSubmit = async () => {
+    try {
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("category", formData.category);
+      data.append("brand", formData.brand);
+      data.append("price", formData.price);
+      data.append("discount", formData.discount);
+      data.append("quantity", formData.quantity);
+      data.append("description", formData.description);
+
+      if (files.length > 0) {
+        files.forEach(file => {
+          data.append("gallery", file);
+        });
+      }
+
+      await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {withCredentials: true});
+      resetForm();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // Tailwind arbitrary variants for the custom scrollbar
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
@@ -114,7 +109,7 @@ const AddProduct = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure product details, gallery, and inventory.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Discard
               </button>
               <button onClick={handleSubmit} className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors">

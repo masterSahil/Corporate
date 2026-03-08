@@ -81,6 +81,12 @@ const AddAdmin = () => {
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
   const handleRoleSelect = (role) => setFormData({ ...formData, role });
 
+  const resetForm = () => {
+    setFormData({ username: "", email: "", gender: "", phoneNumber: "", password: "", 
+      role: "admin", profileImage: null });
+    setPreview(null);
+  }
+
   const handleSubmit = async() => {
     try {
       const error = validateForm();
@@ -101,16 +107,7 @@ const AddAdmin = () => {
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
       alert("success");
 
-      setFormData({
-        username: "",
-        email: "",
-        gender: "",
-        phoneNumber: "",
-        password: "",
-        role: "admin",
-        profileImage: null,
-      });
-      setPreview(null);
+      resetForm();
     } catch (error) {
       console.log(error);
     } finally {
@@ -143,7 +140,7 @@ const AddAdmin = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure system access and profile settings.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Cancel
               </button>
               <button onClick={handleSubmit} disabled={isSubmitting} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-zinc-800'} shadow-lg transition-colors`}

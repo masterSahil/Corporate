@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
+import axios from "axios";
 
 const AddReward = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [validEmail, setValidEmail] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -14,9 +16,25 @@ const AddReward = () => {
 
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
 
-  const handleSubmit = () => {
-    console.log("Submitting reward:", formData);
-    // TODO: connect to backend API
+  const resetForm = () => {
+    setFormData({ title: "", category: "", description: "", emailId: "" })
+  }
+
+  const validateForm = () => {
+    if (!formData.emailId.trim()) return "Email is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailId)) return "Invalid email format";
+    setValidEmail(true);
+  }
+  const handleSubmit = async() => {
+    try {
+      const err = validateForm();
+      err && alert(err);
+      await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {withCredentials: true});
+
+      resetForm();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // Tailwind arbitrary variants for custom scrollbar
@@ -40,15 +58,15 @@ const AddReward = () => {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Issue Reward</h1>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Assign Reward</h1>
               <p className={`text-base ${theme.textMuted} mt-2`}>Create and assign incentives directly to specific employees.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Discard
               </button>
               <button onClick={handleSubmit} className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors">
-                Issue Reward
+                Assign Reward
               </button>
             </div>
           </div>
@@ -126,7 +144,6 @@ const AddReward = () => {
                   </div>
                 </div>
               </div>
-
             </div>
 
             {/* Right Column: User Assignment & Security */}
@@ -172,14 +189,12 @@ const AddReward = () => {
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest border-t border-zinc-700/50 pt-5 relative z-10 mt-auto">
                   <span className="text-zinc-400">Targeting Status</span>
                   <span className={`${formData.emailId ? 'text-emerald-400' : 'text-zinc-500'} flex items-center gap-1.5 transition-colors`}>
-                    {formData.emailId ? <CheckCircle2 size={14} /> : <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full"></span>}
-                    {formData.emailId ? "Valid ID" : "Pending ID"}
+                    {validEmail === true ? <CheckCircle2 size={14} /> : <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full"></span>}
+                    {validEmail === true ? "Valid Email" : "Pending Email"}
                   </span>
                 </div>
               </div>
-
             </div>
-
           </div>
         </div>
       </main>

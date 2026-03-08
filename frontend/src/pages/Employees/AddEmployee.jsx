@@ -65,6 +65,12 @@ const AddEmployee = () => {
     setPreview(url);
   };
 
+  const resetForm = () => {
+    setFormData({ username: "", email: "", gender: "", phoneNumber: "", password: "", 
+    profileImage: null, department: "", employment: "Full-time" });
+    setPreview(null);
+  }
+
   /* Form Validation */
   const validateForm = () => {
     if (!formData.username.trim()) return "Full name is required";
@@ -101,12 +107,7 @@ const AddEmployee = () => {
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
       alert("success");
 
-      setFormData({
-      username: "", email: "", gender: "", phoneNumber: "",
-      password: "", profileImage: null, department: "",
-      employment: "Full-time"
-    });
-      setPreview(null);
+      resetForm();
     } catch (error) {
       console.log(error);
     } finally {
@@ -138,7 +139,7 @@ const AddEmployee = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure the professional profile and employment details.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Cancel
               </button>
               <button

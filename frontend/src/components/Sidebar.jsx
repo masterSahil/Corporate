@@ -16,7 +16,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', icon: LayoutDashboard, isLink: true, path: '/' },
     { name: 'Admins', icon: Shield, subs: [
       { label: '1. Add Admins', path: '/admins/add' },
-      { label: '2. View, Update & Delete', path: '/admins/manage' }
+      { label: '2. View, Update & Delete', path: '/admins/manage' },
+      { label: '3. Soft Deleted', path: '/admins/deleted' }
     ]},
     { name: 'Employees', icon: Users, subs: [
       { label: '1. Add Employees', path: '/employees/add' },
@@ -25,11 +26,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     ]},
     { name: 'Products', icon: Box, subs: [
       { label: '1. Add Products', path: '/products/add' },
-      { label: '2. View, Update & Delete', path: '/products/manage' }
+      { label: '2. View, Update & Delete', path: '/products/manage' },
+      { label: '3. Soft Deleted', path: '/products/deleted' }
     ]},
     { name: 'Rewards', icon: Gift, subs: [
       { label: '1. Add Rewards', path: '/rewards/add' },
-      { label: '2. View, Update & Delete', path: '/rewards/manage' }
+      { label: '2. View, Update & Delete', path: '/rewards/manage' },
+      { label: '3. Soft Deleted', path: '/rewards/deleted' }
     ]},
     { name: 'Settings', icon: Settings, isLink: true, path: '/settings' }
   ];
