@@ -19,6 +19,7 @@ const UserSchema = new Schema({
         default: "employee"
     },
     createdAt: { type: Date, default: Date.now },
+    deletedAt: { type: Date, default: null },
 });
 
 module.exports = model("User_Schema", UserSchema);

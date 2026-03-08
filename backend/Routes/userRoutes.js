@@ -30,13 +30,19 @@ router.get('/remove-auth', userController.LogOut);
 // Change Password
 router.patch('/password-change', userController.changePassword);
 
-router.get('/', userController.FetchUser); // fetch all users
+router.get('/fetch-all-user', userController.FetchUser); // fetch all users
+router.get('/fetch-deleted', userController.FetchDeletedOnly); // fetch all users
+router.get('/', userController.FetchUser); // fetch all not soft deleted users
 router.post('/fetch-user', userController.FetchSingleUser); // fetch single user
 
 router.post('/create-user', upload.single('file'), userController.CreateUser); // Create User
 router.put('/:id', upload.single('file'), userController.UpdatedUser);// update user
 
+// Permanent Delete
+router.post('/permanent-delete/:id', userController.PermanentDelete);
+
 router.put('/delete/:id', userController.SoftDeletedUser); // soft delete
+router.put('/restore/:id', userController.RestoreUser); // restore soft-deleted user
 router.delete('/:id', userController.DeleteUser); // hard delete
 
 router.delete('/image/:id', userController.DeleteImage); // delete image

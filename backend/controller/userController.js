@@ -27,6 +27,112 @@ module.exports.FetchSingleUser = async (req, res) => {
     }
 }
 
+// get each user
+module.exports.FetchAllUsers = async (req, res) => {
+    try {
+        const getUser = await UserSchema.find();
+
+        res.status(200).json({
+            success: true,
+            users: getUser,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+// Crud on Users
+module.exports.FetchDeletedOnly = async (req, res) => {
+    try {
+        const getUser = await UserSchema.find({ isDeleted: true });
+
+        res.status(200).json({
+            success: true,
+            users: getUser,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+// restore user
+module.exports.RestoreUser = async (req, res) => {
+    try {
+        const restored = await UserSchema.findByIdAndUpdate(req.params.id, 
+            { isDeleted: false, deletedAt: null }, { returnDocument: 'after' });
+
+        if (!restored) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            users: restored,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
+// permanent delete
+module.exports.PermanentDelete = async (req, res) => {
+    try {
+        const {password} = req.body;
+        const user = await UserSchema.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User Not Found",
+            })
+        }
+
+        const token = req.cookies.corporate_token;
+        if (!token) {
+            return res.status(401).json({ authenticated: false, message: "Token not found" });
+        }
+    
+        const decoded = jwt.verify(token, process.env.SECRET);
+        const loggedInAdmin = await UserSchema.findOne({email: decoded.email});
+        const isTruePassword = await bcrypt.compare(password, loggedInAdmin.password);
+
+        if (!isTruePassword) {
+            return res.status(409).json({
+                success: false,
+                message: "Invalid Password",
+            }) 
+        }
+
+        // Delete Cloudinary image if exists
+        if (user.profile?.imagePublicId) {
+        await cloudinary.uploader.destroy(user.profile.imagePublicId);
+        }
+        const permanentDelete = await UserSchema.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({
+            success: true,
+            users: permanentDelete,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
 // Crud on Users
 module.exports.FetchUser = async (req, res) => {
     try {
