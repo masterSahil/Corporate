@@ -8,7 +8,7 @@ const cloudinary = require("../config/Cloudinary");
 const storage = new CloudinaryStorage({
     cloudinary,
     params: {
-        folder: "corporate_products",
+        folder: "corporate_products", 
     } 
 })
 
