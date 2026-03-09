@@ -9,18 +9,15 @@ const SoftDeletedProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [deletedProducts, setDeletedProducts] = useState([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const isRefreshing = false;
 
   const getDeletedData = async () => {
-    setIsRefreshing(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-soft-delete-view`, { withCredentials: true });
       setDeletedProducts(res.data.product);
     } catch (error) {
       console.log(error);
-    } finally {
-      setIsRefreshing(false);
-    }
+    } 
   };
 
   useEffect(() => {
@@ -105,14 +102,8 @@ const SoftDeletedProducts = () => {
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Product Trash Bin</h1>
               <p className={`text-base ${theme.textMuted} mt-2`}>Review, restore, or permanently delete removed products.</p>
             </div>
-            <button onClick={getDeletedData}
-                disabled={isRefreshing}
-                className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                <RefreshCw 
-                    size={18} 
-                    className={`${isRefreshing ? 'animate-spin text-black' : 'group-hover:rotate-180 text-slate-500'} transition-all duration-500 ease-in-out`} 
-                />
+            <button onClick={getDeletedData} className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed" >
+                <RefreshCw size={18} className="group-hover:rotate-180 text-slate-500 transition-all duration-500 ease-in-out" />
                 Refresh
             </button>
           </div>
@@ -253,7 +244,7 @@ const SoftDeletedProducts = () => {
                         {/* Deleted Date */}
                         <td className="px-6 py-4">
                           <span className="text-sm font-semibold text-slate-700">
-                            {formatDate(product.deletedAt || product.updatedAt || product.createdAt)}
+                            {formatDate(product.deletedAt)}
                           </span>
                         </td>
 

@@ -166,56 +166,57 @@ module.exports.createProduct = async(req, res) => {
 
 module.exports.updateProduct = async(req, res) => {
     try {
-        const {name, category, brand, price, discount, discountType, quantity, description, isDeleted, gallery} = req.body;
-        const productData = {name, category, brand, price, discount, discountType, quantity, description, gallery, isDeleted};
+        const {name, category, brand, price, discount, discountType, quantity, description, isDeleted, existingGallery} = req.body;
+        
+        // 1. Parse the images the user decided to KEEP
+        let keptImages = existingGallery ? JSON.parse(existingGallery) : [];
 
-        if (price !== undefined && price < 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Price cannot be negative"
-            });
+        // 2. Safely delete removed images from Cloudinary to save storage
+        const oldProduct = await productSchema.findById(req.params.id);
+        if (oldProduct) {
+            const keptPublicIds = keptImages.map(img => img.filePublicId);
+            const imagesToDelete = oldProduct.gallery.filter(img => !keptPublicIds.includes(img.filePublicId));
+            
+            for (const img of imagesToDelete) {
+                if (img.filePublicId) {
+                    await cloudinary.uploader.destroy(img.filePublicId);
+                }
+            }
         }
 
-        if (discount !== undefined && (discount < 0 || discount > 100)) {
-            return res.status(400).json({
-                success: false,
-                message: "Discount must be between 0 and 100"
-            });
-        }
-
+        // 3. Format any brand new images uploaded
+        let newUploadedImages = [];
         if (req.files && req.files.length > 0) {
-            productData.gallery = req.files.map(file => ({
+            newUploadedImages = req.files.map(file => ({
                 fileUrl: file.path,
                 filePublicId: file.filename,
                 fileType: file.mimetype.startsWith("video/") ? "video" : "image"
             }));
         }
 
-        const updated = await productSchema.findByIdAndUpdate(req.params.id, productData, 
-            {returnDocument: 'after'});
+        // 4. Combine kept images with new images
+        const productData = {
+            name, category, brand, price, discount, discountType, quantity, description, isDeleted, 
+            gallery: [...keptImages, ...newUploadedImages] // Merges both arrays
+        };
 
-        if (!updated) {
-            return res.status(404).json({
-                success: false,
-                message: "Product not found"
-            });
-        }
+        const updated = await productSchema.findByIdAndUpdate(req.params.id, productData, {returnDocument: 'after'});
 
         res.status(200).json({
             success: true,
             product: updated,
-        })
+        });
     } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message
-        })
+        });
     }
 }
 
 module.exports.softDeleted = async(req, res) => {
     try {
-        const softDelete = await productSchema.findByIdAndUpdate(req.params.id, {isDeleted: true}, {returnDocument: 'after'});
+        const softDelete = await productSchema.findByIdAndUpdate(req.params.id, {isDeleted: true, deletedAt: Date.now()}, {returnDocument: 'after'});
 
         res.status(200).json({
             success: true,

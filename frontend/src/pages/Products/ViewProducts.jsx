@@ -30,7 +30,7 @@ const ViewProducts = () => {
   // Delete product handler
   const deleteProduct = async (id) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`, { isDeleted: true }, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`, { isDeleted: true, deletedAt: new Date() }, { withCredentials: true });
       getProducts(); // Refresh list after deletion
     } catch (error) {
       console.log("Error deleting product:", error);
@@ -137,7 +137,7 @@ const ViewProducts = () => {
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Product</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category & Brand</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Price</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Inventory</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
@@ -242,7 +242,7 @@ const ViewProducts = () => {
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button 
-                              onClick={() => navigate(`/products/edit/${id}`)}
+                              onClick={() => navigate(`/products/update/${id}`)}
                               className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} 
                               title="Edit Product"
                             >

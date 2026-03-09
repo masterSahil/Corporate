@@ -17,6 +17,7 @@ const productSchema = new Schema({
         }
     ],
     createdAt: {type: Date, default: Date.now},
+    deletedAt: {type: Date, default: null},
     isDeleted: {type: Boolean, default: false},
 
 });

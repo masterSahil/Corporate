@@ -18,13 +18,15 @@ router.get("/product", productController.getProduct);
 router.get("/product-all", productController.getAllProduct);
 router.post("/product", upload.array('gallery', 10), productController.createProduct);
 router.put("/product/:id", upload.array('gallery', 10), productController.updateProduct);
-router.put("/product-soft-delete/:id", productController.softDeleted);
 router.delete("/product-delete/:id", productController.hardDelete);
+
+// for doing soft delete
+router.put("/product-soft-delete/:id", productController.softDeleted);
 
 // soft deleted
 router.get("/product-soft-delete-view", productController.softDeletedView);
 
-// soft deleted
+// hard deleted
 router.post("/hard-delete-product/:id", productController.permanentDelete);
 
 // restore
