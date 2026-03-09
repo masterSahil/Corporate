@@ -117,7 +117,7 @@ module.exports.PermanentDelete = async (req, res) => {
 
         // Delete Cloudinary image if exists
         if (user.profile?.imagePublicId) {
-        await cloudinary.uploader.destroy(user.profile.imagePublicId);
+            await cloudinary.uploader.destroy(user.profile.imagePublicId);
         }
         const permanentDelete = await UserSchema.findByIdAndDelete(req.params.id);
 

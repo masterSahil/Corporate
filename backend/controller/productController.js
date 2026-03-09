@@ -1,5 +1,10 @@
+const cloudinary = require("../config/Cloudinary");
 const productSchema = require("../model/product")
+const UserSchema = require("../model/user")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken");
 
+// Only Show Soft Deleted Products
 module.exports.softDeletedView = async(req, res) => {
     try {
         const fetched = await productSchema.find({isDeleted: true});
@@ -16,14 +21,62 @@ module.exports.softDeletedView = async(req, res) => {
     }
 }
 
+// Hard Delete Products who are Soft Deleted
+module.exports.permanentDelete = async(req, res) => {
+    try {
+        const {password} = req.body;
+
+        const product = await productSchema.findById(req.params.id);
+        if (!product) {
+            res.status(404).json({
+                success: false,
+                message: "Product Not Found",
+            })
+        }
+
+        const token = req.cookies.corporate_token;
+        if (!token) {
+            res.status(401).json({
+                success: false,
+                message: "Token Not Found",
+            })
+        }
+
+        const decoded = jwt.verify(token, process.env.SECRET);
+        const loggedInUser = await UserSchema.findOne({email: decoded.email});
+        const isTruePassword = await bcrypt.compare(password, loggedInUser.password);
+        if (!isTruePassword) {
+            return res.status(409).json({
+                success: false,
+                message: "Password is Invalid",
+            })
+        }
+
+         if (product.gallery && product.gallery.length > 0) {
+            for (const image of product.gallery) {
+                if (image.filePublicId) {
+                    await cloudinary.uploader.destroy(image.filePublicId);
+                }
+            }
+        }
+        const removed = await productSchema.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({
+            success: true,
+            product: removed,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+// Restore Product
 module.exports.restoreProduct = async(req, res) => {
     try {
-        // Change isDeleted back to false
-        const restored = await productSchema.findByIdAndUpdate(
-            req.params.id, 
-            {isDeleted: false}, 
-            {returnDocument: 'after'}
-        );
+        const restored = await productSchema.findByIdAndUpdate(req.params.id, {isDeleted: false}, {returnDocument: 'after'} );
 
         res.status(200).json({
             success: true,

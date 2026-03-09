@@ -40,7 +40,6 @@ const SoftDeletedProducts = () => {
   // Restoring a Product
   const handleRestore = async (id) => {
     try {
-      // Adjust endpoint if needed
       await axios.put(`${import.meta.env.VITE_API_KEY}/product-restore/${id}`, {}, { withCredentials: true });
       getDeletedData();
     } catch (error) {
@@ -55,8 +54,7 @@ const SoftDeletedProducts = () => {
       if (!password) return;
 
       try {
-        // Adjust endpoint to match your backend (e.g., /product/hard-delete/:id)
-        await axios.post(`${import.meta.env.VITE_API_KEY}/product/hard-delete/${id}`, { password }, { withCredentials: true });
+        await axios.post(`${import.meta.env.VITE_API_KEY}/hard-delete-product/${id}`, {password}, {withCredentials: true });
         getDeletedData();
       } catch (error) {
         alert(error.response?.data?.message || "Delete failed");

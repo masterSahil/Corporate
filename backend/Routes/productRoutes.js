@@ -24,6 +24,9 @@ router.delete("/product-delete/:id", productController.hardDelete);
 // soft deleted
 router.get("/product-soft-delete-view", productController.softDeletedView);
 
+// soft deleted
+router.post("/hard-delete-product/:id", productController.permanentDelete);
+
 // restore
 router.put("/product-restore/:id", productController.restoreProduct);
 

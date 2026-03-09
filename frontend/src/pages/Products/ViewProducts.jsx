@@ -30,7 +30,7 @@ const ViewProducts = () => {
   // Delete product handler
   const deleteProduct = async (id) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_KEY}/products/delete/${id}`, { isDeleted: true }, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`, { isDeleted: true }, { withCredentials: true });
       getProducts(); // Refresh list after deletion
     } catch (error) {
       console.log("Error deleting product:", error);
@@ -38,7 +38,7 @@ const ViewProducts = () => {
   };
 
   // Tailwind arbitrary variants for the custom scrollbar
-  const customScrollbar = "[&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
+  const customScrollbar = "[&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
   // Dynamically extract unique categories for the filter dropdown
   const uniqueCategories = ["All", ...new Set(products.map(p => p.category).filter(Boolean))];

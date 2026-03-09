@@ -18,7 +18,6 @@ const ViewEmployees = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true });
       const fetchedUsers = res.data.users;
       const filtered = fetchedUsers.filter(u => u.role === "employee");
-      console.log(filtered);
       setInitialEmployees(filtered);
     } catch (error) {
       console.log(error);
