@@ -1,5 +1,42 @@
 const productSchema = require("../model/product")
 
+module.exports.softDeletedView = async(req, res) => {
+    try {
+        const fetched = await productSchema.find({isDeleted: true});
+
+        res.status(200).json({
+            success: true,
+            product: fetched,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.restoreProduct = async(req, res) => {
+    try {
+        // Change isDeleted back to false
+        const restored = await productSchema.findByIdAndUpdate(
+            req.params.id, 
+            {isDeleted: false}, 
+            {returnDocument: 'after'}
+        );
+
+        res.status(200).json({
+            success: true,
+            product: restored,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
 module.exports.getProduct = async(req, res) => {
     try {
         const fetched = await productSchema.find({isDeleted: false});
@@ -34,8 +71,8 @@ module.exports.getAllProduct = async(req, res) => {
 
 module.exports.createProduct = async(req, res) => {
     try {
-        const {name, category, brand, price, discount, quantity, description, gallery} = req.body;
-        const productData = {name, category, brand, price, discount, quantity, description, gallery};
+        const {name, category, brand, price, discount, discountType, quantity, description, gallery} = req.body;
+        const productData = {name, category, brand, price, discount, discountType, quantity, description, gallery};
 
         if (price < 0) {
             return res.status(400).json({
@@ -76,8 +113,8 @@ module.exports.createProduct = async(req, res) => {
 
 module.exports.updateProduct = async(req, res) => {
     try {
-        const {name, category, brand, price, discount, quantity, description, isDeleted, gallery} = req.body;
-        const productData = {name, category, brand, price, discount, quantity, description, gallery, isDeleted};
+        const {name, category, brand, price, discount, discountType, quantity, description, isDeleted, gallery} = req.body;
+        const productData = {name, category, brand, price, discount, discountType, quantity, description, gallery, isDeleted};
 
         if (price !== undefined && price < 0) {
             return res.status(400).json({

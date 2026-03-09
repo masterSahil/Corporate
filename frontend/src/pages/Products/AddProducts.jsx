@@ -9,6 +9,7 @@ const AddProduct = () => {
   const [images, setImages] = useState([]);
   const fileInputRef = useRef(null);
   const [files, setFiles] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -16,6 +17,7 @@ const AddProduct = () => {
     brand: "",
     price: 0,
     discount: 0,
+    discountType: "percentage",
     quantity: 0,
     description: "",
     gallery: null,
@@ -54,20 +56,22 @@ const AddProduct = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", category: "", brand: "", price: 0, discount: 0, quantity: 0,
-      description: "", gallery: null })
+    setFormData({ name: "", category: "", brand: "", price: 0, discount: 0, 
+      discountType: "percentage", quantity: 0, description: "", gallery: null })
     setImages([]); setFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = null;
   }
 
   const handleSubmit = async () => {
     try {
+      setIsSubmitting(true);
       const data = new FormData();
       data.append("name", formData.name);
       data.append("category", formData.category);
       data.append("brand", formData.brand);
       data.append("price", formData.price);
       data.append("discount", formData.discount);
+      data.append("discountType", formData.discountType);
       data.append("quantity", formData.quantity);
       data.append("description", formData.description);
 
@@ -81,6 +85,8 @@ const AddProduct = () => {
       resetForm();
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,8 +118,12 @@ const AddProduct = () => {
               <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Discard
               </button>
-              <button onClick={handleSubmit} className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors">
-                Publish Product
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-zinc-800"} shadow-lg transition-colors`}
+              >
+                {isSubmitting ? "Publishing..." : "Publish Product"}
               </button>
             </div>
           </div>
@@ -214,19 +224,38 @@ const AddProduct = () => {
                     </div>
                   </div>
 
-                  {/* Discount Price */}
+                  {/* Discount Amount & Type */}
                   <div className="flex flex-col gap-2 mb-6">
-                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Discount Price</label>
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Discount</label>
                     <div className="relative flex items-center">
-                      <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      
+                      {/* Dynamic Icon based on selected type */}
+                      {formData.discountType === 'percentage' ? (
+                        <span className={`absolute left-4 font-bold ${theme.textMuted} pointer-events-none`}>%</span>
+                      ) : (
+                        <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      )}
+
+                      {/* Value Input */}
                       <input
                         type="number"
                         name="discount"
                         value={formData.discount}
-                        onChange={(e) =>setFormData(prev =>({...prev, discount: Number(e.target.value)}))}
-                        placeholder="0.00"
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                        onChange={(e) => setFormData(prev =>({ ...prev, discount: Number(e.target.value)}))}
+                        placeholder="0"
+                        className={`w-full bg-zinc-50 border ${theme.border} border-r-2 text-slate-900 text-sm rounded-l-md pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                       />
+
+                      {/* Type Selector */}
+                      <select
+                        name="discountType"
+                        value={formData.discountType}
+                        onChange={handleChange}
+                        className={`bg-zinc-100 border ${theme.border} text-slate-700 text-sm font-bold rounded-r-lg px-3 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all cursor-pointer`}
+                      >
+                        <option value="percentage">Percent (%)</option>
+                        <option value="flat">Flat ($)</option>
+                      </select>
                     </div>
                   </div>
 

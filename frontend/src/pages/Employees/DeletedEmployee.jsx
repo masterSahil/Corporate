@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, MoreVertical, ShieldAlert, Shield, RefreshCw } from "lucide-react";
+import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, MoreVertical, Briefcase, RefreshCw } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
 
-const SoftDeletedAdmins = () => {
+const SoftDeletedEmployees = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState("All");
-  const [deletedAdmins, setDeletedAdmins] = useState([]);
+  const [departmentFilter, setDepartmentFilter] = useState("All");
+  const [deletedEmployees, setDeletedEmployees] = useState([]);
 
   const isRefreshing = false;
-  // Fetch soft-deleted data
+
   const getDeletedData = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
-      const filtered = res.data.users.filter(u => u.role !== "employee");
-      setDeletedAdmins(filtered);
+      setDeletedEmployees(res.data.users || res.data.employees || []);
     } catch (error) {
       console.log(error);
-    }
+    } 
   };
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const SoftDeletedAdmins = () => {
     });
   };
 
-  // Restoring an Admin
+  // Restoring an Employee
   const handleRestore = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_KEY}/restore/${id}`, {}, { withCredentials: true });
@@ -66,13 +65,16 @@ const SoftDeletedAdmins = () => {
   // Tailwind scrollbar
   const customScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
+  // Dynamically extract unique departments from the deleted data
+  const uniqueDepartments = ["All", ...new Set(deletedEmployees.map(emp => emp.department).filter(Boolean))];
+
   // Filter Logic
-  const filteredAdmins = deletedAdmins.filter((admin) => {
+  const filteredEmployees = deletedEmployees.filter((employee) => {
     const matchesSearch = 
-      admin.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      admin.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === "All" || admin.role === roleFilter;
-    return matchesSearch && matchesRole;
+      employee.username?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment = departmentFilter === "All" || employee.department === departmentFilter;
+    return matchesSearch && matchesDepartment;
   });
 
   return (
@@ -94,9 +96,10 @@ const SoftDeletedAdmins = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-6">
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Trash Bin</h1>
-              <p className={`text-base ${theme.textMuted} mt-2`}>Review, restore, or permanently delete removed admin records.</p>
+              <p className={`text-base ${theme.textMuted} mt-2`}>Review, restore, or permanently delete removed employee records.</p>
             </div>
             <button onClick={getDeletedData}
+                disabled={isRefreshing}
                 className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                 <RefreshCw 
@@ -115,7 +118,7 @@ const SoftDeletedAdmins = () => {
             <div>
               <h3 className="text-sm font-bold text-slate-900">Manual Retention Policy</h3>
               <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                Admins in the trash bin lose access immediately but their data is kept securely until you permanently delete them. Restoring a record will return it to active status with all previous permissions intact.
+                Employees in the trash bin lose access immediately but their data is kept securely until you permanently delete them. Restoring a record will return it to active status.
               </p>
             </div>
           </div>
@@ -126,7 +129,7 @@ const SoftDeletedAdmins = () => {
               <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
               <input 
                 type="text" 
-                placeholder="Search deleted admins by username or email..." 
+                placeholder="Search deleted employees by username or email..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
@@ -136,13 +139,15 @@ const SoftDeletedAdmins = () => {
             <div className="relative md:w-56">
               <Filter size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
               <select 
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
                 className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}
               >
-                <option value="All">All Roles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
+                {uniqueDepartments.map((dept, idx) => (
+                  <option key={idx} value={dept}>
+                    {dept === "All" ? "All Departments" : dept}
+                  </option>
+                ))}
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -158,76 +163,95 @@ const SoftDeletedAdmins = () => {
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Admin Profile</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Email</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Employee Profile</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider hidden lg:block ${theme.textMuted}`}>Email</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Department</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Employment</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Gender</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Deleted On</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-center`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredAdmins.map((admin) => (
-                    <tr key={admin._id} className="hover:bg-zinc-50/50 transition-colors group">
-                      
-                      {/* User Info (Profile Image & Username) */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {admin.profile?.imageUrl ? (
-                            <img 
-                              src={admin.profile.imageUrl} 
-                              alt={admin.username} 
-                              className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600 opacity-60 grayscale group-hover:grayscale-0 transition-all">
-                              {admin.username.charAt(0).toUpperCase()}
+                  {filteredEmployees.map((employee) => {
+                    const id = employee._id?.$oid || employee._id;
+
+                    return (
+                      <tr key={id} className="hover:bg-zinc-50/50 transition-colors group">
+                        
+                        {/* User Info (Profile Image & Username) */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {employee.profile?.imageUrl ? (
+                              <img 
+                                src={employee.profile.imageUrl} 
+                                alt={employee.username} 
+                                className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600 opacity-60 grayscale group-hover:grayscale-0 transition-all">
+                                {employee.username?.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-bold text-slate-900 line-through decoration-slate-300">{employee.username}</p>
+                              <p className={`text-xs ${theme.textMuted} lg:hidden`}>{employee.email}</p>
                             </div>
-                          )}
-                          <p className="font-bold text-slate-900 line-through decoration-slate-300">{admin.username}</p>
-                        </div>
-                      </td>
+                          </div>
+                        </td>
 
-                      {/* Email */}
-                      <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                        {admin.email}
-                      </td>
+                        {/* Email */}
+                        <td className={`px-6 py-4 text-sm font-medium hidden lg:block ${theme.textMuted}`}>
+                          {employee.email}
+                        </td>
 
-                      {/* Role Badge */}
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-100 text-slate-600 ${theme.border}`}>
-                          {admin.role === 'super_admin' ? <ShieldAlert size={12} /> : <Shield size={12} />}
-                          {admin.role.replace('_', ' ')}
-                        </span>
-                      </td>
+                        {/* Department Badge */}
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-100 text-slate-600 ${theme.border}`}>
+                            <Briefcase size={12} />
+                            {employee.department || "N/A"}
+                          </span>
+                        </td>
 
-                      {/* Deleted Date */}
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-slate-700">{formatDate(admin.createdAt)}</span>
-                      </td>
+                        {/* Employment Badge */}
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-100 text-slate-600 ${theme.border}`}>
+                            <Briefcase size={12} />
+                            {employee.employment || "N/A"}
+                          </span>
+                        </td>
+                        
+                        {/* Gender */}
+                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                          {employee.gender}
+                        </td>
 
-                      {/* Actions */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-3 ">
-                          <button onClick={()=>handleRestore(admin._id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm`} title="Restore Admin">
-                            <ArchiveRestore size={14} /> Restore
-                          </button>
-                          <button onClick={()=>handlePermanentDelete(admin._id)} className={`p-1.5 rounded-lg text-rose-500 hover:bg-rose-100 hover:text-rose-700 transition-colors tooltip-trigger`} title="Permanently Delete">
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                        {/* Mobile visible fallback */}
-                        <button className="sm:hidden p-2 text-slate-400 hover:text-black transition-colors">
-                          <MoreVertical size={18} />
-                        </button>
-                      </td>
+                        {/* Deleted Date (Prefers deletedAt, falls back to createdAt) */}
+                        <td className="px-6 py-4">
+                          <span className="text-sm font-semibold text-slate-700">
+                            {formatDate(employee.deletedAt || employee.createdAt)}
+                          </span>
+                        </td>
 
-                    </tr>
-                  ))}
+                        {/* Actions */}
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-3 ">
+                            <button onClick={() => handleRestore(id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm`} title="Restore Employee">
+                              <ArchiveRestore size={14} /> Restore
+                            </button>
+                            <button onClick={() => handlePermanentDelete(id)} className={`p-1.5 rounded-lg text-rose-500 hover:bg-rose-100 hover:text-rose-700 transition-colors tooltip-trigger`} title="Permanently Delete">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               
               {/* Empty State */}
-              {filteredAdmins.length === 0 && (
+              {filteredEmployees.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
                   <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
                     <Trash2 size={24} className={theme.textMuted} />
@@ -236,7 +260,7 @@ const SoftDeletedAdmins = () => {
                   <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>No deleted records found matching your current criteria.</p>
                   {searchTerm && (
                     <button 
-                      onClick={() => { setSearchTerm(""); setRoleFilter("All"); }}
+                      onClick={() => { setSearchTerm(""); setDepartmentFilter("All"); }}
                       className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors"
                     >
                       Clear Filters
@@ -253,4 +277,4 @@ const SoftDeletedAdmins = () => {
   );
 };
 
-export default SoftDeletedAdmins;
+export default SoftDeletedEmployees;

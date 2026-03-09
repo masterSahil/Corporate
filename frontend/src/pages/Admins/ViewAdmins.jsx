@@ -16,15 +16,15 @@ const ViewAdmins = () => {
   const getData = async() => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, {withCredentials: true});
-      // console.log(res);
-      setInitialAdmins(res.data.users)
+      const filteredAdmins = res.data.users.filter(u => u.role !== "employee")
+      setInitialAdmins(filteredAdmins);
     } catch (error) {
       console.log(error);
     }
   }
 
   useEffect(() => {
-    getData()    ;
+    getData();
   }, [])
   
   // Tailwind arbitrary variants for the custom scrollbar
@@ -132,13 +132,13 @@ const ViewAdmins = () => {
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/50 border-b ${theme.border}`}>
                   <tr>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>User Profile</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Email</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Gender</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Created At</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
+                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>User Profile</th>
+                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:block ${theme.textMuted}`}>Email</th>
+                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
+                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Gender</th>
+                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
+                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Created At</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-center`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
@@ -157,15 +157,18 @@ const ViewAdmins = () => {
                             />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600">
-                              {admin.username.charAt(0).toUpperCase()}
+                              {admin.username?.charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <p className="font-bold text-slate-900">{admin.username}</p>
+                          <div>
+                            <p className="font-bold text-slate-900">{admin.username}</p>
+                            <p className={`text-xs ${theme.textMuted} lg:hidden`}>{admin.email}</p>
+                          </div>
                         </div>
                       </td>
 
                       {/* Email */}
-                      <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                      <td className={`px-6 py-4 text-sm font-medium hidden lg:block ${theme.textMuted}`}>
                         {admin.email}
                       </td>
 
@@ -186,7 +189,7 @@ const ViewAdmins = () => {
                             ? 'bg-black text-white border-black' 
                             : `bg-zinc-100 text-slate-700 ${theme.border}`
                         }`}>
-                          {admin.role === 'super_admin' ? <ShieldCheck size={12} /> : <Shield size={12} />}
+                          {admin.role === 'super_admin' ? <ShieldCheck size={13} /> : <Shield size={13} />}
                           {admin.role.replace('_', ' ')}
                         </span>
                       </td>

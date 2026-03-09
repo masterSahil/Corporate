@@ -7,6 +7,7 @@ const productSchema = new Schema({
     price: {type: Number, min: 0},
     quantity: {type: Number, min: 0},
     discount: {type: Number },
+    discountType: { type: String, enum: ['percentage', 'flat'], default: 'percentage' },
     description: {type: String},
     gallery: [
         {

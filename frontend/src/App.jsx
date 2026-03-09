@@ -13,10 +13,11 @@ import AddEmployee from "./pages/Employees/AddEmployee";
 import Settings from "./components/Setting";
 import ViewAdmins from "./pages/Admins/ViewAdmins";
 import ViewEmployees from "./pages/Employees/ViewEmployee";
-import SoftDeleted from "./pages/Employees/SoftDeleted";
-import ViewProducts from "./pages/Products/ViewProducts";
+import ViewProduct from './pages/Products/ViewProducts'
 import ViewRewards from "./pages/Rewards/ViewRewards";
 import SoftDeletedAdmins from "./pages/Admins/DeletedAdmins";
+import SoftDeletedEmployees from "./pages/Employees/DeletedEmployee";
+import SoftDeletedProducts from "./pages/Products/DeletedProducts";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -86,12 +87,14 @@ export default function App() {
 
           <Route path="/employees/manage" element={loggedIn && (role === "super_admin" || role === "admin") ? <ViewEmployees /> : <Navigate to="/" />} />
 
-          <Route path="/employees/deleted" element={loggedIn && (role === "super_admin" || role === "admin") ? <SoftDeleted /> : <Navigate to="/" />} />
+          <Route path="/employees/deleted" element={loggedIn && (role === "super_admin" || role === "admin") ? <SoftDeletedEmployees /> : <Navigate to="/" />} />
 
           {/* Products Manage - Super Admin & Admin */}
           <Route path="/products/add" element={loggedIn && (role === "super_admin" || role === "admin") ? <AddProduct /> : <Navigate to="/" />} />
 
-          <Route path="/products/manage" element={loggedIn && (role === "super_admin" || role === "admin") ? <ViewProducts /> : <Navigate to="/" />} />
+          <Route path="/products/manage" element={loggedIn && (role === "super_admin" || role === "admin") ? <ViewProduct /> : <Navigate to="/" />} />
+
+          <Route path="/products/deleted" element={loggedIn && (role === "super_admin" || role === "admin") ? <SoftDeletedProducts /> : <Navigate to="/" />} />
 
           {/* Rewards Manage - Super Admin & Admin */}
           <Route path="/rewards/add" element={loggedIn && (role === "super_admin" || role === "admin") ? <AddReward /> : <Navigate to="/" />} />
