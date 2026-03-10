@@ -37,9 +37,7 @@ module.exports.getSoftDeletedReward = async (req, res) => {
 // restoring reward
 module.exports.restoringReward = async (req, res) => {
     try {
-        const restored = await rewardSchema.findByIdAndUpdate(req.params.id, {isDeleted: false, 
-                $unset: { deletedAt: "" } // Removes the deletedAt field completely
-            }, { returnDocument: 'after' } 
+        const restored = await rewardSchema.findByIdAndUpdate(req.params.id, {isDeleted: false}, { returnDocument: 'after' } 
         );
 
         if (!restored) {
