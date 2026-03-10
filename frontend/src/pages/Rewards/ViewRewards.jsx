@@ -4,7 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios"
 
-// const initialRewards = [
+// const initialRewards = [ 
 //   { id: 1, title: "$100 Amazon Gift Card", category: "Gift Card", description: "Digital gift card for Amazon.com", userId: "EMP-8493", status: "Issued", date: "Oct 24, 2023", color: "bg-amber-100 text-amber-700" },
 //   { id: 2, title: "Weekend Spa Getaway", category: "Experience", description: "2-night stay at a luxury spa resort", userId: "EMP-2104", status: "Redeemed", date: "Nov 02, 2023", color: "bg-purple-100 text-purple-700" },
 //   { id: 3, title: "Company Branded Hoodie", category: "Merchandise", description: "Premium cotton blend company hoodie", userId: "", status: "Unassigned", date: "-", color: "bg-blue-100 text-blue-700" },
