@@ -12,9 +12,8 @@ const SoftDeletedRewards = () => {
 
   const getDeletedData = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-soft-delete-view`, { withCredentials: true });
-      // Adjust res.data.reward based on your actual backend response structure
-      setDeletedRewards(res.data.reward || res.data.rewards || []);
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-deleted`, { withCredentials: true });
+      setDeletedRewards(res.data.reward);
     } catch (error) {
       console.log(error);
     } 
@@ -37,8 +36,9 @@ const SoftDeletedRewards = () => {
   // Restoring a Reward
   const handleRestore = async (id) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_KEY}/reward-restore/${id}`, {}, { withCredentials: true });
+      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward-restore/${id}`, {isDeleted: false, deletedAt: Date.now()}, { withCredentials: true });
       getDeletedData();
+      console.log(res)
     } catch (error) {
       console.log(error);
     }

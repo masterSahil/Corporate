@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2, Mail } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
@@ -160,7 +160,7 @@ const AddReward = () => {
                     Reward Email ID
                   </label>
                   <div className="relative flex items-center">
-                    <Hash size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                    <Mail size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
                     <input
                       type="text"
                       value={formData.email}

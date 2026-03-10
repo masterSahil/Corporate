@@ -20,14 +20,33 @@ const ViewRewards = () => {
   const [initialRewards, setInitialRewards] = useState([]);
 
   const navigate = useNavigate();
-
+  
   const getData = async() => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`);
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, {withCredentials: true});
       console.log(res.data.reward);
       setInitialRewards(res.data.reward)
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  const softDelete = async(id) => {
+    try {
+       const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward-soft-delete/${id}`, {isDeleted: true, deletedAt: new Date()}, {withCredentials: true})
+
+       console.log(res.data);
+        getData();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const updateReward = async(id) => {
+    try {
+      console.log("hjdjh");
+    } catch (error) {
+      
     }
   }
 
@@ -187,17 +206,13 @@ const ViewRewards = () => {
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
+                          <button onClick={()=>updateReward(reward._id)} className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
                             <Edit2 size={18} />
                           </button>
-                          <button className={`p-2 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Reward">
+                          <button onClick={()=>softDelete(reward._id)} className={`p-2 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Reward">
                             <Trash2 size={18} />
                           </button>
                         </div>
-                        {/* Mobile visible fallback */}
-                        <button className="lg:hidden p-2 text-slate-400 hover:text-black transition-colors">
-                          <MoreVertical size={18} />
-                        </button>
                       </td>
 
                     </tr>

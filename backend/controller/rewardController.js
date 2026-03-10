@@ -1,8 +1,43 @@
 const rewardSchema = require("../model/reward");
 
+// not soft deleted
 module.exports.getReward = async (req, res) => {
     try {
         const fetched = await rewardSchema.find({ isDeleted: false});
+
+        res.status(200).json({
+            success: true,
+            reward: fetched,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
+// fetching soft deleted data
+module.exports.getSoftDeletedReward = async (req, res) => {
+    try {
+        const fetched = await rewardSchema.find({ isDeleted: true});
+
+        res.status(200).json({
+            success: true,
+            reward: fetched,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
+// restoring reward
+module.exports.restoringReward = async (req, res) => {
+    try {
+        const fetched = await rewardSchema.findByIdAndUpdate(req.params.id, {isDeleted: false}, {returnDocument: 'after'})
 
         res.status(200).json({
             success: true,
