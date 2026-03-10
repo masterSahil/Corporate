@@ -34,8 +34,9 @@ module.exports.getAllReward = async (req, res) => {
 
 module.exports.createReward = async (req, res) => {
     try {
-        const {title, category, description, email} = req.body;
-        const newReward = new rewardSchema({title, category, description, email});
+        const {title, category, description, email, status} = req.body;
+        const newReward = new rewardSchema({title, category, description, email, 
+            status: email ? "Issued" : "Unassigned"});
 
         await newReward.save();
         res.status(200).json({
@@ -52,8 +53,9 @@ module.exports.createReward = async (req, res) => {
 
 module.exports.updateReward = async (req, res) => {
     try {
-        const {title, category, description, email, isDeleted} = req.body;
-        const updated = await rewardSchema.findByIdAndUpdate(req.params.id, {title, category, description, email, isDeleted}, {returnDocument: 'after'});
+        const {title, category, description, email, isDeleted, status} = req.body;
+        const updated = await rewardSchema.findByIdAndUpdate(req.params.id, {title, category, 
+            description, email, isDeleted, status}, {returnDocument: 'after'});
 
         res.status(200).json({
             success: true,
@@ -69,7 +71,8 @@ module.exports.updateReward = async (req, res) => {
 
 module.exports.softDeleteReward = async (req, res) => {
     try {
-        const softDelete = await rewardSchema.findByIdAndUpdate(req.params.id, {isDeleted: true}, {returnDocument: 'after'});
+        const softDelete = await rewardSchema.findByIdAndUpdate(req.params.id, 
+            {isDeleted: true, deletedAt: new Date()}, {returnDocument: 'after'});
 
         res.status(200).json({
             success: true,

@@ -5,6 +5,11 @@ const rewardSchema = new Schema({
     category: {type: String},
     description: {type: String},
     email: {type: String},
+    status: {
+        type: String,
+        enum: ["Issued", "Redeemed", "Unassigned"],
+        default: "Unassigned"
+    },
     isDeleted: {type: Boolean, default: false},
     createdAt: {type: Date, default: Date.now},
     deletedAt: {type: Date, default: null},

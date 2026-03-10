@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, Gift, Tag, Hash, Award, CheckCircle2, Clock } from "lucide-react";
+import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, Gift, Tag, Hash, Award, CheckCircle2, Clock, Mail } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios"
 
-// const initialRewards = [ 
-//   { id: 1, title: "$100 Amazon Gift Card", category: "Gift Card", description: "Digital gift card for Amazon.com", userId: "EMP-8493", status: "Issued", date: "Oct 24, 2023", color: "bg-amber-100 text-amber-700" },
-//   { id: 2, title: "Weekend Spa Getaway", category: "Experience", description: "2-night stay at a luxury spa resort", userId: "EMP-2104", status: "Redeemed", date: "Nov 02, 2023", color: "bg-purple-100 text-purple-700" },
-//   { id: 3, title: "Company Branded Hoodie", category: "Merchandise", description: "Premium cotton blend company hoodie", userId: "", status: "Unassigned", date: "-", color: "bg-blue-100 text-blue-700" },
-//   { id: 4, title: "Extra Vacation Day", category: "Digital", description: "One additional paid day off", userId: "EMP-9932", status: "Issued", date: "Nov 15, 2023", color: "bg-emerald-100 text-emerald-700" },
-//   { id: 5, title: "Dinner for Two ($150)", category: "Experience", description: "Voucher for top-rated local restaurant", userId: "", status: "Unassigned", date: "-", color: "bg-rose-100 text-rose-700" },
-// ];
+const rewardColors = [
+  "bg-amber-100 text-amber-700",
+  "bg-purple-100 text-purple-700",
+  "bg-blue-100 text-blue-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-rose-100 text-rose-700",
+];
 
 const ViewRewards = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,7 +37,7 @@ const ViewRewards = () => {
 
   // Filter logic
   const filteredRewards = initialRewards.filter(reward => {
-    const matchesSearch = reward.title.toLowerCase().includes(searchTerm.toLowerCase()) || reward.userId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = reward.title.toLowerCase().includes(searchTerm.toLowerCase()) || reward.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "All" || reward.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
@@ -114,19 +114,19 @@ const ViewRewards = () => {
                   <tr>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Reward Details</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Recipient (User ID)</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Recipient (Email ID)</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Status</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredRewards.map((reward) => (
-                    <tr key={reward._id} className="hover:bg-zinc-50/50 transition-colors group">
+                  {filteredRewards.map((reward, index) => (
+                    <tr key={index} className="hover:bg-zinc-50/50 transition-colors group">
                       
                       {/* Reward Info */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${reward.color}`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${rewardColors[index % rewardColors.length]}`}>
                             <Gift size={20} />
                           </div>
                           <div>
@@ -145,10 +145,10 @@ const ViewRewards = () => {
 
                       {/* Recipient / User ID */}
                       <td className="px-6 py-4">
-                        {reward.userId ? (
+                        {reward.email ? (
                           <div className="flex items-center gap-2">
-                            <Hash size={14} className="text-emerald-600" />
-                            <span className="font-bold text-slate-900 tracking-wide">{reward.userId}</span>
+                            <Mail size={16} />
+                            <span className="font-bold text-slate-900 tracking-wide">{reward.email}</span>
                           </div>
                         ) : (
                           <span className={`text-xs font-semibold ${theme.textMuted} italic`}>
@@ -183,7 +183,7 @@ const ViewRewards = () => {
 
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
+                        <div className="flex items-center justify-end gap-2">
                           <button className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
                             <Edit2 size={18} />
                           </button>
