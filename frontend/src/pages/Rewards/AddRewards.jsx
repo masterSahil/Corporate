@@ -109,16 +109,12 @@ const AddReward = () => {
                     </label>
                     <div className="relative flex items-center">
                       <Tag size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                      <select
+                      <input
                         value={formData.category}
+                        placeholder="Category"
                         onChange={handleChange("category")}
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-                      >
-                        <option value="" disabled hidden>Select an option</option>
-                        {["Gift Card", "Merchandise", "Experience", "Digital", "Travel", "Bonus"].map((opt, i) => (
-                          <option key={i} value={opt}>{opt}</option>
-                        ))}
-                      </select>
+                       />
                       <div className="absolute right-4 pointer-events-none text-slate-400">
                         <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

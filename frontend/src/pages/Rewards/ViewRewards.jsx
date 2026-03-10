@@ -3,6 +3,7 @@ import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, Gift, Tag, Has
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios"
+import { useNavigate } from "react-router-dom";
 
 const rewardColors = [
   "bg-amber-100 text-amber-700",
@@ -17,6 +18,8 @@ const ViewRewards = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [initialRewards, setInitialRewards] = useState([]);
+
+  const navigate = useNavigate();
 
   const getData = async() => {
     try {
@@ -33,7 +36,7 @@ const ViewRewards = () => {
   }, [])
 
   // Tailwind arbitrary variants for the custom scrollbar
-  const customScrollbar = "[&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
+  const customScrollbar = "[&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
   // Filter logic
   const filteredRewards = initialRewards.filter(reward => {
@@ -63,7 +66,7 @@ const ViewRewards = () => {
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Issued Rewards</h1>
               <p className={`text-base ${theme.textMuted} mt-2`}>Manage, update, and track employee incentives.</p>
             </div>
-            <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors w-full sm:w-auto">
+            <button onClick={()=>navigate('/rewards/add')} className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors w-full sm:w-auto">
               <Plus size={18} />
               Issue Reward
             </button>
