@@ -7,6 +7,7 @@ const rewardSchema = new Schema({
     email: {type: String},
     isDeleted: {type: Boolean, default: false},
     createdAt: {type: Date, default: Date.now},
+    deletedAt: {type: Date, default: null},
 });
 
 module.exports = model("Reward_Schema", rewardSchema);

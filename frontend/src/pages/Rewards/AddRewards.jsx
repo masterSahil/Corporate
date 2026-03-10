@@ -11,18 +11,18 @@ const AddReward = () => {
     title: "",
     category: "",
     description: "",
-    emailId: "", 
+    email: "", 
   });
 
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
 
   const resetForm = () => {
-    setFormData({ title: "", category: "", description: "", emailId: "" })
+    setFormData({ title: "", category: "", description: "", email: "" })
   }
 
   const validateForm = () => {
-    if (!formData.emailId.trim()) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailId)) return "Invalid email format";
+    if (!formData.email.trim()) return "Email is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
     setValidEmail(true);
   }
   const handleSubmit = async() => {
@@ -167,8 +167,8 @@ const AddReward = () => {
                     <Hash size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
                     <input
                       type="text"
-                      value={formData.emailId}
-                      onChange={handleChange("emailId")}
+                      value={formData.email}
+                      onChange={handleChange("email")}
                       placeholder="e.g. employee@company.com"
                       className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                     />
@@ -188,7 +188,7 @@ const AddReward = () => {
 
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest border-t border-zinc-700/50 pt-5 relative z-10 mt-auto">
                   <span className="text-zinc-400">Targeting Status</span>
-                  <span className={`${formData.emailId ? 'text-emerald-400' : 'text-zinc-500'} flex items-center gap-1.5 transition-colors`}>
+                  <span className={`${formData.email ? 'text-emerald-400' : 'text-zinc-500'} flex items-center gap-1.5 transition-colors`}>
                     {validEmail === true ? <CheckCircle2 size={14} /> : <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full"></span>}
                     {validEmail === true ? "Valid Email" : "Pending Email"}
                   </span>

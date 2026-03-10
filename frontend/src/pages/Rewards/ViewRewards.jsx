@@ -1,26 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, Gift, Tag, Hash, Award, CheckCircle2, Clock } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
+import axios from "axios"
 
-/* ================================
-   Mock Data
-================================ */
-const initialRewards = [
-  { id: 1, title: "$100 Amazon Gift Card", category: "Gift Card", description: "Digital gift card for Amazon.com", userId: "EMP-8493", status: "Issued", date: "Oct 24, 2023", color: "bg-amber-100 text-amber-700" },
-  { id: 2, title: "Weekend Spa Getaway", category: "Experience", description: "2-night stay at a luxury spa resort", userId: "EMP-2104", status: "Redeemed", date: "Nov 02, 2023", color: "bg-purple-100 text-purple-700" },
-  { id: 3, title: "Company Branded Hoodie", category: "Merchandise", description: "Premium cotton blend company hoodie", userId: "", status: "Unassigned", date: "-", color: "bg-blue-100 text-blue-700" },
-  { id: 4, title: "Extra Vacation Day", category: "Digital", description: "One additional paid day off", userId: "EMP-9932", status: "Issued", date: "Nov 15, 2023", color: "bg-emerald-100 text-emerald-700" },
-  { id: 5, title: "Dinner for Two ($150)", category: "Experience", description: "Voucher for top-rated local restaurant", userId: "", status: "Unassigned", date: "-", color: "bg-rose-100 text-rose-700" },
-];
+// const initialRewards = [
+//   { id: 1, title: "$100 Amazon Gift Card", category: "Gift Card", description: "Digital gift card for Amazon.com", userId: "EMP-8493", status: "Issued", date: "Oct 24, 2023", color: "bg-amber-100 text-amber-700" },
+//   { id: 2, title: "Weekend Spa Getaway", category: "Experience", description: "2-night stay at a luxury spa resort", userId: "EMP-2104", status: "Redeemed", date: "Nov 02, 2023", color: "bg-purple-100 text-purple-700" },
+//   { id: 3, title: "Company Branded Hoodie", category: "Merchandise", description: "Premium cotton blend company hoodie", userId: "", status: "Unassigned", date: "-", color: "bg-blue-100 text-blue-700" },
+//   { id: 4, title: "Extra Vacation Day", category: "Digital", description: "One additional paid day off", userId: "EMP-9932", status: "Issued", date: "Nov 15, 2023", color: "bg-emerald-100 text-emerald-700" },
+//   { id: 5, title: "Dinner for Two ($150)", category: "Experience", description: "Voucher for top-rated local restaurant", userId: "", status: "Unassigned", date: "-", color: "bg-rose-100 text-rose-700" },
+// ];
 
-/* ================================
-   Main Component
-================================ */
 const ViewRewards = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [initialRewards, setInitialRewards] = useState([]);
+
+  const getData = async() => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`);
+      console.log(res.data.reward);
+      setInitialRewards(res.data.reward)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    getData();
+  }, [])
 
   // Tailwind arbitrary variants for the custom scrollbar
   const customScrollbar = "[&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
@@ -94,7 +104,7 @@ const ViewRewards = () => {
                 </svg>
               </div>
             </div>
-          </div>
+          </div>  
 
           {/* Data Table Card */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
@@ -111,7 +121,7 @@ const ViewRewards = () => {
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
                   {filteredRewards.map((reward) => (
-                    <tr key={reward.id} className="hover:bg-zinc-50/50 transition-colors group">
+                    <tr key={reward._id} className="hover:bg-zinc-50/50 transition-colors group">
                       
                       {/* Reward Info */}
                       <td className="px-6 py-4">
