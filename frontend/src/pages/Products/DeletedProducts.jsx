@@ -9,7 +9,6 @@ const SoftDeletedProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [deletedProducts, setDeletedProducts] = useState([]);
-  const isRefreshing = false;
 
   const getDeletedData = async () => {
     try {

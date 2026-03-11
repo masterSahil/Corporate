@@ -9,13 +9,15 @@ const SoftDeletedEmployees = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
   const [deletedEmployees, setDeletedEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const isRefreshing = false;
 
   const getDeletedData = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
-      setDeletedEmployees(res.data.users || res.data.employees || []);
+      const filteredEmployee = res.data.users.filter(u => u.role === "employee");
+      setDeletedEmployees(filteredEmployee);
     } catch (error) {
       console.log(error);
     } 
@@ -47,17 +49,20 @@ const SoftDeletedEmployees = () => {
 
   // Permanent Deletion
   const handlePermanentDelete = async (id) => {
-    if (window.confirm("Are you sure you want to permanently delete this admin? This cannot be undone.")) 
-    {
+    if (window.confirm("Are you sure you want to permanently delete this admin? This cannot be undone.")) {
+
       const password = window.prompt("Enter your password to confirm deletion:");
       if (!password) return;
-
       try {
-          await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${id}`, {password}, {withCredentials: true});
+        setLoading(true);
 
-          getDeletedData();
+        await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${id}`, { password },
+          { withCredentials: true });
+        await getDeletedData();
       } catch (error) {
-          alert(error.response?.data?.message || "Delete failed");
+        alert(error.response?.data?.message || "Delete failed");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -157,6 +162,16 @@ const SoftDeletedEmployees = () => {
             </div>
           </div>
 
+          {loading && (
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
+                <RefreshCw className="animate-spin text-slate-700" size={22} />
+                <span className="text-sm font-semibold text-slate-800">
+                  Permanently deleting employee...
+                </span>
+              </div>
+            </div>
+          )}
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
             <div className={`overflow-x-auto ${customScrollbar}`}>

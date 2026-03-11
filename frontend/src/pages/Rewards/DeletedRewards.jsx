@@ -9,6 +9,7 @@ const SoftDeletedRewards = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [deletedRewards, setDeletedRewards] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const getDeletedData = async () => {
     try {
@@ -51,10 +52,14 @@ const SoftDeletedRewards = () => {
       if (!password) return;
 
       try {
+        setLoading(true);
         await axios.post(`${import.meta.env.VITE_API_KEY}/hard-delete-reward/${id}`, {password}, {withCredentials: true });
         getDeletedData();
       } catch (error) {
         alert(error.response?.data?.message || "Delete failed");
+        console.log(error);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -148,6 +153,16 @@ const SoftDeletedRewards = () => {
             </div>
           </div>
 
+          {loading && (
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
+                <RefreshCw className="animate-spin text-slate-700" size={22} />
+                <span className="text-sm font-semibold text-slate-800">
+                  Permanently deleting Reward...
+                </span>
+              </div>
+            </div>
+          )}
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
             <div className={`overflow-x-auto ${customScrollbar}`}>

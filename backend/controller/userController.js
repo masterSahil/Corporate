@@ -252,7 +252,7 @@ module.exports.DeleteImage = async (req, res) => {
 
 module.exports.SoftDeletedUser = async (req, res) => {
     try {
-        const softDelete = await UserSchema.findByIdAndUpdate(req.params.id, {isDeleted: true}, 
+        const softDelete = await UserSchema.findByIdAndUpdate(req.params.id, {isDeleted: true, deletedAt: new Date()}, 
             {returnDocument: 'after'});
 
         if (!softDelete) {

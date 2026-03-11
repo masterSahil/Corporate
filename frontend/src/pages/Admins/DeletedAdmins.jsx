@@ -9,6 +9,7 @@ const SoftDeletedAdmins = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [deletedAdmins, setDeletedAdmins] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const isRefreshing = false;
   // Fetch soft-deleted data
@@ -54,11 +55,14 @@ const SoftDeletedAdmins = () => {
       if (!password) return;
 
       try {
+          setLoading(true);
           await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${id}`, {password}, {withCredentials: true});
 
           getDeletedData();
       } catch (error) {
           alert(error.response?.data?.message || "Delete failed");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -152,6 +156,17 @@ const SoftDeletedAdmins = () => {
             </div>
           </div>
 
+          {loading && (
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
+                <RefreshCw className="animate-spin text-slate-700" size={22} />
+                <span className="text-sm font-semibold text-slate-800">
+                  Permanently deleting admin / super admin...
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
             <div className={`overflow-x-auto ${customScrollbar}`}>
@@ -202,7 +217,7 @@ const SoftDeletedAdmins = () => {
 
                       {/* Deleted Date */}
                       <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-slate-700">{formatDate(admin.createdAt)}</span>
+                        <span className="text-sm font-semibold text-slate-700">{formatDate(admin.deletedAt)}</span>
                       </td>
 
                       {/* Actions */}
