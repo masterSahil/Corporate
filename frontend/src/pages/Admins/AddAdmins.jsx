@@ -3,51 +3,8 @@ import { Menu, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, U
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
-/* Reusable Components */
-const Card = ({ title, icon: Icon, children, className = "" }) => (
-  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm ${className}`}>
-    {title && (
-      <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
-        {Icon && <Icon size={20} className="text-slate-900" />}
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-      </div>
-    )}
-    {children}
-  </div>
-);
-
-const ImageDropzone = ({ preview, setPreview, onFileSelect }) => {
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreview(imageUrl);   // <-- now this works, comes from parent
-      onFileSelect(file);     // <-- set the file in formData
-    }
-  };
-
-  return (
-    <Card title="Profile Photo" icon={Camera}>
-      <label className={`border-2 border-dashed ${preview ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-62.5`}>
-        {preview ? (
-          <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
-        ) : (
-          <>
-            <div className="bg-slate-100 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
-              <UploadCloud size={28} className="text-slate-600" />
-            </div>
-            <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
-            <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
-          </>
-        )}
-        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-      </label>
-    </Card>
-  );
-};
-
-/* Main Component */
 const AddAdmin = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -78,21 +35,29 @@ const AddAdmin = () => {
 
     return null; 
   };
+
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
   const handleRoleSelect = (role) => setFormData({ ...formData, role });
 
+  // Handle Image Upload Logic Inline
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPreview(imageUrl);
+      setFormData({ ...formData, profileImage: file });
+    }
+  };
+
   const resetForm = () => {
-    setFormData({ username: "", email: "", gender: "", phoneNumber: "", password: "", 
-      role: "admin", profileImage: null });
+    setFormData({ username: "", email: "", gender: "", phoneNumber: "", password: "", role: "admin", profileImage: null });
     setPreview(null);
-  }
+  };
 
   const handleSubmit = async() => {
     try {
       const error = validateForm();
-      if (error) {
-        alert(error); return;
-      }
+      if (error) { toast.warning(error); return; }
       setIsSubmitting(true);
 
       const data = new FormData();
@@ -105,10 +70,10 @@ const AddAdmin = () => {
       data.append("file", formData.profileImage);
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
-      alert("success");
-
+      toast.success("Admin Created Successfully");
       resetForm();
     } catch (error) {
+      toast.error(error);
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -156,7 +121,13 @@ const AddAdmin = () => {
             {/* Left Column: Form Fields & Roles */}
             <div className="xl:col-span-2 space-y-8">
               
-              <Card title="Personal Information" icon={User}>
+              {/* Personal Information Card Inline */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <User size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Personal Information</h2>
+                </div>
+                
                 <div className="grid md:grid-cols-2 gap-x-8">
                   
                   {/* Full Name Input */}
@@ -263,9 +234,15 @@ const AddAdmin = () => {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card title="Role & Permissions" icon={Key}>
+              {/* Role & Permissions Card Inline */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Key size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Role & Permissions</h2>
+                </div>
+                
                 <div className="grid sm:grid-cols-2 gap-6">
                   {/* Role Card: Admin */}
                   <div 
@@ -295,14 +272,35 @@ const AddAdmin = () => {
                     <p className={`text-sm ${theme.textMuted} leading-relaxed`}>Unrestricted access. Can manage billing, security settings, and other admins.</p>
                   </div>
                 </div>
-              </Card>
+              </div>
 
             </div>
 
-            {/* Right Column: Image & Security Info */}
+            {/* Right Column: Image Dropzone Inline */}
             <div className="space-y-8">
-              <ImageDropzone preview={preview} setPreview={setPreview} onFileSelect={(file) => setFormData({ ...formData, profileImage: file })} />
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Camera size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Profile Photo</h2>
+                </div>
+                
+                <label className={`border-2 border-dashed ${preview ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-62.5`}>
+                  {preview ? (
+                    <img src={preview} alt="Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
+                  ) : (
+                    <>
+                      <div className="bg-slate-100 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                        <UploadCloud size={28} className="text-slate-600" />
+                      </div>
+                      <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
+                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
+                    </>
+                  )}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                </label>
+              </div>
             </div>
+
           </div>
         </div>
       </main>

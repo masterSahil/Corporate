@@ -7,7 +7,7 @@ import { toast } from "../../ui/Toaster";
 
 /* Reusable Card Component */
 const Card = ({ title, icon: Icon, children }) => (
-  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 shadow-sm`}>
     {title && (
       <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
         {Icon && <Icon size={20} className="text-slate-900" />}

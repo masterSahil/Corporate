@@ -4,6 +4,7 @@ import { Menu, ArrowLeft, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
 const UpdateAdmin = () => {
   const { id } = useParams();
@@ -44,11 +45,11 @@ const UpdateAdmin = () => {
         });
         setExistingImage(admin.profile?.imageUrl || null);
       } else {
-        alert("Admin not found");
+        toast.error("Admin not found");
         navigate(-1);
       }
     } catch (error) {
-      console.error("Failed to fetch admin:", error);
+      toast.error("Failed to fetch admin:", error);
     } finally {
       setIsLoading(false);
     }
@@ -88,10 +89,7 @@ const UpdateAdmin = () => {
   const handleSubmit = async () => {
     try {
       const error = validateForm();
-      if (error) {
-        alert(error); 
-        return;
-      }
+      if (error) { toast.warning(error);  return; }
       setIsSubmitting(true);
 
       const data = new FormData();
@@ -104,20 +102,15 @@ const UpdateAdmin = () => {
       if (formData.password) {
         data.append("password", formData.password);
       }
-
       if (formData.profileImage) {
         data.append("file", formData.profileImage);
       }
-
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, data, { 
-        withCredentials: true,
-      });
+      await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, data, { withCredentials: true});
       
-      alert("Admin updated successfully!");
+      toast.success("Admin updated successfully!");
       navigate(-1);
-
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to update admin");
+      toast.error(error.response?.data?.message || "Failed to update admin");
       console.error(error);
     } finally {
       setIsSubmitting(false);

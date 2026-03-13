@@ -5,6 +5,7 @@ import { theme } from './theme';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/ContextApi';
+import { toast } from '../ui/Toaster';
 
 const Settings = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,7 +14,6 @@ const Settings = () => {
   const [role, setRole] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(false)
-  
   const [formData, setFormData] = useState({
     profile: null,
     username: "",
@@ -37,18 +37,18 @@ const Settings = () => {
 
   // Profile photo handler
   const handlePhotoUpload = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setFormData((prev) => ({ 
-      ...prev, 
-      profile: { file: file, imageUrl: URL.createObjectURL(file), imagePublicId: file.name } 
-    }));
-  }
-};
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        profile: { file: file, imageUrl: URL.createObjectURL(file), imagePublicId: file.name }
+      }));
+    }
+  };
 
-  const getData = async() => {
+  const getData = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {withCredentials: true});
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
       setFormData({
         profile: res.data.user.profile ?? null,
         username: res.data.user.username ?? "",
@@ -63,6 +63,7 @@ const Settings = () => {
       setRole(res.data.user.role);
       setCurrentUserId(res.data.user._id);
     } catch (error) {
+      toast.error(error)
       console.log(error)
     }
   }
@@ -75,7 +76,7 @@ const Settings = () => {
     try {
       if (loading) return;
       if (formData.phoneNumber.length !== 10) {
-        console.log("Phone number must be exactly 10 digits");
+        toast.info("Phone number must be exactly 10 digits");
         return;
       }
       setLoading(true);
@@ -91,12 +92,14 @@ const Settings = () => {
       if (formData.profile?.file) {
         data.append("file", formData.profile.file);
       }
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, {withCredentials: true, });
+      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, { withCredentials: true, });
 
-      getData();  
+      getData();
+      toast.success("Profile Info Updated")
     } catch (error) {
+      toast.error(error);
       console.log(error);
-    } finally{
+    } finally {
       setLoading(false);
     }
   }
@@ -104,18 +107,18 @@ const Settings = () => {
   const updatePassword = async () => {
     try {
       if (!formData.currentPassword || !formData.newPassword) {
-        alert("Please fill both password fields");
+        toast.warning("Please fill both password fields");
         return;
       }
 
-      await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`, 
-        {email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword},
-        {withCredentials: true});
+      await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`,
+        { email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword },
+        { withCredentials: true });
 
-      alert("Updated Successfully ...");
-      setFormData({newPassword: "", currentPassword: ""});
+      toast.success("Updated Successfully ...");
+      setFormData({ newPassword: "", currentPassword: "" });
     } catch (error) {
-      alert(error?.response?.data?.message || "Something Went Wrong");
+      toast.error(error?.response?.data?.message || "Something Went Wrong");
       console.log(error);
     }
   }
@@ -125,10 +128,10 @@ const Settings = () => {
       await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
       navigate('/');
       loggedIn.setLoggedIn(false);
-      alert("Logged out successfully");
+      toast.success("Logged out successfully");
     } catch (error) {
-      alert(error.message);
-    }    
+      toast.error(error.message);
+    }
   };
 
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
@@ -136,16 +139,16 @@ const Settings = () => {
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       {loading && (
-  <div className="fixed top-0 left-0 w-full h-0.75 bg-black z-50 animate-pulse"></div>
-)}
+        <div className="fixed top-0 left-0 w-full h-0.75 bg-black z-50 animate-pulse"></div>
+      )}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 flex flex-col bg-slate-50 ${customScrollbarClasses}`}>
-        
+
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
-          <button 
-            onClick={() => setIsSidebarOpen(true)} 
+          <button
+            onClick={() => setIsSidebarOpen(true)}
             className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}
           >
             <Menu size={20} /> <span className="text-sm font-medium">Menu</span>
@@ -154,7 +157,7 @@ const Settings = () => {
 
         {/* Settings Content Area */}
         <div className="p-6 max-w-7xl w-full mx-auto pb-12">
-          
+
           <div className="mb-10">
             <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Settings</h1>
             <p className={`text-base ${theme.textMuted} mt-2`}>Manage your personal profile, work details, and security.</p>
@@ -172,19 +175,19 @@ const Settings = () => {
               <div className="flex items-center gap-5 mb-8">
                 <div className="relative w-20 h-20 rounded-full bg-zinc-200 border border-zinc-300 overflow-hidden shrink-0 flex items-center justify-center group cursor-pointer shadow-sm">
                   {formData.profile ? (
-                    <img src={formData.profile?.imageUrl }
-                        alt="Profile" className="w-full h-full object-cover" />
+                    <img src={formData.profile?.imageUrl}
+                      alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User size={32} className="text-zinc-400" />
                   )}
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <Camera size={20} className="text-white" />
                   </div>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     onChange={handlePhotoUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer" 
+                    className="absolute inset-0 opacity-0 cursor-pointer"
                   />
                 </div>
                 <div>
@@ -195,7 +198,7 @@ const Settings = () => {
 
               {/* Form Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                
+
                 {/* Username */}
                 <div className="flex flex-col gap-2">
                   <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Username</label>
@@ -261,7 +264,7 @@ const Settings = () => {
                 </div>
 
                 {
-                  role === "employee" && 
+                  role === "employee" &&
                   <>
                     {/* Department */}
                     <div className="flex flex-col gap-2">
@@ -297,33 +300,33 @@ const Settings = () => {
                 }
 
                 <div className="pt-6">
-                <button
-                  onClick={submit}
-                  disabled={loading}
-                  className={`flex items-center justify-center gap-2 text-white text-sm font-bold py-3 px-6 rounded-lg shadow-md transition-colors w-full
+                  <button
+                    onClick={submit}
+                    disabled={loading}
+                    className={`flex items-center justify-center gap-2 text-white text-sm font-bold py-3 px-6 rounded-lg shadow-md transition-colors w-full
                   ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-black hover:bg-zinc-800"}`}
-                >
-                  {loading ? "Saving..." : (
-                    <>
-                      <Save size={16} />
-                      Save Changes
-                    </>
-                  )}
-                </button>
-              </div>
+                  >
+                    {loading ? "Saving..." : (
+                      <>
+                        <Save size={16} />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* --- RIGHT COLUMN: SECURITY & ACTIONS --- */}
             <div className="flex flex-col gap-8">
-              
+
               {/* Security Card */}
               <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
                 <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
                   <ShieldCheck size={20} className="text-slate-900" />
                   <h2 className="text-lg font-bold text-slate-900">Security</h2>
                 </div>
-                
+
                 {/* Current Password */}
                 <div className="flex flex-col gap-2 mb-5">
                   <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Current Password</label>
@@ -383,7 +386,7 @@ const Settings = () => {
                       Securely log out of your account on this device.
                     </p>
                   </div>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-sm font-bold py-3 px-8 rounded-xl transition-colors w-full sm:w-auto shrink-0"
                   >

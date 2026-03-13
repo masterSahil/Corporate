@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "../../ui/Toaster";
 
 const ViewAdmins = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,6 +20,7 @@ const ViewAdmins = () => {
       const filteredAdmins = res.data.users.filter(u => u.role !== "employee")
       setInitialAdmins(filteredAdmins);
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   }
@@ -50,11 +52,11 @@ const ViewAdmins = () => {
 
   const deleteAdmin = async(id) => {
     try {
-      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/delete/${id}`, {isDeleted: true, deletedAt: new Date()});
-      console.log(res.data.user);
-      console.log("success");
+      await axios.put(`${import.meta.env.VITE_API_KEY}/delete/${id}`, {isDeleted: true, deletedAt: new Date()});
+      toast.success("Admin Deleted Successfully");
       getData();
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   }
