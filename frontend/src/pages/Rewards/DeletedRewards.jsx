@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, LayoutGrid, Trash2, ArchiveRestore, Info, RefreshCw, Gift } from "lucide-react";
+import { Menu, Search, LayoutGrid, Trash2, ArchiveRestore, Info, RefreshCw, Gift, Loader2 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
@@ -154,11 +154,11 @@ const SoftDeletedRewards = () => {
           </div>
 
           {loading && (
-            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
-                <RefreshCw className="animate-spin text-slate-700" size={22} />
-                <span className="text-sm font-semibold text-slate-800">
-                  Permanently deleting Reward...
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+              <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-2xl ring-1 ring-black/5">
+                <Loader2 className="animate-spin text-slate-900" size={20} />
+                <span className="text-sm font-medium text-slate-700">
+                  Permanently deleting...
                 </span>
               </div>
             </div>
