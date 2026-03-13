@@ -337,7 +337,7 @@ const UpdateAdmin = () => {
                   <h2 className="text-lg font-bold text-slate-900">Profile Photo</h2>
                 </div>
 
-                <label className={`border-2 border-dashed ${displayImage ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-[250px]`}>
+                <label className={`border-2 border-dashed ${displayImage ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-62.5`}>
                   {displayImage ? (
                     <img src={displayImage} alt="Profile Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
                   ) : (
