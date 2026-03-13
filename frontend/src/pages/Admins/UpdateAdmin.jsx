@@ -314,8 +314,7 @@ const UpdateAdmin = () => {
                   {/* Role Card: super_admin */}
                   <div 
                     onClick={() => handleRoleSelect("super_admin")}
-                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "super_admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}
-                  >
+                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "super_admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`} >
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-base font-bold text-slate-900">Super Admin</span>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.role === "super_admin" ? 'border-black' : theme.border}`}>
@@ -326,7 +325,6 @@ const UpdateAdmin = () => {
                   </div>
                 </div>
               </div>
-
             </div>
 
             {/* Right Column: Image Inline Component */}
