@@ -20,6 +20,7 @@ import SoftDeletedEmployees from "./pages/Employees/DeletedEmployee";
 import SoftDeletedProducts from "./pages/Products/DeletedProducts";
 import UpdateProduct from "./pages/Products/UpdateProduct";
 import SoftDeletedRewards from "./pages/Rewards/DeletedRewards";
+import UpdateAdmin from "./pages/Admins/UpdateAdmin";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -83,6 +84,8 @@ export default function App() {
           <Route path="/admins/manage" element={loggedIn && role === "super_admin" ? <ViewAdmins /> : <Navigate to="/" />} />
 
           <Route path="/admins/deleted" element={loggedIn && role === "super_admin" ? <SoftDeletedAdmins /> : <Navigate to="/" />} />
+
+          <Route path="/admins/update/:id" element={loggedIn && role === "super_admin" ? <UpdateAdmin /> : <Navigate to="/" />} />
 
           {/* Employees Manage - Super Admin & Admin */}
           <Route path="/employees/add" element={loggedIn && (role === "super_admin" || role === "admin") ? <AddEmployee /> : <Navigate to="/" />} />

@@ -48,10 +48,6 @@ const ViewAdmins = () => {
     });
   };
 
-  const updateAdmin = () => {
-    
-  }
-
   const deleteAdmin = async(id) => {
     try {
       const res = await axios.put(`${import.meta.env.VITE_API_KEY}/delete/${id}`, {isDeleted: true, deletedAt: new Date()});
@@ -202,7 +198,7 @@ const ViewAdmins = () => {
                       {/* Actions (Update & Delete) */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 ">
-                          <button onClick={()=>updateAdmin(admin._id)} className={`p-2 rounded-md hover:bg-zinc-200 text-slate-600 hover:text-black transition-colors tooltip-trigger`} title="Update Admin">
+                          <button onClick={()=>navigate(`/admins/update/${admin._id}`)} className={`p-2 rounded-md hover:bg-zinc-200 text-slate-600 hover:text-black transition-colors tooltip-trigger`} title="Update Admin">
                             <Edit2 size={16} />
                           </button>
                           <button onClick={()=>deleteAdmin(admin._id)} className={`p-2 rounded-md hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Admin">

@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, Shield, Users, Box, Gift, Settings, 
-  ChevronDown, ChevronRight, X, MoreVertical 
-} from 'lucide-react';
-import { theme } from './theme'; // Assuming your theme file is configured
+import { LayoutDashboard, Shield, Users, Box, Gift, Settings, 
+  ChevronDown, ChevronRight, X } from 'lucide-react';
+import { theme } from './theme'; 
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [activeMenu, setActiveMenu] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Updated array with paths for React Router Dom
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, isLink: true, path: '/' },
     { name: 'Admins', icon: Shield, subs: [
@@ -117,7 +114,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                           }`}
                         >
                           <span>{sub.label}</span>
-                          <MoreVertical size={14} className={`transition-opacity ${isSubActive ? 'opacity-100 text-zinc-400' : 'opacity-0 group-hover:opacity-100 text-zinc-400'}`} />
                         </button>
                       );
                     })}
