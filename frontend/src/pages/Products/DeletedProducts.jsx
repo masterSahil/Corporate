@@ -1,20 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, LayoutGrid, ImageIcon, RefreshCw } from "lucide-react";
+import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, LayoutGrid, ImageIcon, RefreshCw, Loader2 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from '../../ui/Toaster'; // Ensure this path matches your project structure
 
 const SoftDeletedProducts = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [deletedProducts, setDeletedProducts] = useState([]);
+  
+  // Added loading state for the overlay with dynamic text
+  const [loadingText, setLoadingText] = useState("");
 
   const getDeletedData = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-soft-delete-view`, { withCredentials: true });
       setDeletedProducts(res.data.product);
     } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch deleted products");
       console.log(error);
     } 
   };
@@ -36,10 +41,15 @@ const SoftDeletedProducts = () => {
   // Restoring a Product
   const handleRestore = async (id) => {
     try {
+      setLoadingText("Restoring product...");
       await axios.put(`${import.meta.env.VITE_API_KEY}/product-restore/${id}`, {}, { withCredentials: true });
-      getDeletedData();
+      await getDeletedData();
+      toast.success("Product Restored Successfully");
     } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to restore product");
       console.log(error);
+    } finally {
+      setLoadingText(""); // Close overlay
     }
   };
 
@@ -50,10 +60,14 @@ const SoftDeletedProducts = () => {
       if (!password) return;
 
       try {
+        setLoadingText("Permanently deleting...");
         await axios.post(`${import.meta.env.VITE_API_KEY}/hard-delete-product/${id}`, {password}, {withCredentials: true });
-        getDeletedData();
+        await getDeletedData();
+        toast.success("Permanently Deleted Successfully");
       } catch (error) {
-        alert(error.response?.data?.message || "Delete failed");
+        toast.error(error.response?.data?.message || "Delete failed");
+      } finally {
+        setLoadingText(""); // Close overlay
       }
     }
   };
@@ -154,6 +168,18 @@ const SoftDeletedProducts = () => {
             </div>
           </div>
 
+          {/* Dynamic Loading Overlay */}
+          {loadingText && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+              <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-2xl ring-1 ring-black/5">
+                <Loader2 className="animate-spin text-slate-900" size={20} />
+                <span className="text-sm font-medium text-slate-700">
+                  {loadingText}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
             <div className={`overflow-x-auto ${customScrollbar}`}>
@@ -163,6 +189,7 @@ const SoftDeletedProducts = () => {
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Product</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category & Brand</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Price</th>
+                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Stock</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Deleted On</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
                   </tr>
@@ -174,21 +201,24 @@ const SoftDeletedProducts = () => {
                     const initials = product.name ? product.name.substring(0, 2).toUpperCase() : "PR";
                     
                     // Pricing Logic
-                    const hasDiscount = product.discount && product.discount > 0;
+                    const hasDiscount = product.discount !== undefined && product.discount !== null;
                     const isPercentage = product.discountType === 'percentage' || !product.discountType;
-                    let finalPrice = product.price;
+                    let finalPrice = product.price || 0;
                     let discountBadgeText = "";
 
                     if (hasDiscount) {
                       if (isPercentage) {
-                        finalPrice = product.price - (product.price * (product.discount / 100));
-                        discountBadgeText = `-${product.discount}%`;
+                        finalPrice = finalPrice - (finalPrice * (product.discount / 100));
+                        discountBadgeText = `${product.discount}%`;
                       } else {
-                        finalPrice = product.price - product.discount;
-                        if (finalPrice < 0) finalPrice = 0; 
-                        discountBadgeText = `-$${product.discount}`;
+                        finalPrice = finalPrice - product.discount;
+                        if (finalPrice < 0) finalPrice = 0;
+                        discountBadgeText = `$${product.discount}`;
                       }
                     }
+
+                    // Stock Status Logic integration
+                    const stockStatus = getStockStatus(product.quantity);
 
                     return (
                       <tr key={id} className="hover:bg-zinc-50/50 transition-colors group">
@@ -225,18 +255,30 @@ const SoftDeletedProducts = () => {
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="font-bold text-slate-900 text-sm opacity-70">
-                              ${finalPrice.toFixed(2)}
+                             ${finalPrice.toFixed(2)}
                             </span>
                             {hasDiscount && (
                               <div className="flex items-center gap-1.5 mt-0.5 opacity-70">
                                 <span className="text-xs text-slate-400 line-through">
-                                  ${product.price.toFixed(2)}
+                                  ${(product.price || 0).toFixed(2)}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
-                                  {discountBadgeText}
+                                 {discountBadgeText}
                                 </span>
                               </div>
                             )}
+                          </div>
+                        </td>
+
+                        {/* Stock (New Column) */}
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col items-start gap-1">
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${stockStatus.classes}`}>
+                              {stockStatus.label}
+                            </span>
+                            <span className="text-xs font-semibold text-slate-500">
+                              {product.quantity || 0} Units
+                            </span>
                           </div>
                         </td>
 

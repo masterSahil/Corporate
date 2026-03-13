@@ -4,6 +4,7 @@ import { Menu, ArrowLeft, Save, ImagePlus, X, Loader2 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
 const UpdateProduct = () => {
   const { id } = useParams();
@@ -39,10 +40,11 @@ const UpdateProduct = () => {
           });
           setExistingImages(product.gallery || []);
         } else {
-          alert("Product not found");
+          toast.error("Product not found");
           navigate(-1); 
         }
       } catch (error) {
+        toast.error("Failed to fetch product");
         console.error("Failed to fetch product:", error);
       } finally {
         setIsLoading(false);
@@ -93,16 +95,12 @@ const UpdateProduct = () => {
           submitData.append("gallery", file);
         });
       }
+      await axios.put(`${import.meta.env.VITE_API_KEY}/product/${id}`, submitData, {withCredentials: true});
 
-      await axios.put(`${import.meta.env.VITE_API_KEY}/product/${id}`, submitData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      alert("Product updated successfully!");
-      navigate(-1); // Go back
+      toast.success("Product updated successfully!");
+      navigate(-1); 
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to update product");
+      toast.error(error.response?.data?.message || "Failed to update product");
       console.error(error);
     } finally {
       setIsSaving(false);

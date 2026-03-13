@@ -3,6 +3,7 @@ import { Menu, Box, UploadCloud, Tag, DollarSign, Package, LayoutGrid, AlignLeft
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios"
+import { toast } from "../../ui/Toaster";
 
 const AddProduct = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -62,8 +63,25 @@ const AddProduct = () => {
     if (fileInputRef.current) fileInputRef.current.value = null;
   }
 
+  const validateForm = () => {
+    if (!formData.name.trim()) return "Product Name is required";
+    if (!formData.category.trim()) return "Category is required";
+    if (!formData.brand.trim()) return "Brand is required";
+    if (formData.price === "" || formData.price <= 0) return "A valid Price (greater than 0) is required";
+    if (formData.discount === "" || formData.discount < 0) return "A valid Discount (0 or more) is required";
+    if (formData.quantity === "" || formData.quantity < 0) return "A valid Stock Quantity (0 or more) is required";
+    if (!formData.description.trim()) return "Product Description is required";
+    if (files.length === 0) return "At least one product image or video is required";
+    return null; 
+  };
+
   const handleSubmit = async () => {
     try {
+      const err = validateForm();
+      if (err) {
+        toast.warning(err);
+        return;
+      }
       setIsSubmitting(true);
       const data = new FormData();
       data.append("name", formData.name);
@@ -83,7 +101,9 @@ const AddProduct = () => {
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {withCredentials: true});
       resetForm();
+      toast.success("Product Added Successfully");
     } catch (error) {
+      toast.error(error);
       console.log(error);
     } finally {
       setIsSubmitting(false);

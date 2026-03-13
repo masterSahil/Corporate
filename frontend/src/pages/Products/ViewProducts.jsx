@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "../../ui/Toaster";
 
 const ViewProducts = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,12 +14,12 @@ const ViewProducts = () => {
 
   const navigate = useNavigate();
 
-  // Fetch product data from API
   const getProducts = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
       setProducts(res.data.product);
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   };
@@ -27,12 +28,13 @@ const ViewProducts = () => {
     getProducts();
   }, []);
 
-  // Delete product handler
   const deleteProduct = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`, { isDeleted: true, deletedAt: new Date() }, { withCredentials: true });
-      getProducts(); // Refresh list after deletion
+      getProducts();
+      toast.success("Product Deleted Successfully");
     } catch (error) {
+      toast.error(error);
       console.log("Error deleting product:", error);
     }
   };
@@ -153,7 +155,7 @@ const ViewProducts = () => {
                     const initials = product.name ? product.name.substring(0, 2).toUpperCase() : "PR";
                     
                     // --- NEW DISCOUNT LOGIC ---
-                    const hasDiscount = product.discount && product.discount > 0;
+                    const hasDiscount = product.discount !== undefined && product.discount !== null;
                     const isPercentage = product.discountType === 'percentage' || !product.discountType; // Fallback to percentage if undefined
                     
                     let finalPrice = product.price;
@@ -162,13 +164,11 @@ const ViewProducts = () => {
                     if (hasDiscount) {
                       if (isPercentage) {
                         finalPrice = product.price - (product.price * (product.discount / 100));
-                        discountBadgeText = `-${product.discount}%`;
+                        discountBadgeText = `Discount: ${product.discount}%`;
                       } else {
-                        // Flat amount logic
                         finalPrice = product.price - product.discount;
-                        // Ensure it doesn't drop below 0
-                        if (finalPrice < 0) finalPrice = 0; 
-                        discountBadgeText = `-$${product.discount}`;
+                        if (finalPrice < 0) finalPrice = 0;
+                        discountBadgeText = `Discount: $${product.discount}`;
                       }
                     }
 
