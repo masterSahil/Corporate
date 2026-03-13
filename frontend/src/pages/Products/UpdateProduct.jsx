@@ -125,15 +125,20 @@ const UpdateProduct = () => {
 
       <main className={`flex-1 bg-slate-50 ${customScrollbar} flex flex-col`}>
         <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <button onClick={() => navigate(-1)} className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+              <button type="button" onClick={() => navigate(-1)} className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors hidden sm:block">
                 <ArrowLeft size={20} />
               </button>
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">Edit Product</h1>
                 <p className={`text-sm ${theme.textMuted} mt-1`}>Update details and manage images for this product.</p>
               </div>
+            </div>
+
+            <div className="flex gap-4 w-full sm:w-auto mt-2 sm:mt-0">
+              <button onClick={() => navigate(-1)} className={`flex-1 sm:flex-none px-6 py-3 rounded-lg text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}> Cancel
+              </button>
             </div>
           </div>
 
