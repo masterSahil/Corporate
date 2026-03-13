@@ -5,55 +5,6 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
 
-/* Reusable Components */
-const Card = ({ title, icon: Icon, children, className = "" }) => (
-  <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm ${className}`}>
-    {title && (
-      <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
-        {Icon && <Icon size={20} className="text-slate-900" />}
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-      </div>
-    )}
-    {children}
-  </div>
-);
-
-const ImageDropzone = ({ preview, existingImage, setPreview, onFileSelect }) => {
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setPreview(imageUrl);
-      onFileSelect(file);
-    }
-  };
-
-  const displayImage = preview || existingImage;
-
-  return (
-    <Card title="Profile Photo" icon={Camera}>
-      <label className={`border-2 border-dashed ${displayImage ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-[250px]`}>
-        {displayImage ? (
-          <img src={displayImage} alt="Profile Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
-        ) : (
-          <>
-            <div className="bg-slate-100 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
-              <UploadCloud size={28} className="text-slate-600" />
-            </div>
-            <p className="text-base font-bold text-slate-900 mb-1">Click to upload new photo</p>
-            <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
-          </>
-        )}
-        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-      </label>
-      {displayImage && (
-        <p className="text-xs text-center text-slate-500 mt-3">Click the image to upload a replacement.</p>
-      )}
-    </Card>
-  );
-};
-
-/* Main Component */
 const UpdateAdmin = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -76,36 +27,36 @@ const UpdateAdmin = () => {
     profileImage: null,
   });
 
-    const fetchAdmin = async () => {
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
-            const admin = res.data.users?.find(u => u._id === id);
+  const fetchAdmin = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
+      const admin = res.data.users?.find(u => u._id === id);
 
-            if (admin) {
-                setFormData({
-                    username: admin.username || "",
-                    email: admin.email || "",
-                    phoneNumber: admin.phoneNumber || "",
-                    gender: admin.gender || "",
-                    role: admin.role || "admin",
-                    password: "",
-                    profileImage: null,
-                });
-                setExistingImage(admin.profile.imageUrl);
-            } else {
-                alert("Admin not found");
-                navigate(-1);
-            }
-        } catch (error) {
-            console.error("Failed to fetch admin:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+      if (admin) {
+        setFormData({
+          username: admin.username || "",
+          email: admin.email || "",
+          phoneNumber: admin.phoneNumber || "",
+          gender: admin.gender || "",
+          role: admin.role || "admin",
+          password: "",
+          profileImage: null,
+        });
+        setExistingImage(admin.profile?.imageUrl || null);
+      } else {
+        alert("Admin not found");
+        navigate(-1);
+      }
+    } catch (error) {
+      console.error("Failed to fetch admin:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchAdmin();
-    }, []);
+  useEffect(() => {
+    fetchAdmin();
+  }, []);
 
   const validateForm = () => {
     if (!formData.username.trim()) return "Full name is required";
@@ -121,6 +72,18 @@ const UpdateAdmin = () => {
 
   const handleChange = (field) => (e) => setFormData({ ...formData, [field]: e.target.value });
   const handleRoleSelect = (role) => setFormData({ ...formData, role });
+
+  // Inlined Image Handler
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPreview(imageUrl);
+      setFormData({ ...formData, profileImage: file });
+    }
+  };
+
+  const displayImage = preview || existingImage;
 
   const handleSubmit = async () => {
     try {
@@ -138,19 +101,16 @@ const UpdateAdmin = () => {
       data.append("phoneNumber", formData.phoneNumber);
       data.append("role", formData.role);
       
-      // Only append password if the user actually typed a new one
       if (formData.password) {
         data.append("password", formData.password);
       }
 
-      // Append new image if one was selected
       if (formData.profileImage) {
         data.append("file", formData.profileImage);
       }
 
       await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, data, { 
         withCredentials: true,
-        // headers: { "Content-Type": "multipart/form-data" }
       });
       
       alert("Admin updated successfully!");
@@ -222,9 +182,14 @@ const UpdateAdmin = () => {
             {/* Left Column: Form Fields & Roles */}
             <div className="xl:col-span-2 space-y-8">
               
-              <Card title="Personal Information" icon={User}>
+              {/* Personal Information Inline Card */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <User size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Personal Information</h2>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-x-8">
-                  
                   {/* Full Name Input */}
                   <div className="flex flex-col gap-2 mb-6">
                     <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
@@ -329,9 +294,15 @@ const UpdateAdmin = () => {
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card title="Role & Permissions" icon={Key}>
+              {/* Role & Permissions Inline Card */}
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Key size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Role & Permissions</h2>
+                </div>
+
                 <div className="grid sm:grid-cols-2 gap-6">
                   {/* Role Card: Admin */}
                   <div 
@@ -361,18 +332,37 @@ const UpdateAdmin = () => {
                     <p className={`text-sm ${theme.textMuted} leading-relaxed`}>Unrestricted access. Can manage billing, security settings, and other admins.</p>
                   </div>
                 </div>
-              </Card>
+              </div>
 
             </div>
 
-            {/* Right Column: Image */}
+            {/* Right Column: Image Inline Component */}
             <div className="space-y-8">
-              <ImageDropzone 
-                preview={preview} 
-                existingImage={existingImage} 
-                setPreview={setPreview} 
-                onFileSelect={(file) => setFormData({ ...formData, profileImage: file })} 
-              />
+              <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
+                <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
+                  <Camera size={20} className="text-slate-900" />
+                  <h2 className="text-lg font-bold text-slate-900">Profile Photo</h2>
+                </div>
+
+                <label className={`border-2 border-dashed ${displayImage ? 'border-black' : theme.border} rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group relative overflow-hidden min-h-[250px]`}>
+                  {displayImage ? (
+                    <img src={displayImage} alt="Profile Preview" className="w-full h-full object-cover rounded-lg absolute inset-0" />
+                  ) : (
+                    <>
+                      <div className="bg-slate-100 p-5 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                        <UploadCloud size={28} className="text-slate-600" />
+                      </div>
+                      <p className="text-base font-bold text-slate-900 mb-1">Click to upload new photo</p>
+                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
+                    </>
+                  )}
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                </label>
+
+                {displayImage && (
+                  <p className="text-xs text-center text-slate-500 mt-3">Click the image to upload a replacement.</p>
+                )}
+              </div>
             </div>
             
           </div>
