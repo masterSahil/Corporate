@@ -204,7 +204,7 @@ const SoftDeletedRewards = () => {
 
                         {/* Description */}
                         <td className="px-6 py-4">
-                          <p className={`text-sm ${theme.textMuted} truncate max-w-[200px]`} title={reward.description}>
+                          <p className={`text-sm ${theme.textMuted} truncate max-w-50`} title={reward.description}>
                             {reward.description || "No description provided."}
                           </p>
                         </td>
