@@ -4,6 +4,7 @@ import { Menu, ShieldCheck, User, UploadCloud, Mail, Briefcase, Users, Camera, L
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
 const UpdateEmployee = () => {
   const { id } = useParams();
@@ -12,48 +13,48 @@ const UpdateEmployee = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const [preview, setPreview] = useState(null);
   const [newProfileImage, setNewProfileImage] = useState(null);
-
   const [formData, setFormData] = useState({
     username: "", email: "", gender: "", phoneNumber: "",
     password: "", department: "", employment: "Full-time", role: "employee"
   });
 
-  useEffect(() => {
-    const fetchEmployee = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
-        
-        const employee = res.data.users?.find(emp => emp._id === id);
-        if (employee) {
-          setFormData({
-            username: employee.username || "",
-            email: employee.email || "",
-            gender: employee.gender || "",
-            phoneNumber: employee.phoneNumber || "",
-            department: employee.department || "",
-            employment: employee.employment || "Full-time",
-            role: employee.role || "employee",
-            password: "",
-          });
-          
-          if (employee.profile) {
-            setPreview(employee.profile.imageUrl);
-          }
-        } else {
-          alert("Employee not found");
-          navigate(-1);
+  const fetchEmployee = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
+
+      const employee = res.data.users?.find(emp => emp._id === id);
+      if (employee) {
+        setFormData({
+          username: employee.username || "",
+          email: employee.email || "",
+          gender: employee.gender || "",
+          phoneNumber: employee.phoneNumber || "",
+          department: employee.department || "",
+          employment: employee.employment || "Full-time",
+          role: employee.role || "employee",
+          password: "",
+        });
+
+        if (employee.profile) {
+          setPreview(employee.profile.imageUrl);
         }
-      } catch (error) {
-        console.error("Failed to fetch employee:", error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        toast.error("Employee not found");
+        navigate(-1);
       }
-    };
+    } catch (error) {
+      toast.error(error);
+      console.error("Failed to fetch employee:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEmployee();
-  }, [id, navigate]);
+  }, []);
 
   /* Generic change handlers */
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -85,10 +86,7 @@ const UpdateEmployee = () => {
   const handleSubmit = async () => {
     try {
       const error = validateForm();
-      if (error) {
-        alert(error); 
-        return;
-      }
+      if (error) { toast.warning(error); return;}
       setIsSubmitting(true);
 
       const submitData = new FormData();
@@ -110,13 +108,12 @@ const UpdateEmployee = () => {
       if (newProfileImage) {
         submitData.append("file", newProfileImage);
       }
-
       await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, submitData, { withCredentials: true });
 
-      alert("Employee updated successfully!");
+      toast.success("Employee updated successfully!");
       navigate(-1);
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to update employee");
+      toast.error(error.response?.data?.message || "Failed to update employee");
       console.error(error);
     } finally {
       setIsSubmitting(false);

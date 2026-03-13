@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
+import { toast } from "../../ui/Toaster";
 
 const rewardColors = [
   "bg-amber-100 text-amber-700",
@@ -24,20 +25,21 @@ const ViewRewards = () => {
   const getData = async() => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, {withCredentials: true});
-      console.log(res.data.reward);
       setInitialRewards(res.data.reward)
     } catch (error) {
+      toast.error(error)
       console.log(error)
     }
   }
 
   const softDelete = async(id) => {
     try {
-       const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward-soft-delete/${id}`, {isDeleted: true, deletedAt: new Date()}, {withCredentials: true})
+      await axios.put(`${import.meta.env.VITE_API_KEY}/reward-soft-delete/${id}`, {isDeleted: true, deletedAt: new Date()}, {withCredentials: true})
 
-       console.log(res.data);
-        getData();
+      getData();
+      toast.success("Reward Deleted Successfully");
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   }

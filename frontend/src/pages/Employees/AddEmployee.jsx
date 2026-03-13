@@ -3,6 +3,7 @@ import { Menu, ShieldCheck, User, UploadCloud, Mail, Briefcase, Users, Camera, L
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
 /* Reusable Card Component */
 const Card = ({ title, icon: Icon, children }) => (
@@ -88,9 +89,7 @@ const AddEmployee = () => {
   const handleSubmit = async() => {
     try {
       const error = validateForm();
-      if (error) {
-        alert(error); return;
-      }
+      if (error) { toast.warning(error); return; }
       setIsSubmitting(true);
 
       const data = new FormData();
@@ -105,11 +104,10 @@ const AddEmployee = () => {
       data.append("file", formData.profileImage);
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
-      alert("success");
-
+      toast.success("success");
       resetForm();
     } catch (error) {
-      console.log(error);
+      toast.error(error);
     } finally {
       setIsSubmitting(false);
     }

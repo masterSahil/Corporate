@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "../../ui/Toaster";
 
 const ViewEmployees = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -20,6 +21,7 @@ const ViewEmployees = () => {
       const filtered = fetchedUsers.filter(u => u.role === "employee");
       setInitialEmployees(filtered);
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   };

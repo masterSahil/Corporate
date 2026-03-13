@@ -3,6 +3,7 @@ import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, MoreVertical, Brief
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
 const SoftDeletedEmployees = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,6 +20,7 @@ const SoftDeletedEmployees = () => {
       const filteredEmployee = res.data.users.filter(u => u.role === "employee");
       setDeletedEmployees(filteredEmployee);
     } catch (error) {
+      toast.error(error);
       console.log(error);
     } 
   };
@@ -37,17 +39,17 @@ const SoftDeletedEmployees = () => {
     });
   };
 
-  // Restoring an Employee
   const handleRestore = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_KEY}/restore/${id}`, {}, { withCredentials: true });
       getDeletedData();
+      toast.success("Employee Restored Successfully");
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   };
 
-  // Permanent Deletion
   const handlePermanentDelete = async (id) => {
     if (window.confirm("Are you sure you want to permanently delete this admin? This cannot be undone.")) {
 
@@ -59,8 +61,9 @@ const SoftDeletedEmployees = () => {
         await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${id}`, { password },
           { withCredentials: true });
         await getDeletedData();
+        toast.success("Permanently Deleted Successfully")
       } catch (error) {
-        alert(error.response?.data?.message || "Delete failed");
+        toast.error(error.response?.data?.message || "Delete failed");
       } finally {
         setLoading(false);
       }

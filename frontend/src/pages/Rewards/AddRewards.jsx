@@ -44,7 +44,7 @@ const AddReward = () => {
   const handleSubmit = async() => {
     try {
       const err = validateForm();
-      if (err) { toast.info(err); return }
+      if (err) { toast.warning(err); return }
       await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {withCredentials: true});
 
       resetForm();

@@ -4,7 +4,7 @@ import { Menu, Gift, Tag, AlignLeft, UserCheck, ShieldCheck, CheckCircle2, Mail,
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
-import { toast } from "../../ui/Toaster"; // Assuming you added the Toaster from the previous step
+import { toast } from "../../ui/Toaster"; 
 
 const UpdateReward = () => {
   const { id } = useParams();
@@ -18,7 +18,7 @@ const UpdateReward = () => {
   const [formData, setFormData] = useState({
     title: "",
     category: "",
-    points: "", // Added points
+    points: "",
     description: "",
     email: "", 
   });
@@ -32,7 +32,7 @@ const UpdateReward = () => {
         setFormData({
           title: reward.title || "",
           category: reward.category || "",
-          points: reward.points || "", // Populate points
+          points: reward.points || "", 
           description: reward.description || "",
           email: reward.email || "",
         });
@@ -76,17 +76,13 @@ const UpdateReward = () => {
     if (formData.points && isNaN(formData.points)) {
       return "Points must be a valid number";
     }
-    
     return null;
   };
 
   const handleSubmit = async () => {
     try {
       const err = validateForm();
-      if (err) {
-        toast.warning(err);
-        return;
-      }
+      if (err) { toast.warning(err); return; }
       setIsSubmitting(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${id}`, formData, { withCredentials: true });
 

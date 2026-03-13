@@ -3,6 +3,7 @@ import { Menu, Search, LayoutGrid, Trash2, ArchiveRestore, Info, RefreshCw, Gift
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
+import { toast } from "../../ui/Toaster";
 
 const SoftDeletedRewards = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -16,6 +17,7 @@ const SoftDeletedRewards = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-deleted`, { withCredentials: true });
       setDeletedRewards(res.data.reward);
     } catch (error) {
+      toast.error(error);
       console.log(error);
     } 
   };
@@ -37,11 +39,11 @@ const SoftDeletedRewards = () => {
   // Restoring a Reward
   const handleRestore = async (id) => {
     try {
-      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward-restore/${id}`, {isDeleted: false, deletedAt: Date.now()}, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_API_KEY}/reward-restore/${id}`, {isDeleted: false, deletedAt: Date.now()}, { withCredentials: true });
       getDeletedData();
-      console.log(res)
+      toast.success("Rewards Restored Successfully");
     } catch (error) {
-      console.log(error);
+      toast.error(error);
     }
   };
 
@@ -55,8 +57,9 @@ const SoftDeletedRewards = () => {
         setLoading(true);
         await axios.post(`${import.meta.env.VITE_API_KEY}/hard-delete-reward/${id}`, {password}, {withCredentials: true });
         getDeletedData();
+        toast.success("Permanent Deleted Successfully");
       } catch (error) {
-        alert(error.response?.data?.message || "Delete failed");
+        toast.error(error.response?.data?.message || "Delete failed");
         console.log(error);
       } finally {
         setLoading(false);
