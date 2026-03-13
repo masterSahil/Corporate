@@ -214,7 +214,7 @@ const UpdateReward = () => {
                     <AlignLeft size={18} className={`absolute left-4 top-3.5 ${theme.textMuted} pointer-events-none`} />
                     <textarea value={formData.description} onChange={handleChange("description")}
                       placeholder="Briefly describe the reward, redemption rules, and value..."
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-[120px] resize-y`}/>
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-30 resize-y`}/>
                   </div>
                 </div>
               </div>
@@ -245,7 +245,7 @@ const UpdateReward = () => {
               </div>
 
               {/* Premium Issuance Badge */}
-              <div className="bg-gradient-to-br from-zinc-800 to-black rounded-xl p-8 text-white shadow-xl shadow-black/20 relative overflow-hidden flex flex-col justify-center min-h-[260px]">
+              <div className="bg-linear-to-br from-zinc-800 to-black rounded-xl p-8 text-white shadow-xl shadow-black/20 relative overflow-hidden flex flex-col justify-center min-h-65">
                 <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                 
                 <ShieldCheck size={32} className="text-zinc-400 mb-5 relative z-10" />
