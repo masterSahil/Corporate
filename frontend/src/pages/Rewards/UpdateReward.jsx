@@ -21,31 +21,31 @@ const UpdateReward = () => {
     email: "", 
   });
 
-    const fetchReward = async () => {
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
-            const reward = res.data.reward?.find(r => r._id === id);
+  const fetchReward = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
+      const reward = res.data.reward?.find(r => r._id === id);
 
-            if (reward) {
-                setFormData({
-                    title: reward.title || "",
-                    category: reward.category || "",
-                    description: reward.description || "",
-                    email: reward.email || "",
-                });
-                if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reward.email)) {
-                    setValidEmail(true);
-                }
-            } else {
-                alert("Reward not found");
-                navigate(-1);
-            }
-        } catch (error) {
-            console.error("Failed to fetch reward:", error);
-        } finally {
-            setIsLoading(false);
+      if (reward) {
+        setFormData({
+          title: reward.title || "",
+          category: reward.category || "",
+          description: reward.description || "",
+          email: reward.email || "",
+        });
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reward.email)) {
+          setValidEmail(true);
         }
-    };
+      } else {
+        alert("Reward not found");
+        navigate(-1);
+      }
+    } catch (error) {
+      console.error("Failed to fetch reward:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchReward();
