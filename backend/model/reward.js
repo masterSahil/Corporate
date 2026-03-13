@@ -5,6 +5,7 @@ const rewardSchema = new Schema({
     category: {type: String},
     description: {type: String},
     email: {type: String},
+    points: {type: Number},
     status: {
         type: String,
         enum: ["Issued", "Redeemed", "Unassigned"],

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2, Mail } from "lucide-react";
+import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2, Mail, Coins } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
+import { toast } from "../../ui/Toaster";
 import axios from "axios";
 
 const AddReward = () => {
@@ -10,6 +11,7 @@ const AddReward = () => {
   const [formData, setFormData] = useState({
     title: "",
     category: "",
+    points: "",
     description: "",
     email: "", 
   });
@@ -19,29 +21,36 @@ const AddReward = () => {
     setFormData({ ...formData, [field]: value });
 
     if (field === "email") {
-      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      const isValid = value.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
       setValidEmail(isValid);
     }
   };
 
   const resetForm = () => {
-    setFormData({ title: "", category: "", description: "", email: "" })
+    setFormData({ title: "", category: "", points: "", description: "", email: "" })
   }
 
   const validateForm = () => {
-    if (!formData.email.trim()) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
+    if (!formData.title.trim()) return "Title is required";
+    if (!formData.category.trim()) return "Category is required";
+    if (!formData.description.trim()) return "Description is required";
+    // Email is optional, but if provided, it must be valid
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      return "Invalid email format";
+    }
     return null;
   };
 
   const handleSubmit = async() => {
     try {
       const err = validateForm();
-      if (err) { alert(err); return }
+      if (err) { toast.error(err); return }
       await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {withCredentials: true});
 
       resetForm();
+      toast.success("Reward Added Successfully")
     } catch (error) {
+      toast.error("Failed to Add Rewards")
       console.log(error);
     }
   };
@@ -71,17 +80,9 @@ const AddReward = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Create and assign incentives directly to specific employees.</p>
             </div>
             <div className="relative group flex-1 sm:flex-none">
-              <button disabled={!validEmail} onClick={handleSubmit}
-                className={`w-full px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-colors
-                ${validEmail ? "bg-black hover:bg-zinc-800" : "bg-zinc-400 cursor-not-allowed"}`} >
+              <button onClick={handleSubmit} className={`w-full px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-colors bg-black hover:bg-zinc-800`} >
                 Assign Reward
               </button>
-
-              {!validEmail && (
-                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs px-3 py-1 rounded-md whitespace-nowrap">
-                  Enter a valid email first
-                </div>
-              )}
             </div>
           </div>
 
@@ -116,8 +117,8 @@ const AddReward = () => {
                     </div>
                   </div>
 
-                  {/* Category Select */}
-                  <div className="md:col-span-2 flex flex-col gap-2 mb-6">
+                  {/* Category Select - Changed to md:col-span-1 */}
+                  <div className="md:col-span-1 flex flex-col gap-2 mb-6">
                     <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
                       Reward Category
                     </label>
@@ -127,6 +128,23 @@ const AddReward = () => {
                         value={formData.category}
                         placeholder="Category"
                         onChange={handleChange("category")}
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                       />
+                    </div>
+                  </div>
+
+                  {/* Points Input - Added as md:col-span-1 */}
+                  <div className="md:col-span-1 flex flex-col gap-2 mb-6">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
+                      Reward Points <span className="normal-case font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative flex items-center">
+                      <Coins size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <input
+                        type="number"
+                        value={formData.points}
+                        placeholder="e.g. 500"
+                        onChange={handleChange("points")}
                         className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
                        />
                     </div>
@@ -166,7 +184,7 @@ const AddReward = () => {
                 
                 <div className="flex flex-col gap-2 mb-6">
                   <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
-                    Reward Email ID
+                    Reward Email ID <span className="normal-case font-normal">(Optional)</span>
                   </label>
                   <div className="relative flex items-center">
                     <Mail size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />

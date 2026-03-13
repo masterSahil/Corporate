@@ -80,8 +80,8 @@ module.exports.getAllReward = async (req, res) => {
 
 module.exports.createReward = async (req, res) => {
     try {
-        const {title, category, description, email, status} = req.body;
-        const newReward = new rewardSchema({title, category, description, email, 
+        const {title, category, description, email, points, status} = req.body;
+        const newReward = new rewardSchema({title, category, description, email, points,
             status: email ? "Issued" : "Unassigned"});
 
         await newReward.save();
@@ -99,9 +99,10 @@ module.exports.createReward = async (req, res) => {
 
 module.exports.updateReward = async (req, res) => {
     try {
-        const {title, category, description, email, isDeleted, status} = req.body;
+        const {title, category, description, email, isDeleted, points, status} = req.body;
         const updated = await rewardSchema.findByIdAndUpdate(req.params.id, {title, category, 
-            description, email, isDeleted, status}, {returnDocument: 'after'});
+            description, email, isDeleted, status: email ? "Issued" : "Unassigned", points},
+             {returnDocument: 'after'});
 
         res.status(200).json({
             success: true,

@@ -23,6 +23,7 @@ import SoftDeletedRewards from "./pages/Rewards/DeletedRewards";
 import UpdateAdmin from "./pages/Admins/UpdateAdmin";
 import UpdateEmployee from "./pages/Employees/UpdateEmployee";
 import UpdateReward from "./pages/Rewards/UpdateReward";
+import { Toaster } from "./ui/Toaster";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -123,6 +124,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
+      <Toaster />
     </AuthContext.Provider>
   );
 }
