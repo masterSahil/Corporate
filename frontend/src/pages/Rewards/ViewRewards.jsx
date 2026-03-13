@@ -42,14 +42,6 @@ const ViewRewards = () => {
     }
   }
 
-  const updateReward = async(id) => {
-    try {
-      console.log("hjdjh");
-    } catch (error) {
-      
-    }
-  }
-
   useEffect(() => {
     getData();
   }, [])
@@ -206,7 +198,7 @@ const ViewRewards = () => {
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={()=>updateReward(reward._id)} className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
+                          <button onClick={()=>navigate(`/rewards/update/${reward._id}`)} className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
                             <Edit2 size={18} />
                           </button>
                           <button onClick={()=>softDelete(reward._id)} className={`p-2 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Reward">

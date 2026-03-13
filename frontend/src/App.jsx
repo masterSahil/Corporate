@@ -22,6 +22,7 @@ import UpdateProduct from "./pages/Products/UpdateProduct";
 import SoftDeletedRewards from "./pages/Rewards/DeletedRewards";
 import UpdateAdmin from "./pages/Admins/UpdateAdmin";
 import UpdateEmployee from "./pages/Employees/UpdateEmployee";
+import UpdateReward from "./pages/Rewards/UpdateReward";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -112,6 +113,8 @@ export default function App() {
           <Route path="/rewards/manage" element={loggedIn && (role === "super_admin" || role === "admin") ? <ViewRewards /> : <Navigate to="/" />} />
 
           <Route path="/rewards/deleted" element={loggedIn && (role === "super_admin" || role === "admin") ? <SoftDeletedRewards /> : <Navigate to="/" />} />
+
+          <Route path="/rewards/update/:id" element={loggedIn && (role === "super_admin" || role === "admin") ? <UpdateReward /> : <Navigate to="/" />} />
 
           {/* Settings */}
           <Route path="/settings" element={loggedIn ? <Settings /> : <Navigate to="/" />} />

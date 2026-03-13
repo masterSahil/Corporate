@@ -1,12 +1,19 @@
-import React, { useState } from "react";
-import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2, Mail } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Menu, Gift, Tag, AlignLeft, UserCheck, ShieldCheck, CheckCircle2, Mail, ArrowLeft, Loader2 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
 
-const AddReward = () => {
+const UpdateReward = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [validEmail, setValidEmail] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -14,46 +21,89 @@ const AddReward = () => {
     email: "", 
   });
 
+    const fetchReward = async () => {
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
+            const reward = res.data.reward?.find(r => r._id === id);
+
+            if (reward) {
+                setFormData({
+                    title: reward.title || "",
+                    category: reward.category || "",
+                    description: reward.description || "",
+                    email: reward.email || "",
+                });
+                if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reward.email)) {
+                    setValidEmail(true);
+                }
+            } else {
+                alert("Reward not found");
+                navigate(-1);
+            }
+        } catch (error) {
+            console.error("Failed to fetch reward:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+  useEffect(() => {
+    fetchReward();
+  }, []);
+
   const handleChange = (field) => (e) => {
     const value = e.target.value;
     setFormData({ ...formData, [field]: value });
-
+    
     if (field === "email") {
-      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-      setValidEmail(isValid);
+      setValidEmail(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
     }
   };
 
-  const resetForm = () => {
-    setFormData({ title: "", category: "", description: "", email: "" })
-  }
-
   const validateForm = () => {
+    if (!formData.title.trim()) return "Title is required";
+    if (!formData.category.trim()) return "Category is required";
     if (!formData.email.trim()) return "Email is required";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
     return null;
   };
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     try {
       const err = validateForm();
-      if (err) { alert(err); return }
-      await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {withCredentials: true});
+      if (err) {
+        alert(err);
+        return;
+      }
+      setIsSubmitting(true);
+      await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${id}`, formData, { withCredentials: true });
 
-      resetForm();
+      alert("Reward updated successfully!");
+      navigate(-1);
     } catch (error) {
+      alert(error.response?.data?.message || "Failed to update reward");
       console.log(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Tailwind arbitrary variants for custom scrollbar
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-slate-400" size={40} />
+      </div>
+    );
+  }
+
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <main className={`flex-1 bg-slate-50 ${customScrollbarClasses}`}>
+      <main className={`flex-1 bg-slate-50 ${customScrollbarClasses} flex flex-col`}>
         
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
@@ -62,26 +112,30 @@ const AddReward = () => {
           </button>
         </div>
 
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
           
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-10">
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Assign Reward</h1>
-              <p className={`text-base ${theme.textMuted} mt-2`}>Create and assign incentives directly to specific employees.</p>
-            </div>
-            <div className="relative group flex-1 sm:flex-none">
-              <button disabled={!validEmail} onClick={handleSubmit}
-                className={`w-full px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-colors
-                ${validEmail ? "bg-black hover:bg-zinc-800" : "bg-zinc-400 cursor-not-allowed"}`} >
-                Assign Reward
+          {/* Header Block */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+            <div className="flex items-center gap-4">
+              <button type="button" onClick={() => navigate(-1)} className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors hidden sm:block">
+                <ArrowLeft size={20} />
               </button>
-
-              {!validEmail && (
-                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs px-3 py-1 rounded-md whitespace-nowrap">
-                  Enter a valid email first
-                </div>
-              )}
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">Edit Reward</h1>
+                <p className={`text-sm ${theme.textMuted} mt-1`}>Update incentive details and assignment for this reward.</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4 w-full sm:w-auto mt-2 sm:mt-0">
+              <button type="button" onClick={() => navigate(-1)} 
+                className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+                Cancel
+              </button>
+              <button onClick={handleSubmit} disabled={isSubmitting}
+                className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 ${isSubmitting ? "bg-slate-400 cursor-not-allowed" : "bg-black hover:bg-zinc-800 shadow-lg"} transition-colors`}>
+                {isSubmitting && <Loader2 className="animate-spin" size={16} />}
+                {isSubmitting ? "Updating..." : "Update Reward"}
+              </button>
             </div>
           </div>
 
@@ -106,29 +160,22 @@ const AddReward = () => {
                     </label>
                     <div className="relative flex items-center">
                       <Gift size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                      <input
-                        type="text"
-                        value={formData.title}
-                        onChange={handleChange("title")}
+                      <input type="text" value={formData.title} onChange={handleChange("title")}
                         placeholder="e.g. $100 Amazon Gift Card, Weekend Getaway..."
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                      />
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
                     </div>
                   </div>
 
-                  {/* Category Select */}
+                  {/* Category Text Input */}
                   <div className="md:col-span-2 flex flex-col gap-2 mb-6">
                     <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
                       Reward Category
                     </label>
                     <div className="relative flex items-center">
                       <Tag size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                      <input
-                        value={formData.category}
-                        placeholder="Category"
-                        onChange={handleChange("category")}
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-                       />
+                      <input type="text" value={formData.category} onChange={handleChange("category")}
+                        placeholder="e.g. Bonus, Voucher, Recognition"
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
                     </div>
                   </div>
                 </div>
@@ -140,12 +187,9 @@ const AddReward = () => {
                   </label>
                   <div className="relative">
                     <AlignLeft size={18} className={`absolute left-4 top-3.5 ${theme.textMuted} pointer-events-none`} />
-                    <textarea
-                      value={formData.description}
-                      onChange={handleChange("description")}
+                    <textarea value={formData.description} onChange={handleChange("description")}
                       placeholder="Briefly describe the reward, redemption rules, and value..."
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-35 resize-y`}
-                    />
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-35 resize-y`}/>
                   </div>
                 </div>
               </div>
@@ -170,13 +214,7 @@ const AddReward = () => {
                   </label>
                   <div className="relative flex items-center">
                     <Mail size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                    <input
-                      type="text"
-                      value={formData.email}
-                      onChange={handleChange("email")}
-                      placeholder="e.g. employee@company.com"
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                    />
+                    <input type="text" value={formData.email} onChange={handleChange("email")} placeholder="e.g. employee@company.com" className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
                   </div>
                 </div>
               </div>
@@ -188,14 +226,13 @@ const AddReward = () => {
                 <ShieldCheck size={32} className="text-zinc-400 mb-5 relative z-10" />
                 <h3 className="text-lg font-bold mb-3 relative z-10">Issuance Protocol</h3>
                 <p className="text-sm text-zinc-400 relative z-10 mb-6 leading-relaxed flex-1">
-                  This reward will be permanently credited to the specified user's profile.
-                </p>
+                  Modifying this assignment will transfer the reward. Enterprise audit logs will record this update. </p>
 
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest border-t border-zinc-700/50 pt-5 relative z-10 mt-auto">
                   <span className="text-zinc-400">Targeting Status</span>
                   <span className={`${validEmail ? 'text-emerald-400' : 'text-zinc-500'} flex items-center gap-1.5 transition-colors`}>
-                    {validEmail === true ? <CheckCircle2 size={14} /> : <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full"></span>}
-                    {validEmail === true ? "Valid Email" : "Pending Email"}
+                    {validEmail ? <CheckCircle2 size={14} /> : <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full"></span>}
+                    {validEmail ? "Valid Email" : "Pending Email"}
                   </span>
                 </div>
               </div>
@@ -207,4 +244,4 @@ const AddReward = () => {
   );
 };
 
-export default AddReward;
+export default UpdateReward;
