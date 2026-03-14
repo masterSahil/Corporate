@@ -177,11 +177,11 @@ const SoftDeletedAdmins = () => {
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Admin Profile</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Email</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Deleted On</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
+                    <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Admin Profile</th>
+                    <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Email</th>
+                    <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
+                    <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Deleted On</th>
+                    <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted} `}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
@@ -230,14 +230,10 @@ const SoftDeletedAdmins = () => {
                           <button onClick={()=>handleRestore(admin._id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm`} title="Restore Admin">
                             <ArchiveRestore size={14} /> Restore
                           </button>
-                          <button onClick={()=>handlePermanentDelete(admin._id)} className={`p-1.5 rounded-lg text-rose-500 hover:bg-rose-100 hover:text-rose-700 transition-colors tooltip-trigger`} title="Permanently Delete">
-                            <Trash2 size={18} />
+                          <button onClick={()=>handleRestore(admin._id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-500 hover:bg-rose-100 hover:text-rose-700 border transition-colors shadow-sm`} title="Restore Admin">
+                            <Trash2 size={18} /> Delete
                           </button>
                         </div>
-                        {/* Mobile visible fallback */}
-                        <button className="sm:hidden p-2 text-slate-400 hover:text-black transition-colors">
-                          <MoreVertical size={18} />
-                        </button>
                       </td>
 
                     </tr>

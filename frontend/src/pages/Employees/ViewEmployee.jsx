@@ -58,9 +58,10 @@ const ViewEmployees = () => {
   const deleteEmployee = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_KEY}/delete/${id}`, { isDeleted: true, deletedAt: new Date() });
-      console.log("success");
+      toast.success("success");
       getData();
     } catch (error) {
+      toast.error(error);
       console.log(error);
     }
   };
@@ -214,10 +215,6 @@ const ViewEmployees = () => {
                               <Trash2 size={16} />
                             </button>
                           </div>
-                          {/* Mobile visible fallback */}
-                          <button className="hidden p-2 text-slate-400 hover:text-black">
-                            <MoreVertical size={16} />
-                          </button>
                         </td>
 
                       </tr>

@@ -24,6 +24,7 @@ import UpdateAdmin from "./pages/Admins/UpdateAdmin";
 import UpdateEmployee from "./pages/Employees/UpdateEmployee";
 import UpdateReward from "./pages/Rewards/UpdateReward";
 import { Toaster } from "./ui/Toaster";
+import { RefreshCw } from "lucide-react";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -67,8 +68,17 @@ export default function App() {
     verifyLogin_Role();
   }, [])
 
-  if (loading) {
-    return <div>Loading...</div>;
+  {
+    loading && (
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
+          <RefreshCw className="animate-spin text-slate-700" size={22} />
+          <span className="text-sm font-semibold text-slate-800">
+            Loading Screen...
+          </span>
+        </div>
+      </div>
+    )
   }
 
   return (
