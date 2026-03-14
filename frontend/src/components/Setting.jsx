@@ -217,15 +217,21 @@ const Settings = () => {
 
                 {/* Email */}
                 <div className="flex flex-col gap-2">
-                  <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Email</label>
+                  <div className="flex justify-between items-end">
+                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Email</label>
+                    <span className="text-[11px] text-slate-400 italic">Ask admin to change</span>
+                  </div>
+                  
                   <div className="relative flex items-center">
                     <Mail size={18} className={`absolute left-4 ${theme.textMuted}`} />
                     <input
                       type="email"
                       name="email"
-                      readOnly value={formData.email} title="Email cannot be changed"
+                      readOnly 
+                      value={formData.email} 
                       onChange={handleChange}
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none cursor-not-allowed focus:border-black focus:ring-1 focus:ring-black transition-all`} />
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-500 text-sm rounded-lg pl-11 pr-4 py-3 outline-none cursor-not-allowed transition-all`} 
+                    />
                   </div>
                 </div>
 
