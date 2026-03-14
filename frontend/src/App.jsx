@@ -69,10 +69,6 @@ export default function App() {
     verifyLogin_Role();
   }, [])
 
-  useEffect(() => {
-    verifyLogin_Role();
-  }, [])
-
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
@@ -93,7 +89,7 @@ export default function App() {
           <Route path="/" element={loggedIn ? <Navigate to="/dashboard" /> : <AuthPage />} />
 
           {/* Dashboard - All Logged In Users */}
-          <Route path="/dashboard" element={loggedIn && role === "super_admin" ? <SuperAdmin /> : <Navigate to="/" />} />
+          <Route path="/dashboard" element={loggedIn && (role === "super_admin" || role === "admin") ? <SuperAdmin /> : <Navigate to="/" />} />
 
           {/* Admins Manage - Super Admin Only */}
           <Route path="/admins/add" element={loggedIn && role === "super_admin" ? <AddAdmin /> : 
