@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, UserPlus, FileText, CheckCircle2, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { 
+  Menu, Users, Shield, Package, Gift, UserCheck, Zap, 
+  Trash2, Download, Plus, UserPlus, FileText, CheckCircle2, Clock 
+} from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import { toast } from "../../ui/Toaster";
-import axios from "axios";
-import { Link } from "react-router-dom";
 
+// --- CONSTANTS ---
 const donutColors = ['#09090b', '#52525b', '#a1a1aa', '#e4e4e7', '#71717a'];
 const donutBgClasses = ['bg-[#09090b]', 'bg-[#52525b]', 'bg-[#a1a1aa]', 'bg-[#e4e4e7]', 'bg-[#71717a]'];
 
@@ -18,27 +22,30 @@ const quickActions = [
 ];
 
 const Dashboard = () => {
+  // --- STATE ---
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [deletedUsers, setDeletedUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [rewards, setRewards] = useState([]);
 
+  // --- DATA FETCHING ---
   const getData = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
-      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
-      const res3 = await axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true });
-      const res4 = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true });
-      
-      if (res.data?.success) setUsers(res.data.users || []);
-      if (res2.data?.success) setDeletedUsers(res2.data.users || []);
-      if (res3.data?.success) setProducts(res3.data.product || []);
-      if (res4.data?.success) setRewards(res4.data.reward || []);
+      const [resUsers, resDeleted, resProducts, resRewards] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true })
+      ]);
 
+      if (resUsers.data?.success) setUsers(resUsers.data.users || []);
+      if (resDeleted.data?.success) setDeletedUsers(resDeleted.data.users || []);
+      if (resProducts.data?.success) setProducts(resProducts.data.product || []);
+      if (resRewards.data?.success) setRewards(resRewards.data.reward || []);
     } catch (error) {
       toast.error(error.message || "Failed to fetch data");
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -47,9 +54,13 @@ const Dashboard = () => {
   }, []);
 
   // --- DYNAMIC DATA CALCULATIONS ---
-  const totalEmployeesCount = users.filter(u => u.role?.toLowerCase() === 'employee').length;
-  const activeEmployeesCount = users.filter(u => u.role?.toLowerCase() === 'employee' && !u.isDeleted).length;
-  const adminsCount = users.filter(u => u.role?.toLowerCase() === 'admin' || u.role?.toLowerCase() === 'super_admin').length;
+  // 1. User & Admin Metrics
+  const employeesOnly = users.filter(u => u.role?.toLowerCase() === 'employee');
+  const totalEmployeesCount = employeesOnly.length;
+  const activeEmployeesCount = employeesOnly.filter(u => !u.isDeleted).length;
+  const adminsCount = users.filter(u => ['admin', 'super_admin'].includes(u.role?.toLowerCase())).length;
+  
+  // 2. Product & Reward Metrics
   const uniqueBrandsCount = new Set(products.map(p => p.brand?.toLowerCase())).size;
   const uniqueRewardCategories = new Set(rewards.map(r => r.category)).size;
 
@@ -64,22 +75,19 @@ const Dashboard = () => {
     { id: 8, title: "Deleted Records", value: deletedUsers.length.toString(), icon: Trash2, badge: deletedUsers.length > 0 ? "Warning" : null, badgeColor: "bg-red-50 text-red-600", alert: deletedUsers.length > 0 },
   ];
 
-  // Calculate Department Spread dynamically (Employees Only)
-  const employeesOnly = users.filter(u => u.role?.toLowerCase() === 'employee');
+  // 3. Department Spread
   const deptCounts = {};
-  
   employeesOnly.forEach(u => {
     const dept = u.department || 'Unassigned';
     deptCounts[dept] = (deptCounts[dept] || 0) + 1;
   });
   
-  const dynamicDeptData = Object.keys(deptCounts).map(name => ({name,
-    value: deptCounts[name],
-    percentage: Math.round((deptCounts[name] / (employeesOnly.length || 1)) * 100)
+  const dynamicDeptData = Object.keys(deptCounts).map(name => ({ name, value: deptCounts[name],
+    percentage: Math.round((deptCounts[name] / (totalEmployeesCount || 1)) * 100)
   }));
-  const safeDeptData = dynamicDeptData.length > 0 ? dynamicDeptData : [{ name: 'No Data', value: 1, percentage: 0 }];
+  const safeDeptData = dynamicDeptData.length>0 ? dynamicDeptData: [{name: 'No Data', value: 1, percentage: 0}];
 
-  // Generate dynamic insights
+  // 4. System Insights
   const uniqueProductCategories = new Set(products.map(p => p.category)).size;
   const uniqueRewardRecipients = new Set(rewards.map(r => r.email)).size;
   
@@ -88,7 +96,7 @@ const Dashboard = () => {
     { id: 2, text: "Rewards have been distributed to", highlight: uniqueRewardRecipients.toString(), suffix: "unique employees.", icon: Gift, iconColor: "text-amber-400" },
   ];
 
-  // Generate dynamic activity feed from latest array items
+  // 5. Activity Feed
   const activityFeed = [];
   if (rewards.length > 0) {
     const latestReward = rewards[rewards.length - 1];
@@ -103,9 +111,8 @@ const Dashboard = () => {
     activityFeed.push({ id: 3, user: "Inventory", action: `Added ${latestProduct.name} (${latestProduct.brand})`, time: "Recent" });
   }
 
-  // Lists for tables
-  const recentEmployeesList = users.filter(u => u.role?.toLowerCase() === "employee")
-  .slice(-5).reverse().map(u => ({
+  // 6. Recent Lists
+  const recentEmployeesList = employeesOnly.slice(-5).reverse().map(u => ({
     id: u._id,
     name: u.email.split('@')[0],
     role: u.profile?.role || "Employee",
@@ -113,8 +120,6 @@ const Dashboard = () => {
     status: u.isDeleted ? "Pending" : "Active",
     initial: (u.profile?.name || u.email)[0].toUpperCase()
   }));
-
-  console.log(users.filter(u => u.role?.toLowerCase() === "employee"))
 
   const recentRewardsList = rewards.slice(-5).reverse().map(r => ({
     id: r._id,
@@ -124,14 +129,37 @@ const Dashboard = () => {
     status: r.status 
   }));
 
+  // --- HANDLERS ---
+  const handleExportCSV = () => {
+    let csvContent = "Metric,Value\n";
+    topStats.forEach(stat => { csvContent += `"${stat.title}","${stat.value}"\n`; });
+    csvContent += "\nDepartment,Employee Count,Percentage\n";
+    safeDeptData.forEach(dept => {
+      if (dept.name !== 'No Data') {
+        csvContent += `"${dept.name}","${dept.value}","${dept.percentage}%"\n`;
+      }
+    });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `dashboard_summary_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
+  // --- RENDER ---
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses} flex flex-col`}>
         
+        {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}>
             <Menu size={20} /> <span className="text-sm font-medium">Menu</span>
@@ -140,18 +168,23 @@ const Dashboard = () => {
 
         <div className="p-6 max-w-7xl mx-auto w-full space-y-8 pb-12">
           
+          {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900">System Overview</h1>
               <p className="text-zinc-500 text-sm mt-1">Real-time management and analytics across the enterprise.</p>
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              <button className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all shadow-sm">
+              <button 
+                onClick={handleExportCSV} 
+                className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all shadow-sm"
+              >
                 <Download size={18} /> Export
               </button>
             </div>
           </div>
 
+          {/* Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {topStats.map((stat) => {
               const Icon = stat.icon;
@@ -175,6 +208,8 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Department Chart */}
             <div className={`${theme.cardBg} p-6 lg:p-8 rounded-2xl border ${theme.border} shadow-sm flex flex-col`}>
               <h2 className="text-lg font-bold text-zinc-900 mb-6">Department Spread</h2>
               <div className="flex-1 min-h-55 relative flex items-center justify-center">
@@ -206,6 +241,7 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* Quick Actions */}
             <div className={`${theme.cardBg} p-6 lg:p-8 rounded-2xl border ${theme.border} shadow-sm`}>
               <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-3 lg:gap-4">
@@ -221,8 +257,8 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* Insights & Feed */}
             <div className="space-y-6 flex flex-col">
-              
               <div className="bg-zinc-900 text-white p-6 lg:p-8 rounded-2xl shadow-lg">
                 <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-400 mb-5">System Insights</h2>
                 <ul className="space-y-4">
@@ -264,12 +300,13 @@ const Dashboard = () => {
                   )}
                 </div>
               </div>
-
             </div>
           </div>
 
+          {/* Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
+            {/* Employees Table */}
             <div className={`${theme.cardBg} rounded-2xl border ${theme.border} shadow-sm overflow-hidden flex flex-col`}>
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 gap-4">
                 <div>
@@ -318,6 +355,7 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* Rewards Table */}
             <div className={`${theme.cardBg} rounded-2xl border ${theme.border} shadow-sm overflow-hidden flex flex-col`}>
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 gap-4">
                 <div>
@@ -359,7 +397,6 @@ const Dashboard = () => {
                 </table>
               </div>
             </div>
-
           </div>
         </div>
       </main>
