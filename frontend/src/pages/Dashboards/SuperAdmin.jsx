@@ -282,7 +282,7 @@ const Dashboard = () => {
               <div className={`${theme.cardBg} p-6 rounded-2xl border ${theme.border} shadow-sm flex-1`}>
                 <div className="flex justify-between items-center mb-5">
                   <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-500">Recent Activity</h2>
-                  <button className="text-[10px] font-bold tracking-wider uppercase text-zinc-900 hover:underline">View All</button>
+                  <Link to="/system-logs" className="text-sm font-semibold text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg hover:bg-zinc-50 transition-colors">See all</Link>
                 </div>
                 <div className="space-y-5">
                   {activityFeed.length > 0 ? activityFeed.map((feed) => (
@@ -313,7 +313,7 @@ const Dashboard = () => {
                   <h2 className="text-lg font-bold text-zinc-900">Recent Employees</h2>
                   <p className="text-xs text-zinc-500 mt-1">Latest onboarded personnel across departments.</p>
                 </div>
-                <button className="text-sm font-semibold text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg hover:bg-zinc-50 transition-colors">See all</button>
+                <Link to="/employees/manage" className="text-sm font-semibold text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg hover:bg-zinc-50 transition-colors">See all</Link>
               </div>
               <div className={`overflow-x-auto ${customScrollbarClasses}`}>
                 <table className="w-full text-left whitespace-nowrap">
@@ -362,7 +362,7 @@ const Dashboard = () => {
                   <h2 className="text-lg font-bold text-zinc-900">Recent Rewards</h2>
                   <p className="text-xs text-zinc-500 mt-1">Latest reward distributions.</p>
                 </div>
-                <button className="text-sm font-semibold text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg hover:bg-zinc-50 transition-colors">See all</button>
+                <Link to="/rewards/manage" className="text-sm font-semibold text-zinc-900 border border-zinc-200 px-4 py-2 rounded-lg hover:bg-zinc-50 transition-colors">See all</Link>
               </div>
               <div className={`overflow-x-auto ${customScrollbarClasses}`}>
                 <table className="w-full text-left whitespace-nowrap">
