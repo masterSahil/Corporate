@@ -223,10 +223,9 @@ const Settings = () => {
                     <input
                       type="email"
                       name="email"
-                      value={formData.email}
+                      readOnly value={formData.email} title="Email cannot be changed"
                       onChange={handleChange}
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                    />
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none cursor-not-allowed focus:border-black focus:ring-1 focus:ring-black transition-all`} />
                   </div>
                 </div>
 
