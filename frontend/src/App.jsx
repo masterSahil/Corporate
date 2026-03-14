@@ -25,6 +25,7 @@ import UpdateReward from "./pages/Rewards/UpdateReward";
 import { Toaster } from "./ui/Toaster";
 import { RefreshCw } from "lucide-react";
 import SuperAdmin from "./pages/Dashboards/SuperAdmin";
+import SystemLogs from "./components/SystemLogs";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -130,6 +131,9 @@ export default function App() {
           <Route path="/rewards/deleted" element={loggedIn && (role === "super_admin" || role === "admin") ? <SoftDeletedRewards /> : <Navigate to="/" />} />
 
           <Route path="/rewards/update/:id" element={loggedIn && (role === "super_admin" || role === "admin") ? <UpdateReward /> : <Navigate to="/" />} />
+
+          {/* System Logs */}
+          <Route path="/system-logs" element={loggedIn && (role === "super_admin" || role === "admin") ? <SystemLogs /> : <Navigate to="/" />} />
 
           {/* Settings */}
           <Route path="/settings" element={loggedIn ? <Settings /> : <Navigate to="/" />} />

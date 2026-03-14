@@ -1,76 +1,125 @@
-import React, { useState } from "react";
-import { 
-  Menu, Users, Shield, Package, Gift, UserCheck, 
-  AlertCircle, Zap, Trash2, Download, Plus, UserPlus, FileText, 
-  CheckCircle2, Clock
-} from "lucide-react";
-import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip 
-} from "recharts";
+import React, { useState, useEffect } from "react";
+import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, Plus, UserPlus, FileText, CheckCircle2, Clock } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
+import { toast } from "../../ui/Toaster";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
-// ==========================================
-// DEMO DATA OBJECTS (Replace with API later)
-// ==========================================
-
-const topStats = [
-  { id: 1, title: "Total Employees", value: "1,240", icon: Users, badge: "+12%", badgeColor: "bg-emerald-50 text-emerald-700" },
-  { id: 2, title: "Total Admins", value: "15", icon: Shield, badge: null, badgeColor: "" },
-  { id: 3, title: "Total Products", value: "450", icon: Package, badge: null, badgeColor: "" },
-  { id: 4, title: "Rewards Issued", value: "3,200", icon: Gift, badge: null, badgeColor: "" },
-  { id: 5, title: "Active Employees", value: "1,180", icon: UserCheck, badge: null, badgeColor: "" },
-  { id: 6, title: "Products in Stock", value: "412", icon: Package, badge: "Low Stock", badgeColor: "bg-amber-50 text-amber-700" },
-  { id: 7, title: "Issued Today", value: "18", icon: Zap, badge: null, badgeColor: "" },
-  { id: 8, title: "Deleted Records", value: "54", icon: Trash2, badge: "Warning", badgeColor: "bg-red-50 text-red-600", alert: true },
-];
-
-const deptData = [
-  { name: 'Engineering', value: 42 }, 
-  { name: 'Sales', value: 25 }, 
-  { name: 'Marketing', value: 18 }, 
-  { name: 'Other', value: 15 },
-];
-const donutColors = ['#09090b', '#52525b', '#a1a1aa', '#e4e4e7'];
+const donutColors = ['#09090b', '#52525b', '#a1a1aa', '#e4e4e7', '#71717a'];
+const donutBgClasses = ['bg-[#09090b]', 'bg-[#52525b]', 'bg-[#a1a1aa]', 'bg-[#e4e4e7]', 'bg-[#71717a]'];
 
 const quickActions = [
-  { id: 1, label: "Add Employee", icon: UserPlus },
-  { id: 2, label: "Create Reward", icon: Gift },
-  { id: 3, label: "Add Product", icon: Package },
-  { id: 4, label: "Audit Logs", icon: FileText },
+  { id: 1, label: "Add Employee", icon: UserPlus, navigate: "/employees/add" },
+  { id: 2, label: "Create Reward", icon: Gift, navigate: "/rewards/add" },
+  { id: 3, label: "Add Product", icon: Package, navigate: "/products/add" },
+  { id: 4, label: "Audit Logs", icon: FileText, navigate: "/system-logs" },
 ];
-
-const systemInsights = [
-  { id: 1, text: "Reward issuance is up", highlight: "40%", suffix: "this week.", icon: Zap, iconColor: "text-zinc-300" },
-  { id: 2, text: "8 items in 'Tech Gadgets' are", highlight: "low in stock", suffix: ".", icon: AlertCircle, iconColor: "text-amber-400" },
-];
-
-const activityFeed = [
-  { id: 1, user: "Marcus Thorne", action: "Created new reward: Sales Bonus", time: "2 mins ago" },
-  { id: 2, user: "Sarah Connor", action: "Added 45 new employees to Engineering", time: "1 hour ago" },
-  { id: 3, user: "System Audit", action: "Inventory restock: 100x Headphones", time: "3 hours ago" },
-];
-
-const recentEmployees = [
-  { id: 1, name: "David Miller", role: "Lead Designer", dept: "Creative", status: "Active", initial: "D" },
-  { id: 2, name: "Sophia Chen", role: "Senior Dev", dept: "Engineering", status: "Active", initial: "S" },
-  { id: 3, name: "Robert Fox", role: "Sales Associate", dept: "Marketing", status: "Pending", initial: "R" },
-];
-
-const recentRewards = [
-  { id: 1, title: "Performance Excellence", recipient: "Alicia Keys", value: "$250.00", status: "Disbursed" },
-  { id: 2, title: "Holiday Gift Card", recipient: "Mark Sloan", value: "$50.00", status: "Processing" },
-  { id: 3, title: "Client Acquisition", recipient: "James Wilson", value: "$500.00", status: "Disbursed" },
-];
-
-// ==========================================
-// MAIN COMPONENT
-// ==========================================
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [deletedUsers, setDeletedUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [rewards, setRewards] = useState([]);
 
-  // Tailwind arbitrary variants to style the scrollbar uniformly
+  const getData = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
+      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
+      const res3 = await axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true });
+      const res4 = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true });
+      
+      if (res.data?.success) setUsers(res.data.users || []);
+      if (res2.data?.success) setDeletedUsers(res2.data.users || []);
+      if (res3.data?.success) setProducts(res3.data.product || []);
+      if (res4.data?.success) setRewards(res4.data.reward || []);
+
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch data");
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  // --- DYNAMIC DATA CALCULATIONS ---
+  const totalEmployeesCount = users.filter(u => u.role?.toLowerCase() === 'employee').length;
+  const activeEmployeesCount = users.filter(u => u.role?.toLowerCase() === 'employee' && !u.isDeleted).length;
+  const adminsCount = users.filter(u => u.role?.toLowerCase() === 'admin' || u.role?.toLowerCase() === 'super_admin').length;
+  const uniqueBrandsCount = new Set(products.map(p => p.brand?.toLowerCase())).size;
+  const uniqueRewardCategories = new Set(rewards.map(r => r.category)).size;
+
+  const topStats = [
+    { id: 1, title: "Total Employees", value: totalEmployeesCount.toString(), icon: Users, badge: null, badgeColor: "" },
+    { id: 2, title: "Total Admins", value: adminsCount.toString(), icon: Shield, badge: null, badgeColor: "" },
+    { id: 3, title: "Total Products", value: products.length.toString(), icon: Package, badge: null, badgeColor: "" },
+    { id: 4, title: "Rewards Issued", value: rewards.length.toString(), icon: Gift, badge: null, badgeColor: "" },
+    { id: 5, title: "Active Employees", value: activeEmployeesCount.toString(), icon: UserCheck, badge: null, badgeColor: "" },
+    { id: 6, title: "Product Brands", value: uniqueBrandsCount.toString(), icon: Package, badge: null, badgeColor: "" },
+    { id: 7, title: "Reward Categories", value: uniqueRewardCategories.toString(), icon: Zap, badge: null, badgeColor: "" },
+    { id: 8, title: "Deleted Records", value: deletedUsers.length.toString(), icon: Trash2, badge: deletedUsers.length > 0 ? "Warning" : null, badgeColor: "bg-red-50 text-red-600", alert: deletedUsers.length > 0 },
+  ];
+
+  // Calculate Department Spread dynamically
+  const deptCounts = {};
+  users.forEach(u => {
+    const dept = u.profile?.department || 'Unassigned';
+    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+  });
+  
+  const dynamicDeptData = Object.keys(deptCounts).map(name => ({
+    name,
+    value: deptCounts[name],
+    percentage: Math.round((deptCounts[name] / (users.length || 1)) * 100)
+  }));
+  const safeDeptData = dynamicDeptData.length > 0 ? dynamicDeptData : [{ name: 'No Data', value: 1, percentage: 0 }];
+
+  // Generate dynamic insights
+  const uniqueProductCategories = new Set(products.map(p => p.category)).size;
+  const uniqueRewardRecipients = new Set(rewards.map(r => r.email)).size;
+  
+  const systemInsights = [
+    { id: 1, text: "Inventory catalog spans across", highlight: uniqueProductCategories.toString(), suffix: "unique categories.", icon: Package, iconColor: "text-zinc-300" },
+    { id: 2, text: "Rewards have been distributed to", highlight: uniqueRewardRecipients.toString(), suffix: "unique employees.", icon: Gift, iconColor: "text-amber-400" },
+  ];
+
+  // Generate dynamic activity feed from latest array items
+  const activityFeed = [];
+  if (rewards.length > 0) {
+    const latestReward = rewards[rewards.length - 1];
+    activityFeed.push({ id: 1, user: "Reward System", action: `Issued '${latestReward.title}' to ${latestReward.email.split('@')[0]}`, time: "Recent" });
+  }
+  if (users.length > 0) {
+    const latestUser = users[users.length - 1];
+    activityFeed.push({ id: 2, user: "HR Module", action: `Onboarded new employee: ${latestUser.email.split('@')[0]}`, time: "Recent" });
+  }
+  if (products.length > 0) {
+    const latestProduct = products[products.length - 1];
+    activityFeed.push({ id: 3, user: "Inventory", action: `Added ${latestProduct.name} (${latestProduct.brand})`, time: "Recent" });
+  }
+
+  // Lists for tables
+  const recentEmployeesList = users.slice(-5).reverse().map(u => ({
+    id: u._id,
+    name: u.profile?.name || u.email.split('@')[0],
+    role: u.profile?.role || "Employee",
+    dept: u.profile?.department || "Unassigned",
+    status: u.isDeleted ? "Pending" : "Active",
+    initial: (u.profile?.name || u.email)[0].toUpperCase()
+  }));
+
+  const recentRewardsList = rewards.slice(-5).reverse().map(r => ({
+    id: r._id,
+    title: r.title,
+    recipient: r.email,
+    value: r.category, 
+    status: r.status 
+  }));
+
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
   return (
@@ -79,17 +128,14 @@ const Dashboard = () => {
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses} flex flex-col`}>
         
-        {/* Mobile Header (Replaces the complex Top Navbar) */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}>
             <Menu size={20} /> <span className="text-sm font-medium">Menu</span>
           </button>
         </div>
 
-        {/* Dashboard Content Container */}
         <div className="p-6 max-w-7xl mx-auto w-full space-y-8 pb-12">
           
-          {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900">System Overview</h1>
@@ -105,7 +151,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* --- TOP METRICS GRID --- */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {topStats.map((stat) => {
               const Icon = stat.icon;
@@ -128,17 +173,14 @@ const Dashboard = () => {
             })}
           </div>
 
-          {/* --- MIDDLE BENTO GRID --- */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Department Distribution Chart */}
             <div className={`${theme.cardBg} p-6 lg:p-8 rounded-2xl border ${theme.border} shadow-sm flex flex-col`}>
               <h2 className="text-lg font-bold text-zinc-900 mb-6">Department Spread</h2>
               <div className="flex-1 min-h-55 relative flex items-center justify-center">
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
-                    <Pie data={deptData} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
-                      {deptData.map((entry, index) => (
+                    <Pie data={safeDeptData} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
+                      {safeDeptData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={donutColors[index % donutColors.length]} />
                       ))}
                     </Pie>
@@ -146,41 +188,40 @@ const Dashboard = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-3xl font-bold text-zinc-900">1.2k</span>
+                  <span className="text-3xl font-bold text-zinc-900">{users.length}</span>
                   <span className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase mt-1">Total</span>
                 </div>
               </div>
               
               <div className="mt-6 grid grid-cols-2 gap-y-3 gap-x-2">
-                {deptData.map((dept, i) => (
+                {safeDeptData.map((dept, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: donutColors[i % donutColors.length]}} />
-                    <span className="text-xs font-medium text-zinc-600">{dept.name} <span className="text-zinc-400">({dept.value}%)</span></span>
+                    <div className={`w-2.5 h-2.5 rounded-full ${donutBgClasses[i % donutBgClasses.length]}`} />
+                    <span className="text-xs font-medium text-zinc-600 truncate" title={dept.name}>
+                      {dept.name} <span className="text-zinc-400">({dept.percentage}%)</span>
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Quick Actions Panel */}
             <div className={`${theme.cardBg} p-6 lg:p-8 rounded-2xl border ${theme.border} shadow-sm`}>
               <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-3 lg:gap-4">
                 {quickActions.map((action) => {
                   const ActionIcon = action.icon;
                   return (
-                    <button key={action.id} className="flex flex-col items-center justify-center p-6 bg-zinc-50 rounded-xl hover:bg-zinc-900 hover:text-white transition-all duration-300 group border border-zinc-200 hover:border-zinc-900">
+                    <Link to={action.navigate} key={action.id} className="flex flex-col items-center justify-center p-6 bg-zinc-50 rounded-xl hover:bg-zinc-900 hover:text-white transition-all duration-300 group border border-zinc-200 hover:border-zinc-900">
                       <ActionIcon className="mb-3 text-zinc-600 group-hover:text-white transition-colors" size={24} />
                       <span className="text-xs font-bold">{action.label}</span>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
             </div>
 
-            {/* System Insights & Activity */}
             <div className="space-y-6 flex flex-col">
               
-              {/* Dark Insight Card */}
               <div className="bg-zinc-900 text-white p-6 lg:p-8 rounded-2xl shadow-lg">
                 <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-400 mb-5">System Insights</h2>
                 <ul className="space-y-4">
@@ -195,17 +236,19 @@ const Dashboard = () => {
                       </li>
                     );
                   })}
+                  {systemInsights.length === 0 && (
+                     <p className="text-sm text-zinc-400">Collecting insight data...</p>
+                  )}
                 </ul>
               </div>
 
-              {/* Activity Feed */}
               <div className={`${theme.cardBg} p-6 rounded-2xl border ${theme.border} shadow-sm flex-1`}>
                 <div className="flex justify-between items-center mb-5">
                   <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-500">Recent Activity</h2>
                   <button className="text-[10px] font-bold tracking-wider uppercase text-zinc-900 hover:underline">View All</button>
                 </div>
                 <div className="space-y-5">
-                  {activityFeed.map((feed) => (
+                  {activityFeed.length > 0 ? activityFeed.map((feed) => (
                     <div key={feed.id} className="flex gap-3 items-start">
                       <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center shrink-0 border border-zinc-200">
                         <Clock size={14} className="text-zinc-500" />
@@ -215,17 +258,17 @@ const Dashboard = () => {
                         <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mt-1">{feed.time}</p>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-sm text-zinc-500">No recent activity found.</p>
+                  )}
                 </div>
               </div>
 
             </div>
           </div>
 
-          {/* --- BOTTOM DATA TABLES --- */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Recent Employees Table */}
             <div className={`${theme.cardBg} rounded-2xl border ${theme.border} shadow-sm overflow-hidden flex flex-col`}>
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 gap-4">
                 <div>
@@ -244,7 +287,7 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
-                    {recentEmployees.map((emp) => (
+                    {recentEmployeesList.length > 0 ? recentEmployeesList.map((emp) => (
                       <tr key={emp.id} className="hover:bg-zinc-50 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -264,13 +307,16 @@ const Dashboard = () => {
                           </span>
                         </td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-8 text-center text-sm text-zinc-500">No recent employees found.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
 
-            {/* Recent Rewards Table */}
             <div className={`${theme.cardBg} rounded-2xl border ${theme.border} shadow-sm overflow-hidden flex flex-col`}>
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 gap-4">
                 <div>
@@ -284,12 +330,12 @@ const Dashboard = () => {
                   <thead className="bg-zinc-50/50 border-b border-zinc-100">
                     <tr>
                       <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Reward Title</th>
-                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Value</th>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Category</th>
                       <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
-                    {recentRewards.map((reward) => (
+                    {recentRewardsList.length > 0 ? recentRewardsList.map((reward) => (
                       <tr key={reward.id} className="hover:bg-zinc-50 transition-colors group">
                         <td className="px-6 py-4">
                           <p className="text-sm font-bold text-zinc-900">{reward.title}</p>
@@ -303,7 +349,11 @@ const Dashboard = () => {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-8 text-center text-sm text-zinc-500">No recent rewards found.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

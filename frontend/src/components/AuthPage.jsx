@@ -119,7 +119,7 @@ const CorporateLogin = () => {
                 Work Email
               </label>
               <div className="relative flex items-center">
-                <Mail size={18} className="absolute left-4 text-slate-400 pointer-events-none" />
+                <Mail size={18} className="absolute left-4 text-black pointer-events-none" />
                 <input
                   type="email"
                   name="email"
@@ -145,7 +145,7 @@ const CorporateLogin = () => {
                 )}
               </div>
               <div className="relative flex items-center">
-                <Lock size={18} className="absolute left-4 text-slate-400 pointer-events-none" />
+                <Lock size={18} className="absolute left-4 text-black pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
