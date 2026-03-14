@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, Plus, UserPlus, FileText, CheckCircle2, Clock } from "lucide-react";
+import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, UserPlus, FileText, CheckCircle2, Clock } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
@@ -64,17 +64,18 @@ const Dashboard = () => {
     { id: 8, title: "Deleted Records", value: deletedUsers.length.toString(), icon: Trash2, badge: deletedUsers.length > 0 ? "Warning" : null, badgeColor: "bg-red-50 text-red-600", alert: deletedUsers.length > 0 },
   ];
 
-  // Calculate Department Spread dynamically
+  // Calculate Department Spread dynamically (Employees Only)
+  const employeesOnly = users.filter(u => u.role?.toLowerCase() === 'employee');
   const deptCounts = {};
-  users.forEach(u => {
-    const dept = u.profile?.department || 'Unassigned';
+  
+  employeesOnly.forEach(u => {
+    const dept = u.department || 'Unassigned';
     deptCounts[dept] = (deptCounts[dept] || 0) + 1;
   });
   
-  const dynamicDeptData = Object.keys(deptCounts).map(name => ({
-    name,
+  const dynamicDeptData = Object.keys(deptCounts).map(name => ({name,
     value: deptCounts[name],
-    percentage: Math.round((deptCounts[name] / (users.length || 1)) * 100)
+    percentage: Math.round((deptCounts[name] / (employeesOnly.length || 1)) * 100)
   }));
   const safeDeptData = dynamicDeptData.length > 0 ? dynamicDeptData : [{ name: 'No Data', value: 1, percentage: 0 }];
 
@@ -103,14 +104,17 @@ const Dashboard = () => {
   }
 
   // Lists for tables
-  const recentEmployeesList = users.slice(-5).reverse().map(u => ({
+  const recentEmployeesList = users.filter(u => u.role?.toLowerCase() === "employee")
+  .slice(-5).reverse().map(u => ({
     id: u._id,
-    name: u.profile?.name || u.email.split('@')[0],
+    name: u.email.split('@')[0],
     role: u.profile?.role || "Employee",
-    dept: u.profile?.department || "Unassigned",
+    dept: u.department || "Unassigned",
     status: u.isDeleted ? "Pending" : "Active",
     initial: (u.profile?.name || u.email)[0].toUpperCase()
   }));
+
+  console.log(users.filter(u => u.role?.toLowerCase() === "employee"))
 
   const recentRewardsList = rewards.slice(-5).reverse().map(r => ({
     id: r._id,
@@ -144,9 +148,6 @@ const Dashboard = () => {
             <div className="flex gap-3 w-full sm:w-auto">
               <button className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all shadow-sm">
                 <Download size={18} /> Export
-              </button>
-              <button className="flex-1 sm:flex-none px-5 py-2.5 bg-black hover:bg-zinc-800 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md">
-                <Plus size={18} /> Create New
               </button>
             </div>
           </div>
@@ -188,7 +189,7 @@ const Dashboard = () => {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-3xl font-bold text-zinc-900">{users.length}</span>
+                  <span className="text-3xl font-bold text-zinc-900">{totalEmployeesCount}</span>
                   <span className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase mt-1">Total</span>
                 </div>
               </div>
