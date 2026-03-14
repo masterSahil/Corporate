@@ -4,7 +4,6 @@ import { AuthContext } from "./context/ContextApi";
 import { useEffect, useState } from "react";
 import NotFound from "./components/NotFound";
 import { checkLoginApi } from "./auth/Auth";
-import SA_Dashboard from "./pages/SuperAdmins/SA_Dashboard";
 import axios from "axios";
 import AddAdmin from "./pages/Admins/AddAdmins";
 import AddProduct from "./pages/Products/AddProducts";
@@ -25,6 +24,7 @@ import UpdateEmployee from "./pages/Employees/UpdateEmployee";
 import UpdateReward from "./pages/Rewards/UpdateReward";
 import { Toaster } from "./ui/Toaster";
 import { RefreshCw } from "lucide-react";
+import SuperAdmin from "./pages/Dashboards/SuperAdmin";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -92,7 +92,7 @@ export default function App() {
           <Route path="/" element={loggedIn ? <Navigate to="/dashboard" /> : <AuthPage />} />
 
           {/* Dashboard - All Logged In Users */}
-          <Route path="/dashboard" element={loggedIn ? <SA_Dashboard /> : <Navigate to="/" />} />
+          <Route path="/dashboard" element={loggedIn && role === "super_admin" ? <SuperAdmin /> : <Navigate to="/" />} />
 
           {/* Admins Manage - Super Admin Only */}
           <Route path="/admins/add" element={loggedIn && role === "super_admin" ? <AddAdmin /> : 
