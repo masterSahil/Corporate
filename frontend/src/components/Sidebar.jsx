@@ -23,7 +23,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       console.error("Error fetching user role:", error);
     }
   };
-  
+
   useEffect(() => {
     fetchUserRole();
   }, []);
@@ -87,7 +87,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <Shield size={20} className="text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>Super Admin</h1>
+            <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>{userRole === "admin" ? "Admin" : "Super Admin"}</h1>
           </div>
         </div>
         
@@ -120,7 +120,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <Shield size={20} className="text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>Super Admin</h1>
+              <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>{userRole === "admin" ? "Admin" : "Super Admin"}</h1>
               <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Portal</p>
             </div>
           </div>
