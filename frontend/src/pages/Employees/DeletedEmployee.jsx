@@ -279,7 +279,7 @@ const SoftDeletedEmployees = () => {
 
               {/* Custom Prompt Modal */}
               {showDeleteModal && (
-                <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-100 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
                   <form onSubmit={handlePermanentDelete} className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 border border-zinc-200">
                     <h2 className="text-lg font-bold text-rose-600 flex items-center gap-2 mb-2">
                       <Trash2 size={20} /> Confirm Deletion
