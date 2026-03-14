@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Users, Package, Gift, Trash2, ShieldAlert, Clock, Download, Filter } from "lucide-react";
+import { Menu, Users, Package, Gift, Trash2, ShieldAlert, Clock, Download } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { theme } from "./theme";
 import axios from "axios";
@@ -9,9 +9,23 @@ const SystemLogs = () => {
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [filterType, setFilterType] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const logsPerPage = 8;
+
+  const filterOptions = [
+    "All",
+    "User Onboarded",
+    "Record Deleted",
+    "Inventory Added",
+    "Reward Issued"
+  ];
+
   const getLogData = async () => {
     try {
       setIsLoading(true);
+
       const [usersRes, deletedRes, productsRes, rewardsRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
@@ -21,14 +35,13 @@ const SystemLogs = () => {
 
       const compiledLogs = [];
 
-      // Parse Active Users
       if (usersRes.data?.success && usersRes.data.users) {
         usersRes.data.users.forEach((u) => {
           compiledLogs.push({
             id: `usr-${u._id}`,
             type: "User Onboarded",
             entity: u.email,
-            description: `Assigned role: ${u.role || 'employee'}`,
+            description: `Assigned role: ${u.role || "employee"}`,
             timestamp: u.createdAt || new Date().toISOString(),
             icon: Users,
             colorClass: "text-emerald-600 bg-emerald-50 border-emerald-100"
@@ -36,7 +49,6 @@ const SystemLogs = () => {
         });
       }
 
-      // Parse Deleted Users
       if (deletedRes.data?.success && deletedRes.data.users) {
         deletedRes.data.users.forEach((u) => {
           compiledLogs.push({
@@ -51,7 +63,6 @@ const SystemLogs = () => {
         });
       }
 
-      // Parse Products
       if (productsRes.data?.success && productsRes.data.product) {
         productsRes.data.product.forEach((p) => {
           compiledLogs.push({
@@ -66,7 +77,6 @@ const SystemLogs = () => {
         });
       }
 
-      // Parse Rewards
       if (rewardsRes.data?.success && rewardsRes.data.reward) {
         rewardsRes.data.reward.forEach((r) => {
           compiledLogs.push({
@@ -81,9 +91,8 @@ const SystemLogs = () => {
         });
       }
 
-      // Sort all logs chronologically (newest first)
       compiledLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
+
       setLogs(compiledLogs);
     } catch (error) {
       console.log("Error fetching logs:", error);
@@ -96,110 +105,185 @@ const SystemLogs = () => {
     getLogData();
   }, []);
 
-  const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
+  const filteredLogs =
+    filterType === "All"
+      ? logs
+      : logs.filter((log) => log.type === filterType);
+
+  const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * logsPerPage,
+    currentPage * logsPerPage
+  );
+
+  const customScrollbarClasses =
+    "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
   return (
-    <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
+    <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden`}>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses} flex flex-col`}>
-        
-        {/* Mobile Header */}
+
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
-          <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}>
-            <Menu size={20} /> <span className="text-sm font-medium">Menu</span>
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}
+          >
+            <Menu size={20} />
+            <span className="text-sm font-medium">Menu</span>
           </button>
         </div>
 
         <div className="p-6 max-w-7xl mx-auto w-full space-y-6 pb-12 flex-1 flex flex-col">
-          
-          {/* Page Header */}
+
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 shrink-0">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">System Logs</h1>
-              <p className="text-zinc-500 text-sm mt-1">Comprehensive audit trail of all enterprise activities.</p>
+              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+                System Logs
+              </h1>
+              <p className="text-zinc-500 text-sm mt-1">
+                Comprehensive audit trail of all enterprise activities.
+              </p>
             </div>
+
             <div className="flex gap-3 w-full sm:w-auto">
-              <button className="flex-1 sm:flex-none px-4 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all shadow-sm">
-                <Filter size={16} /> Filter
-              </button>
+
+              <select
+                value={filterType}
+                onChange={(e) => {
+                  setFilterType(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-4 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700"
+              >
+                {filterOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+
               <button className="flex-1 sm:flex-none px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md">
                 <Download size={16} /> Download CSV
               </button>
+
             </div>
           </div>
 
-          {/* Logs Table Container */}
           <div className={`${theme.cardBg} rounded-2xl border ${theme.border} shadow-sm overflow-hidden flex flex-col flex-1`}>
+
             <div className={`overflow-x-auto ${customScrollbarClasses} flex-1`}>
               <table className="w-full text-left whitespace-nowrap">
-                <thead className="bg-zinc-50/80 border-b border-zinc-100 sticky top-0 backdrop-blur-sm z-10">
+                <thead className="bg-zinc-50/80 border-b border-zinc-100 sticky top-0">
                   <tr>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500 w-16">Event</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Action Type</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Entity / User</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500 hidden md:table-cell">Details</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500 text-right">Date & Time</th>
+                    <th className="px-6 py-4 text-[10px] font-bold uppercase text-zinc-500 w-16">
+                      Event
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-bold uppercase text-zinc-500">
+                      Action Type
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-bold uppercase text-zinc-500">
+                      Entity / User
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-bold uppercase text-zinc-500 hidden md:table-cell">
+                      Details
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-bold uppercase text-zinc-500 text-right">
+                      Date & Time
+                    </th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-zinc-100">
+
                   {isLoading ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center justify-center text-zinc-400 gap-3">
+                        <div className="flex flex-col items-center text-zinc-400 gap-3">
                           <ShieldAlert className="animate-pulse" size={32} />
-                          <p className="text-sm font-medium">Compiling secure audit logs...</p>
+                          <p className="text-sm font-medium">
+                            Compiling secure audit logs...
+                          </p>
                         </div>
                       </td>
                     </tr>
-                  ) : logs.length > 0 ? (
-                    logs.map((log) => {
+                  ) : paginatedLogs.length > 0 ? (
+
+                    paginatedLogs.map((log) => {
                       const LogIcon = log.icon;
+
                       return (
-                        <tr key={log.id} className="hover:bg-zinc-50 transition-colors group">
+                        <tr key={log.id} className="hover:bg-zinc-50 transition-colors">
                           <td className="px-6 py-4">
                             <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${log.colorClass}`}>
                               <LogIcon size={18} />
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-bold text-zinc-900 block">{log.type}</span>
+
+                          <td className="px-6 py-4 text-sm font-bold text-zinc-900">
+                            {log.type}
                           </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-zinc-700">{log.entity}</span>
+
+                          <td className="px-6 py-4 text-sm text-zinc-700">
+                            {log.entity}
                           </td>
-                          <td className="px-6 py-4 hidden md:table-cell">
-                            <span className="text-xs text-zinc-500 max-w-xs truncate block">{log.description}</span>
+
+                          <td className="px-6 py-4 hidden md:table-cell text-xs text-zinc-500">
+                            {log.description}
                           </td>
+
                           <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5 text-zinc-500">
+                            <div className="flex items-center justify-end gap-1 text-zinc-500">
                               <Clock size={14} />
                               <span className="text-xs font-semibold">
-                                {new Date(log.timestamp).toLocaleString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                                {new Date(log.timestamp).toLocaleString()}
                               </span>
                             </div>
                           </td>
                         </tr>
                       );
                     })
+
                   ) : (
                     <tr>
-                      <td colSpan="5" className="px-6 py-12 text-center text-sm text-zinc-500 font-medium">
+                      <td colSpan="5" className="px-6 py-12 text-center text-sm text-zinc-500">
                         No system logs found.
                       </td>
                     </tr>
                   )}
+
                 </tbody>
               </table>
             </div>
-          </div>
 
+            <div className="flex justify-between items-center p-4 border-t">
+
+              <span className="text-xs text-zinc-500 font-medium">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+
+              <div className="flex gap-2">
+
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  className="px-3 py-1 border border-zinc-200 rounded-lg text-sm disabled:opacity-40"
+                >
+                  Prev
+                </button>
+
+                <button
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  className="px-3 py-1 border border-zinc-200 rounded-lg text-sm disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
