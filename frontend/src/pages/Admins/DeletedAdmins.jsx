@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, MoreVertical, ShieldAlert, Shield, RefreshCw } from "lucide-react";
+import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, MoreVertical, ShieldAlert, Shield, RefreshCw, EyeOff, Eye } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios";
@@ -11,9 +11,13 @@ const SoftDeletedAdmins = () => {
   const [roleFilter, setRoleFilter] = useState("All");
   const [deletedAdmins, setDeletedAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
+  // --- Modal States ---
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const isRefreshing = false;
-  // Fetch soft-deleted data
   const getDeletedData = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
@@ -51,23 +55,25 @@ const SoftDeletedAdmins = () => {
   };
 
   // Permanent Deletion
-  const handlePermanentDelete = async (id) => {
-    if (window.confirm("Are you sure you want to permanently delete this admin? This cannot be undone.")) 
-    {
-      const password = window.prompt("Enter your password to confirm deletion:");
-      if (!password) return;
+  const handlePermanentDelete = async (e) => {
+    e.preventDefault(); 
+    if (!deletePassword) return;
 
-      try {
-          setLoading(true);
-          await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${id}`, {password}, {withCredentials: true});
-
-          getDeletedData();
-          toast.success("Permanently Deleted Successfully");
-      } catch (error) {
-          toast.error(error.response?.data?.message || "Delete failed");
-      } finally {
-        setLoading(false);
-      }
+    try {
+      setLoading(true);
+      await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${deleteId}`, { password: deletePassword }, { withCredentials: true });
+      await getDeletedData();
+      toast.success("Permanently Deleted Successfully");
+      
+      setShowDeleteModal(false);
+      setDeleteId(null);
+      setDeletePassword("");
+      setShowPassword(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Delete failed");
+      console.log(error.response?.data?.message || error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -230,7 +236,8 @@ const SoftDeletedAdmins = () => {
                           <button onClick={()=>handleRestore(admin._id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm`} title="Restore Admin">
                             <ArchiveRestore size={14} /> Restore
                           </button>
-                          <button onClick={()=>handleRestore(admin._id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-500 hover:bg-rose-100 hover:text-rose-700 border transition-colors shadow-sm`} title="Restore Admin">
+                          <button onClick={() => { setDeleteId(admin._id); setShowDeleteModal(true); }}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-500 hover:bg-rose-100 hover:text-rose-700 border transition-colors shadow-sm`} title="Permanently Delete Admin" >
                             <Trash2 size={18} /> Delete
                           </button>
                         </div>
@@ -240,7 +247,44 @@ const SoftDeletedAdmins = () => {
                   ))}
                 </tbody>
               </table>
-              
+
+              {/* Custom Prompt Modal with Eye Icon */}
+              {showDeleteModal && (
+                <div className="fixed inset-0 z-100 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+                  <form onSubmit={handlePermanentDelete} className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 border border-zinc-200">
+                    <h2 className="text-lg font-bold text-rose-600 flex items-center gap-2 mb-2">
+                      <Trash2 size={20} /> Confirm Deletion
+                    </h2>
+                    <p className="text-sm text-slate-600 mb-5">
+                      Are you sure you want to permanently delete this admin? This cannot be undone. Enter your password to confirm:
+                    </p>
+
+                    <div className="relative mb-6">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter password..."
+                        value={deletePassword}
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                        className="w-full p-3 pr-12 bg-zinc-50 border border-zinc-200 rounded-lg text-sm outline-none focus:border-black" autoFocus required />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none" >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                      <button type="button" onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteId(null); setShowPassword(false); }}
+                      className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50" >
+                        Cancel
+                      </button>
+                      <button type="submit" disabled={!deletePassword || loading}
+                        className="px-4 py-2 text-sm font-bold text-white bg-rose-600 rounded-lg hover:bg-rose-700 disabled:opacity-50" >
+                        {loading ? "Deleting ..." : "Delete Permanently"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
               {/* Empty State */}
               {filteredAdmins.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
