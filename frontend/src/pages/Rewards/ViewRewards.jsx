@@ -176,21 +176,9 @@ const ViewRewards = () => {
                       {/* Status */}
                       <td className="px-6 py-4">
                         <div className="flex flex-col items-start gap-1">
-                          {reward.status === "Issued" && (
                             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600">
-                              <Award size={14} /> Issued
+                              <Award size={14} /> {reward.status}
                             </span>
-                          )}
-                          {reward.status === "Redeemed" && (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-                              <CheckCircle2 size={14} /> Redeemed
-                            </span>
-                          )}
-                          {reward.status === "Unassigned" && (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-                              <Clock size={14} /> Pending
-                            </span>
-                          )}
                           {reward.date !== "-" && (
                             <span className={`text-[10px] ${theme.textMuted}`}>{reward.date}</span>
                           )}

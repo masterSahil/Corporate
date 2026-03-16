@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Menu, Search, ShoppingBag, Star, Plus, 
-  Package, ChevronDown, Filter, Check 
-} from "lucide-react";
+import { Menu, Search, Star, Plus, Minus, Package, ChevronDown, Filter, Check, Eye } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { theme } from "../components/theme";
 import axios from "axios";
+import { toast } from "../ui/Toaster";
 
 const EmployeeStore = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,17 +12,35 @@ const EmployeeStore = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+  const [userPoints, setUserPoints] = useState(0);
+
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-
-  const userPoints = 0; 
 
   const getData = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
+      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
+      const res3 = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
+      
       setProducts(res.data.product);
+      const userId = res2.data.user._id;
+      setCurrentUserId(userId);
+      const currentUserRewards = res3.data.reward.filter(r => r.email === res2.data.user.email);
+      const calculatedPoints = currentUserRewards.reduce((total, currentReward) => {
+        return total + (currentReward.points || 0);
+      }, 0);
+      setUserPoints(calculatedPoints);
+
+      // Fetch all carts and filter for this specific user to set initial UI state
+      const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true });
+      const userCart = cartRes.data.cart.filter(item => item.buyerId === userId);
+      setCartItems(userCart);
     } catch (error) {
-      console.log(error);
+      toast.error(error.message || "Failed to fetch data");
     }
   };
 
@@ -41,6 +57,40 @@ const EmployeeStore = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const addToCart = async (id) => {
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, { buyerId: currentUserId, productId: id, quantity: 1 }, { withCredentials: true });
+      
+      setCartItems([...cartItems, res.data.cart]);
+      toast.success("Product Added to Cart");
+    } catch (error) {
+      toast.error(error.message || "Failed to add product");
+    }
+  };
+
+  const updateQuantity = async (cartItemId, productId, newQuantity) => {
+    try {
+      if (newQuantity <= 0) {
+        // Remove from cart database if quantity is 0 or less
+        await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, { withCredentials: true });
+        setCartItems(cartItems.filter(item => item._id !== cartItemId));
+        toast.success("Removed from cart");
+      } else {
+        // Update quantity in database
+        const res = await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, {
+          buyerId: currentUserId,
+          productId: productId,
+          quantity: newQuantity
+        }, { withCredentials: true });
+
+        // Update local state
+        setCartItems(cartItems.map(item => item._id === cartItemId ? res.data.cart : item));
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to update quantity");
+    }
+  };
 
   const categories = ["All", ...new Set(products.map((p) => p.category))];
 
@@ -64,22 +114,22 @@ const EmployeeStore = () => {
           </button>
         </div>
 
-        <div className="max-w-7xl mx-auto p-6 space-y-10">
+        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8 md:space-y-10">
           
           {/* Store Header / Points Banner */}
-          <section className="relative rounded-2xl overflow-hidden bg-black p-8 lg:p-10 text-white shadow-2xl border border-zinc-800">
+          <section className="relative rounded-2xl overflow-hidden bg-black p-6 md:p-8 lg:p-10 text-white shadow-2xl border border-zinc-800">
             <div className="absolute top-[-20%] right-[-5%] w-64 h-64 bg-zinc-500/10 blur-[80px] rounded-full pointer-events-none"></div>
             
-            <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
-                <h1 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 italic">THE PRODUCT STORE</h1>
-                <p className="text-zinc-400 font-medium text-lg">Turn your hard-earned points into premium rewards.</p>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter mb-2 italic">THE PRODUCT STORE</h1>
+                <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium rewards.</p>
               </div>
 
-              <div className="bg-white/10 border border-white/10 rounded-2xl p-5 flex flex-col items-center min-w-45">
+              <div className="bg-white/10 border border-white/10 rounded-2xl p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Your Balance</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white">{userPoints}</span>
+                  <span className="text-3xl md:text-4xl font-black text-white">{userPoints}</span>
                   <span className="text-sm font-bold text-zinc-500 uppercase">pts</span>
                 </div>
               </div>
@@ -87,8 +137,8 @@ const EmployeeStore = () => {
           </section>
 
           {/* Search & Dynamic Dropdown Filter */}
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between relative z-30">
-            <div className="relative w-full md:w-1/3 group">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between relative z-30">
+            <div className="relative w-full sm:w-1/2 md:w-1/3 group">
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-black transition-colors" />
               <input
                 type="text"
@@ -100,7 +150,7 @@ const EmployeeStore = () => {
             </div>
 
             {/* Category Dropdown */}
-            <div className="relative w-full md:w-72" ref={dropdownRef}>
+            <div className="relative w-full sm:w-64 md:w-72" ref={dropdownRef}>
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className={`w-full flex items-center justify-between px-5 py-3.5 bg-white border-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-sm
@@ -108,9 +158,9 @@ const EmployeeStore = () => {
               >
                 <div className="flex items-center gap-3">
                   <Filter size={14} />
-                  <span>{selectedCategory === "All" ? "Filter Category" : selectedCategory}</span>
+                  <span className="truncate">{selectedCategory === "All" ? "Filter Category" : selectedCategory}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${isFilterOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 shrink-0 ${isFilterOpen ? "rotate-180" : ""}`} />
               </button>
 
               {/* Dropdown Menu */}
@@ -124,11 +174,11 @@ const EmployeeStore = () => {
                           setSelectedCategory(cat);
                           setIsFilterOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors border-b border-slate-50 last:border-0
+                        className={`w-full flex items-center justify-between px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors border-b border-slate-50 last:border-0 text-left
                           ${selectedCategory === cat ? "bg-black text-white" : "text-slate-600 hover:bg-slate-200"}`}
                       >
-                        {cat}
-                        {selectedCategory === cat && <Check size={14} />}
+                        <span className="truncate pr-2">{cat}</span>
+                        {selectedCategory === cat && <Check size={14} className="shrink-0" />}
                       </button>
                     ))}
                   </div>
@@ -138,79 +188,109 @@ const EmployeeStore = () => {
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => (
-              <div 
-                key={product._id} 
-                onClick={() => navigate(`/employee/store/${product._id}`)}
-                className="group relative bg-white border-2 border-slate-200 rounded-xl p-4 transition-all hover:border-black hover:shadow-2xl cursor-pointer flex flex-col"
-              >
-                <div className="aspect-4/3 rounded-xl group-hover:border-2 bg-slate-100 mb-5 overflow-hidden relative flex items-center justify-center">
-                  {product.gallery && product.gallery.length > 0 ? (
-                    <img 
-                      src={product.gallery[0].fileUrl} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-700 ease-in-out" 
-                    />
-                  ) : (
-                    <Package size={40} className="text-slate-300" />
-                  )}
-                  
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-black/80 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg">
-                      {product.category}
-                    </span>
-                  </div>
-
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg border border-slate-200 flex items-center gap-1 shadow-sm">
-                    <Star size={10} className="fill-black text-black" />
-                    <span className="text-[10px] font-black text-black">4.8</span>
-                  </div>
-                </div>
-
-                <div className="flex-1 flex flex-col px-1">
-                  <h4 className="text-lg font-black text-slate-900 mb-2 line-clamp-1 leading-tight uppercase tracking-tight group-hover:text-zinc-600 transition-colors">
-                    {product.name}
-                  </h4>
-                  
-                  <p className="text-sm text-slate-400 line-clamp-2 mb-6 font-medium">
-                    {product.description || "Premium employee reward item."}
-                  </p>
-                  
-                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Exchange At</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-2xl font-black text-black tracking-tighter italic">{product.price}</span>
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase">$</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+            {filteredProducts.map((product) => {
+              const cartItem = cartItems.find((c) => c.productId === product._id);
+              return (
+                <div 
+                  key={product._id} 
+                  onClick={() => navigate(`/employee/store/${product._id}`)}
+                  className="group relative bg-white border-2 border-slate-200 rounded-2xl p-4 transition-all duration-300 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col h-full">
+                  {/* Image Container with Sleek Hover Overlay */}
+                  <div className="aspect-4/3 rounded-xl bg-slate-100 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100 group-hover:border-slate-200 transition-colors">
+                    {product.gallery && product.gallery.length > 0 ? (
+                      <img src={product.gallery[0].fileUrl} alt={product.name} 
+                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-700 ease-out" 
+                      />
+                    ) : (
+                      <Package size={40} className="text-slate-300" />
+                    )}
+                    
+                    {/* Dark Glass Overlay on Hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                      <div className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 rounded-xl flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-2xl">
+                        <Eye size={14} /> View
                       </div>
                     </div>
+                    
+                    {/* Top Left Badge */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="bg-black/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg shadow-sm">
+                        {product.category}
+                      </span>
+                    </div>
 
-                    <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 border-2 border-slate-100 group-hover:bg-black group-hover:border-black group-hover:text-white transition-all duration-300 shadow-sm text-slate-500">
-                      <Plus size={20} />
+                    {/* Top Right Badge */}
+                    <div className="absolute top-3 right-3 z-10 bg-white/95 backdrop-blur-md px-2 py-1 rounded-lg border border-slate-200 flex items-center gap-1 shadow-sm">
+                      <Star size={10} className="fill-black text-black" />
+                      <span className="text-[10px] font-black text-black">4.8</span>
+                    </div>
+                  </div>
+
+                  {/* Content Container */}
+                  <div className="flex-1 flex flex-col px-1">
+                    <h4 className="text-lg font-black text-slate-900 mb-1.5 line-clamp-1 leading-tight uppercase tracking-tight group-hover:text-zinc-600 transition-colors">
+                      {product.name}
+                    </h4>
+                    
+                    <p className="text-xs md:text-sm text-slate-400 line-clamp-2 mb-4 font-medium leading-relaxed">
+                      {product.description || "Premium employee reward item."}
+                    </p>
+                    
+                    {/* Pricing & Cart Controls */}
+                    <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-slate-100">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Exchange At</span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-black text-black tracking-tighter italic leading-none">{product.price}</span>
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase">$</span>
+                        </div>
+                      </div>
+
+                      {/* Quantity Controls OR Add to Cart Button */}
+                      {cartItem ? (
+                        <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1 border-2 border-slate-200 shrink-0">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem._id, product._id, cartItem.quantity - 1); }} 
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-slate-600 hover:text-black hover:shadow-md transition-all border border-slate-200"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          
+                          <span className="font-black text-xs w-5 text-center">{cartItem.quantity}</span>
+                          
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem._id, product._id, cartItem.quantity + 1); }} 
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-black text-white hover:bg-zinc-800 hover:shadow-md transition-all"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); addToCart(product._id); }} 
+                          className="flex items-center justify-center w-10 h-10 md:w-11 rounded-xl bg-slate-50 border-2 border-slate-200 group-hover:bg-black group-hover:border-black group-hover:text-white transition-all duration-300 shadow-sm text-slate-600 shrink-0"
+                        >
+                          <Plus size={18} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
-
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:-translate-y-5 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
-                  <span className="bg-black text-white text-[10px] font-black uppercase p-3 rounded-sm shadow-xl">
-                    View Details
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Empty State */}
           {filteredProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-              <Package size={60} className="text-slate-200 mb-4" />
-              <h3 className="text-xl font-bold text-slate-400 uppercase tracking-widest">No products found</h3>
+            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 mx-4 md:mx-0">
+              <Package size={60} className="text-slate-200 mb-5" />
+              <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest text-center">No products found</h3>
               <button 
                 onClick={() => {setSearchQuery(""); setSelectedCategory("All")}}
-                className="mt-4 text-black underline font-bold"
+                className="mt-4 text-black text-sm font-bold tracking-wider hover:underline transition-all"
               >
-                Clear all filters
+                CLEAR FILTERS
               </button>
             </div>
           )}

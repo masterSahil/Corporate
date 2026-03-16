@@ -59,12 +59,12 @@ const EmployeeDashboard = () => {
       let totalEarned = 0;
       let claimedCount = 0;
 
-      activeRewards.forEach(r => {
-        if (r.points) totalEarned += r.points;
-        if (r.status?.toLowerCase() === 'redeemed') claimedCount++;
-      });
-
-      setUserPoints(totalEarned); // Represents available balance for this demo
+      const myRewards = activeRewards.filter(r => r.email === employee.email)
+      claimedCount = myRewards.length;
+      totalEarned = myRewards.reduce((total, rewardPoint) => {
+        return total += (rewardPoint.points || 0)
+      }, 0)
+      setUserPoints(totalEarned); 
 
       setStats([
         { id: 1, title: "Total Points Earned", value: totalEarned.toLocaleString(), icon: Award, trend: "Lifetime earnings", trendUp: true },
@@ -162,7 +162,7 @@ const EmployeeDashboard = () => {
               </div>
 
               {/* Current Points Overlay */}
-              <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-full md:w-auto shrink-0 flex flex-col items-start md:items-end shadow-lg">
+              <div className="bg-white/10 border border-white/10 rounded-2xl p-6 w-full md:w-auto shrink-0 flex flex-col items-start md:items-end shadow-lg">
                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Available Balance</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-extrabold text-white tracking-tight">{userPoints.toLocaleString()}</span>
