@@ -13,6 +13,7 @@ const userRoutes = require("./Routes/userRoutes")
 const rewardRoutes = require("./Routes/rewardRoutes")
 const productRoutes = require("./Routes/productRoutes")
 const cartRoutes = require("./Routes/cartRoutes")
+const ratingRoutes = require("./Routes/ratingRoutes")
 
 connectDB();
 
@@ -31,3 +32,4 @@ app.use('/', rewardRoutes);
 app.use('/', productRoutes); 
 app.use('/', healthRoutes);
 app.use('/', cartRoutes);
+app.use('/', ratingRoutes);
