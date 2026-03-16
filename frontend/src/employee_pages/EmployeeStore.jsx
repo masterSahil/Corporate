@@ -256,21 +256,15 @@ const EmployeeStore = () => {
                           >
                             <Minus size={14} />
                           </button>
-                          
                           <span className="font-black text-xs w-5 text-center">{cartItem.quantity}</span>
-                          
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem._id, product._id, cartItem.quantity + 1); }} 
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-black text-white hover:bg-zinc-800 hover:shadow-md transition-all"
-                          >
+                          <button onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem._id, product._id, cartItem.quantity + 1); }} 
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-black text-white hover:bg-zinc-800 hover:shadow-md transition-all">
                             <Plus size={14} />
                           </button>
                         </div>
                       ) : (
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); addToCart(product._id); }} 
-                          className="flex items-center justify-center w-10 h-10 md:w-11 rounded-xl bg-slate-50 border-2 border-slate-200 group-hover:bg-black group-hover:border-black group-hover:text-white transition-all duration-300 shadow-sm text-slate-600 shrink-0"
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); addToCart(product._id); }} 
+                          className="flex items-center justify-center w-10 h-10 md:w-11 rounded-xl bg-slate-50 border-2 border-slate-200 group-hover:bg-black group-hover:border-black group-hover:text-white transition-all duration-300 shadow-sm text-slate-600 shrink-0">
                           <Plus size={18} />
                         </button>
                       )}
@@ -286,8 +280,7 @@ const EmployeeStore = () => {
             <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 mx-4 md:mx-0">
               <Package size={60} className="text-slate-200 mb-5" />
               <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest text-center">No products found</h3>
-              <button 
-                onClick={() => {setSearchQuery(""); setSelectedCategory("All")}}
+              <button onClick={() => {setSearchQuery(""); setSelectedCategory("All")}}
                 className="mt-4 text-black text-sm font-bold tracking-wider hover:underline transition-all"
               >
                 CLEAR FILTERS
