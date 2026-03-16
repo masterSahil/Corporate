@@ -107,7 +107,7 @@ module.exports.updateReward = async (req, res) => {
         }
 
         const updated = await rewardSchema.findByIdAndUpdate(req.params.id, 
-            { title, category, description, email, isDeleted, points, status: finalStatus },
+            { title, category, description, email, isDeleted, points, status: finalStatus, createdAt: new Date() },
             { returnDocument: 'after' });
 
         res.status(200).json({

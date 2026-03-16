@@ -27,6 +27,10 @@ const EmployeeDashboard = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [stats, setStats] = useState([]);
   const [graphData, setGraphData] = useState([]);
+  
+  // CHART STATES: 'THIS_MONTH', 'LAST_MONTH', '1_YEAR'
+  const [chartView, setChartView] = useState('THIS_MONTH'); 
+  const [allUserRewards, setAllUserRewards] = useState([]); 
 
   // --- DATA FETCHING & PROCESSING ---
   const getData = async () => {
@@ -45,7 +49,6 @@ const EmployeeDashboard = () => {
       const adminsList = fetchedUsers.filter(u => ['admin', 'super_admin'].includes(u.role?.toLowerCase()));
       setAdmins(adminsList.slice(0, 3));
 
-      // Assuming we can identify the current employee. Fallback to the first employee found.
       const employee = fetchedUsers.find(u => u.role?.toLowerCase() === 'employee');
       setCurrentUser(employee);
 
@@ -56,14 +59,17 @@ const EmployeeDashboard = () => {
       setRewards(activeRewards.slice(0, 4));
 
       // 3. Calculate Dynamic Points & Stats
-      let totalEarned = 0;
-      let claimedCount = 0;
+      const myRewards = activeRewards.filter(r => r.email === employee.email);
+      setAllUserRewards(myRewards);
 
-      const myRewards = activeRewards.filter(r => r.email === employee.email)
-      claimedCount = myRewards.length;
-      totalEarned = myRewards.reduce((total, rewardPoint) => {
-        return total += (rewardPoint.points || 0)
-      }, 0)
+      let claimedCount = myRewards.filter(r => r.status?.toLowerCase() === 'redeemed').length;
+      let totalEarned = myRewards.reduce((total, reward) => {
+        if (reward.status?.toLowerCase() === 'redeemed') {
+          return total + (reward.points || 0);
+        }
+        return total;
+      }, 0);
+      
       setUserPoints(totalEarned); 
 
       setStats([
@@ -73,51 +79,87 @@ const EmployeeDashboard = () => {
         { id: 4, title: "Available Balance", value: totalEarned.toLocaleString(), icon: Sparkles, trend: "Ready to spend", trendUp: true },
       ]);
 
-      // 4. Generate 6-Month Points History for Chart
-      generateChartData(activeRewards);
+      // 4. Default to This Month view
+      generateChartData(myRewards, 'THIS_MONTH');
 
     } catch (error) {
       console.error("Error fetching employee data:", error);
     }
   };
 
-  // Helper to build sequential graph data
-  const generateChartData = (rewardsData) => {
+  // Build graph data based on selection
+  const generateChartData = (rewardsData, viewType) => {
     const data = [];
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const today = new Date();
-    
-    // Initialize last 6 months with 0 points
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      data.push({
-        name: monthNames[d.getMonth()],
-        monthIndex: d.getMonth(),
-        year: d.getFullYear(),
-        points: 0
+
+    if (viewType === 'THIS_MONTH' || viewType === 'LAST_MONTH') {
+      // Setup base date depending on selection
+      const targetDate = viewType === 'THIS_MONTH' 
+        ? new Date(today.getFullYear(), today.getMonth(), 1)
+        : new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      
+      // Get total days in that specific month (e.g., 28, 30, or 31)
+      const daysInMonth = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+
+      // Create an entry for every day of the month (1 to 31)
+      for (let i = 1; i <= daysInMonth; i++) {
+        data.push({
+          name: `${i} ${targetDate.toLocaleString('default', { month: 'short' })}`, // e.g., "15 Mar"
+          day: i,
+          monthIndex: targetDate.getMonth(),
+          year: targetDate.getFullYear(),
+          points: 0
+        });
+      }
+
+      // Map rewards to the specific days
+      rewardsData.forEach(r => {
+        if (r.points && r.status?.toLowerCase() === 'redeemed') {
+          const dateStr = r.createdAt?.$date || r.createdAt;
+          if (!dateStr) return;
+          const rDate = new Date(dateStr);
+          
+          const dayData = data.find(d => 
+            d.day === rDate.getDate() && 
+            d.monthIndex === rDate.getMonth() && 
+            d.year === rDate.getFullYear()
+          );
+          if (dayData) dayData.points += r.points;
+        }
+      });
+
+    } else if (viewType === '1_YEAR') {
+      // Create an entry for the last 12 months
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        data.push({
+          name: monthNames[d.getMonth()],
+          monthIndex: d.getMonth(),
+          year: d.getFullYear(),
+          points: 0
+        });
+      }
+
+      // Map rewards to the specific months
+      rewardsData.forEach(r => {
+        if (r.points && r.status?.toLowerCase() === 'redeemed') {
+          const dateStr = r.createdAt?.$date || r.createdAt;
+          if (!dateStr) return;
+          const rDate = new Date(dateStr);
+          
+          const monthData = data.find(m => m.monthIndex === rDate.getMonth() && m.year === rDate.getFullYear());
+          if (monthData) monthData.points += r.points;
+        }
       });
     }
 
-    // Populate with actual API data
-    rewardsData.forEach(r => {
-      if (r.points) {
-        // Safely extract date (Handles both ISO strings and MongoDB $date objects)
-        const dateStr = r.createdAt?.$date || r.createdAt;
-        if (!dateStr) return;
-        
-        const rDate = new Date(dateStr);
-        const rMonth = rDate.getMonth();
-        const rYear = rDate.getFullYear();
-
-        // Add points to the matching month in our timeline
-        const monthData = data.find(m => m.monthIndex === rMonth && m.year === rYear);
-        if (monthData) {
-          monthData.points += r.points;
-        }
-      }
-    });
-
     setGraphData(data);
+  };
+
+  const handleChartToggle = (view) => {
+    setChartView(view);
+    generateChartData(allUserRewards, view);
   };
 
   useEffect(() => {
@@ -126,14 +168,12 @@ const EmployeeDashboard = () => {
   
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
-  // --- RENDER ---
   return (
     <div className={`flex h-screen ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-black`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses}`}>
         
-        {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm transition-all`}>
             <Menu size={20} /> <span className="text-sm font-medium">Menu</span>
@@ -142,7 +182,7 @@ const EmployeeDashboard = () => {
 
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 pb-12">
           
-          {/* 1. Welcome Banner */}
+          {/* Welcome Banner */}
           <section className="relative rounded-2xl overflow-hidden bg-zinc-950 flex flex-col justify-end p-8 sm:p-10 text-white shadow-xl border border-zinc-800">
             <div className="absolute top-[-50%] left-[-10%] w-96 h-96 bg-zinc-600/20 blur-[120px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-80 h-80 bg-zinc-400/10 blur-[100px] rounded-full pointer-events-none"></div>
@@ -161,7 +201,6 @@ const EmployeeDashboard = () => {
                 </p>
               </div>
 
-              {/* Current Points Overlay */}
               <div className="bg-white/10 border border-white/10 rounded-2xl p-6 w-full md:w-auto shrink-0 flex flex-col items-start md:items-end shadow-lg">
                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Available Balance</span>
                 <div className="flex items-baseline gap-2">
@@ -172,7 +211,7 @@ const EmployeeDashboard = () => {
             </div>
           </section>
 
-          {/* 2. Quick Stats Grid (Dynamically Rendered) */}
+          {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {stats.map((stat) => {
               const Icon = stat.icon;
@@ -194,19 +233,42 @@ const EmployeeDashboard = () => {
             })}
           </div>
 
-          {/* 3. Performance Graph & Recent Achievements */}
+          {/* Performance Graph & Recent Achievements */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Chart Section */}
             <div className="lg:col-span-2 bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-              <div className="flex justify-between items-center mb-8">
+              
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div>
                   <h2 className="text-lg font-bold text-slate-900">Points History</h2>
-                  <p className="text-xs text-slate-500 mt-1">Your earning velocity over the last 6 months.</p>
+                  <p className="text-xs text-slate-500 mt-1">Your earning velocity over time.</p>
+                </div>
+                
+                {/* NEW TOGGLE BUTTONS */}
+                <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 overflow-x-auto max-w-full">
+                  <button 
+                    onClick={() => handleChartToggle('THIS_MONTH')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === 'THIS_MONTH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  >
+                    This Month
+                  </button>
+                  <button 
+                    onClick={() => handleChartToggle('LAST_MONTH')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === 'LAST_MONTH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  >
+                    Last Month
+                  </button>
+                  <button 
+                    onClick={() => handleChartToggle('1_YEAR')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === '1_YEAR' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                  >
+                    1 Year
+                  </button>
                 </div>
               </div>
               
-              <div className="flex-1 w-full h-70">
+              <div className="flex-1 w-full h-75 min-h-75">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
@@ -216,7 +278,14 @@ const EmployeeDashboard = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dy={10} />
+                    <XAxis 
+                      dataKey="name" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} 
+                      dy={10} 
+                      minTickGap={15} // Prevents day labels from overlapping on month view
+                    />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#09090b', color: '#fff', borderRadius: '12px', border: 'none', fontWeight: 'bold' }}
@@ -269,7 +338,7 @@ const EmployeeDashboard = () => {
             </div>
           </div>
 
-          {/* 4. Featured Products (Marketplace Highlights) */}
+          {/* Featured Products */}
           <div className="flex flex-col pt-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div className="flex items-center gap-2.5">
@@ -322,7 +391,7 @@ const EmployeeDashboard = () => {
             </div>
           </div>
 
-          {/* 5. Team Leaders / Directory */}
+          {/* Team Leaders / Directory */}
           <div className="flex flex-col pt-6 border-t border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div className="flex items-center gap-2.5">

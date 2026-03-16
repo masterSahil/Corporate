@@ -31,7 +31,10 @@ const EmployeeStore = () => {
       setCurrentUserId(userId);
       const currentUserRewards = res3.data.reward.filter(r => r.email === res2.data.user.email);
       const calculatedPoints = currentUserRewards.reduce((total, currentReward) => {
-        return total + (currentReward.points || 0);
+        if (currentReward.status?.toLowerCase() === 'redeemed') {
+          return total + (currentReward.points || 0);
+        }
+        return total; 
       }, 0);
       setUserPoints(calculatedPoints);
 
