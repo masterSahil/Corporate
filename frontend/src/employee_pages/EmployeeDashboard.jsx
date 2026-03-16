@@ -206,7 +206,7 @@ const EmployeeDashboard = () => {
                 </div>
               </div>
               
-              <div className="flex-1 w-full h-[280px]">
+              <div className="flex-1 w-full h-70">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
