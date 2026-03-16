@@ -315,7 +315,7 @@ module.exports.RegisterUser = async (req, res) => {
         const newUser = new UserSchema({email, password:hash_password, role});
         await newUser.save();
 
-        const token = jwt.sign({userId: newUser._id, role: newUser.role, email: newUser.email}, process.env.SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({userId: newUser._id, role: newUser.role, email: newUser.email}, process.env.SECRET, { expiresIn: '7d' });
         
         // local dev         = secure: false; sameSite: "lax"
         // Deploy with https = secure: true; sameSite: "none"
@@ -323,7 +323,7 @@ module.exports.RegisterUser = async (req, res) => {
             httpOnly: true,      // so JS cannot access it (good security)
             secure: false,       // set true if using HTTPS
             sameSite: "lax",     // "none" for cross-origin on HTTPS
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            maxAge: 168 * 60 * 60 * 1000 // 7 days
         });
 
         res.status(201).json({

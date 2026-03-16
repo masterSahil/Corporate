@@ -43,7 +43,9 @@ import EmployeeRewards from "./employee_pages/EmployeeRewards";
 const MainRoutes = ({ loggedIn, role }) => {
   return (
     <Routes>
-      <Route path="/" element={loggedIn && role === "employee" ? <Navigate to="/employee/dashboard" /> : <AuthPage />} />
+      <Route path="/" 
+        element={!loggedIn ? ( <AuthPage /> ) : role === "employee" ? 
+          (<Navigate to="/employee/dashboard" replace />) : (<Navigate to="/dashboard" replace />)}/>
 
       {/* Dashboard - All Logged In Users */}
       <Route path="/dashboard" element={loggedIn && (role === "super_admin" || role === "admin") ? <SuperAdmin /> : <Navigate to="/" />} />

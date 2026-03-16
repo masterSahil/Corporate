@@ -76,7 +76,7 @@ const EmployeeStore = () => {
                 <p className="text-zinc-400 font-medium text-lg">Turn your hard-earned points into premium rewards.</p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5 flex flex-col items-center min-w-45">
+              <div className="bg-white/10 border border-white/10 rounded-2xl p-5 flex flex-col items-center min-w-45">
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Your Balance</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-black text-white">{userPoints}</span>

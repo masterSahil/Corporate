@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Menu, Trophy, Search, Filter, Calendar, Award, History, CheckCircle2, Globe } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
-import { theme } from "../components/theme";
 import axios from "axios";
 
 const EmployeeRewards = () => {
@@ -10,10 +9,6 @@ const EmployeeRewards = () => {
   const [myRewards, setMyRewards] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Filter");
-
-  // Stats calculation
-  const myTotalPoints = myRewards.reduce((acc, curr) => acc + (curr.points || 0), 0);
-  const myTotalCount = myRewards.length;
 
   const getRewards = async () => {
     try {
@@ -34,10 +29,25 @@ const EmployeeRewards = () => {
     getRewards();
   }, []);
 
-  // Derived categories from all rewards
+  // --- ACTIONS ---
+  const handleAcceptReward = async (rewardId) => {
+    setMyRewards(prevRewards => 
+      prevRewards.map(reward => 
+        reward._id === rewardId ? { ...reward, isAccepted: true, status: 'redeemed' } : reward
+      )
+    );
+
+    try {
+      await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${rewardId}`, {status: "redeemed"}, { withCredentials: true });
+      console.log("Accept reward clicked and updated for ID:", rewardId);
+    } catch (error) {
+      console.error("Error accepting reward:", error);
+    }
+  };
+
+  // --- FILTERING LOGIC ---
   const categories = ["Filter", ...new Set(rewards.map(r => r.category).filter(Boolean))];
 
-  // Logic for filtering
   const filterLogic = (list) => {
     return list.filter(r => {
       const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -46,9 +56,18 @@ const EmployeeRewards = () => {
     });
   };
 
-  // Helper for filtering based on search and category
-  const filteredMyRewards = filterLogic(myRewards);
+  // BROAD CATCH: If it's not explicitly accepted, it stays in Pending. 
+  // (Adjust 'isAccepted' or 'status === accepted' based on your actual MongoDB schema)
+  const myPendingRewards = myRewards.filter(r => r.status !== 'redeemed' && r.isAccepted !== true); 
+  const myAcceptedRewards = myRewards.filter(r => r.status === 'redeemed' || r.isAccepted === true);
+
+  const filteredPendingRewards = filterLogic(myPendingRewards);
+  const filteredAcceptedRewards = filterLogic(myAcceptedRewards);
   const filteredAllRewards = filterLogic(rewards);
+
+  // Stats calculation (Only counting accepted rewards for stats)
+  const myTotalPoints = myAcceptedRewards.reduce((acc, curr) => acc + (curr.points || 0), 0);
+  const myTotalCount = myAcceptedRewards.length;
 
   return (
     <div className={`flex h-screen w-full bg-slate-50 font-sans selection:bg-slate-900 selection:text-white overflow-hidden`}>
@@ -93,7 +112,6 @@ const EmployeeRewards = () => {
 
           {/* 2. SEARCH & CONTROLS */}
           <div className="flex flex-col md:flex-row gap-4 mb-10 items-center justify-between">
-            {/* Wider Search Bar */}
             <div className="relative w-full md:flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input 
@@ -105,10 +123,9 @@ const EmployeeRewards = () => {
             </div>
             
             <div className="flex gap-2 w-full md:w-auto">
-              {/* Category Dropdown Filter */}
               <div className="relative flex-1 md:w-48">
                 <select 
-                  className="w-full appearance-none pl-4  py-3.5 bg-white border border-slate-200 rounded-lg text-xs font-bold uppercase tracking-wider outline-none hover:bg-slate-50 cursor-pointer transition-all shadow-sm"
+                  className="w-full appearance-none pl-4 py-3.5 bg-white border border-slate-200 rounded-lg text-xs font-bold uppercase tracking-wider outline-none hover:bg-slate-50 cursor-pointer transition-all shadow-sm"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
@@ -125,22 +142,72 @@ const EmployeeRewards = () => {
             </div>
           </div>
 
-          {/* 3. SECTION ONE: MY REWARDS */}
+          {/* =========================================
+              3. SECTION: PENDING REWARDS (To Accept)
+                 This entirely disappears if empty!
+              ========================================= */}
+          {filteredPendingRewards.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="h-6 w-1 bg-orange-400 rounded-full"></div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-slate-900">Action Required: Accept Rewards</h2>
+                <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full">{filteredPendingRewards.length}</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredPendingRewards.map((reward) => (
+                  <div key={reward._id} className="group bg-white border-2 border-orange-100 hover:border-orange-300 rounded-xl p-5 transition-all shadow-sm flex flex-col h-full relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-orange-100 to-transparent rounded-bl-full opacity-50"></div>
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-orange-50 border-orange-200 text-orange-700">
+                        <CheckCircle2 size={13} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Pending</span>
+                      </div>
+                      <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
+                        <Calendar size={12} /> {new Date(reward.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="mb-5 relative z-10">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{reward.category || 'General'}</p>
+                      <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2">{reward.title}</h3>
+                      <p className="text-sm text-slate-500 line-clamp-2">{reward.description}</p>
+                    </div>
+                    <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between relative z-10">
+                      <div>
+                        <span className="text-[12px] font-bold text-slate-400 block">Value</span>
+                        <span className="text-xl font-bold text-slate-900">+{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
+                      </div>
+                      <button 
+                        onClick={() => handleAcceptReward(reward._id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-orange-600 transition-all shadow-md active:scale-95"
+                      >
+                        Accept <Award size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* =========================================
+              4. SECTION: MY ACHIEVEMENTS (Accepted)
+              ========================================= */}
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <div className="h-6 w-1 bg-slate-300 rounded-full"></div>
               <h2 className="text-2xl lg:text-3xl font-bold text-slate-900">My Achievements</h2>
-              <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full">{filteredMyRewards.length}</span>
+              <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full">{filteredAcceptedRewards.length}</span>
             </div>
 
-            {filteredMyRewards.length > 0 ? (
+            {filteredAcceptedRewards.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredMyRewards.map((reward) => (
-                  <div key={reward._id} className="group bg-white border hover:border-black border-dashed border-slate-200 rounded-xl p-5 transition-all hover:shadow-md flex flex-col h-full">
+                {filteredAcceptedRewards.map((reward) => (
+                  <div key={reward._id} className="group bg-white border border-slate-200 rounded-xl p-5 transition-all flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-blue-50 border-blue-100 text-blue-700">
                         <CheckCircle2 size={13} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Earned</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Accepted</span>
                       </div>
                       <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
                         <Calendar size={12} /> {new Date(reward.createdAt).toLocaleDateString()}
@@ -156,7 +223,7 @@ const EmployeeRewards = () => {
                         <span className="text-[12px] font-bold text-slate-400 block">Value Awarded</span>
                         <span className="text-xl font-bold text-slate-900">+{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded-lg group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                      <div className="p-2.5 bg-slate-100 text-slate-400 rounded-lg">
                         <Award size={18} />
                       </div>
                     </div>
@@ -164,22 +231,24 @@ const EmployeeRewards = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white border hover:border-black border-dashed border-slate-200 rounded-xl py-12 flex flex-col items-center justify-center text-center">
+              <div className="bg-white border border-dashed border-slate-200 rounded-xl py-12 flex flex-col items-center justify-center text-center">
                 <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                  <Award size={24} />
+                  <Award className="text-slate-400" size={24} />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900">No personal rewards yet</h3>
-                <p className="text-slate-500 text-md">Achievements you earn will appear here.</p>
+                <h3 className="font-bold text-xl text-slate-900">No accepted rewards yet</h3>
+                <p className="text-slate-500 text-md">Rewards you accept will appear here.</p>
               </div>
             )}
           </section>
 
           <hr className="border-slate-200 mb-12" />
 
-          {/* 4. SECTION TWO: ALL REWARDS */}
+          {/* =========================================
+              5. SECTION: GLOBAL REWARDS GALLERY
+              ========================================= */}
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-6 w-1 bg-slate-300 rounded-full"></div>
+              <div className="h-6 w-1 bg-slate-800 rounded-full"></div>
               <h2 className="text-2xl lg:text-3xl font-bold text-slate-900">Global Rewards Gallery</h2>
               <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full">{filteredAllRewards.length}</span>
             </div>
@@ -207,8 +276,8 @@ const EmployeeRewards = () => {
                         <span className="text-[12px] font-bold text-slate-400 block">Reward Value</span>
                         <span className="text-xl font-bold text-slate-900">{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded-lg group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                        <Award size={18} />
+                      <div className="p-2.5 bg-slate-50 rounded-lg text-slate-400">
+                        <Trophy size={18} />
                       </div>
                     </div>
                   </div>
@@ -216,7 +285,7 @@ const EmployeeRewards = () => {
               </div>
             ) : (
               <div className="text-center py-20 bg-white border hover:border-black border-dashed border-slate-200 rounded-xl">
-                <Globe className="mx-auto text-black mb-4" size={40} />
+                <Globe className="mx-auto text-slate-400 mb-4" size={40} />
                 <p className="text-slate-500 text-md">No results found for this criteria.</p>
               </div>
             )}

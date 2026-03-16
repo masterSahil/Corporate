@@ -99,10 +99,16 @@ module.exports.createReward = async (req, res) => {
 
 module.exports.updateReward = async (req, res) => {
     try {
-        const {title, category, description, email, isDeleted, points, status} = req.body;
-        const updated = await rewardSchema.findByIdAndUpdate(req.params.id, {title, category, 
-            description, email, isDeleted, status: email ? "Issued" : "Unassigned", points},
-             {returnDocument: 'after'});
+        const { title, category, description, email, isDeleted, points, status } = req.body;
+        let finalStatus = status;
+        
+        if (!status && email !== undefined) {
+            finalStatus = email ? "Issued" : "Unassigned";
+        }
+
+        const updated = await rewardSchema.findByIdAndUpdate(req.params.id, 
+            { title, category, description, email, isDeleted, points, status: finalStatus },
+            { returnDocument: 'after' });
 
         res.status(200).json({
             success: true,
