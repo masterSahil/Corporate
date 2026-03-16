@@ -368,7 +368,7 @@ module.exports.LoginUser = async (req, res) => {
             httpOnly: true,      // so JS cannot access it (good security)
             secure: false,       // set true if using HTTPS
             sameSite: "lax",     // "none" for cross-origin on HTTPS
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            maxAge: 168 * 60 * 60 * 1000 // 7 days
         });
 
         res.status(201).json({

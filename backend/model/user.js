@@ -18,6 +18,7 @@ const UserSchema = new Schema({
         enum: ["super_admin", "admin", "employee"], 
         default: "employee"
     },
+    points: {type: Number, default: 0},
     createdAt: { type: Date, default: Date.now },
     deletedAt: { type: Date, default: null },
 });
