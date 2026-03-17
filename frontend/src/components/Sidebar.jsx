@@ -116,7 +116,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             onClick={() => handleNavigation('/dashboard')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="bg-black p-1.5 rounded-lg shadow-md transition-transform group-hover:scale-105">
+            <div className="bg-black p-1.5 rounded-lg shadow-md transition-transform">
               <Shield size={20} className="text-white" strokeWidth={2.5} />
             </div>
             <div>

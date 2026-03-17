@@ -38,7 +38,12 @@ const EmployeeRewards = () => {
     );
 
     try {
-      await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${rewardId}`, {status: "redeemed"}, { withCredentials: true });
+      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${rewardId}`, {status: "redeemed"}, { withCredentials: true });
+      const email = res.data.reward.email;
+      const res2 = await axios.post(`${import.meta.env.VITE_API_KEY}/fetch-user`, {email}, { withCredentials: true });
+      const id = res2.data.users._id;
+      const user_Points = res2.data.users.points;
+      await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, {points: user_Points + res.data.reward.points}, { withCredentials: true });
       console.log("Accept reward clicked and updated for ID:", rewardId);
     } catch (error) {
       console.error("Error accepting reward:", error);
@@ -157,7 +162,7 @@ const EmployeeRewards = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredPendingRewards.map((reward) => (
                   <div key={reward._id} className="group bg-white border-2 border-orange-100 hover:border-orange-300 rounded-xl p-5 transition-all shadow-sm flex flex-col h-full relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-orange-100 to-transparent rounded-bl-full opacity-50"></div>
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-linear-to-br from-orange-100 to-transparent rounded-bl-full opacity-50"></div>
                     <div className="flex justify-between items-start mb-4 relative z-10">
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-orange-50 border-orange-200 text-orange-700">
                         <CheckCircle2 size={13} />

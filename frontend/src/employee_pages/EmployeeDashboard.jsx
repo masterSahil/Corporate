@@ -35,55 +35,69 @@ const EmployeeDashboard = () => {
   // --- DATA FETCHING & PROCESSING ---
   const getData = async () => {
     try {
-      const [resUsers, resRewards, resProducts] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }),
+      // 1. Fetch all data in parallel, INCLUDING the current session role
+      const [resUsers, resRewards, resProducts, resRole] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }), 
         axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true })
+        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }) 
       ]);
 
       const fetchedUsers = resUsers.data?.users || [];
       const fetchedRewards = resRewards.data?.reward || [];
       const fetchedProducts = resProducts.data?.product || [];
+      
+      // 2. EXACT USER MATCHING
+      // Get the email of the person holding the JWT cookie
+      const loggedInEmail = resRole.data?.user?.email;
+      // Find their exact profile in the user database
+      const actualEmployee = fetchedUsers.find(u => u.email === loggedInEmail);
+      setCurrentUser(actualEmployee);
 
-      // 1. Setup Users & Admins
+      // 3. Setup Admins & Store Items (For the UI layout)
       const adminsList = fetchedUsers.filter(u => ['admin', 'super_admin'].includes(u.role?.toLowerCase()));
       setAdmins(adminsList.slice(0, 3));
-
-      const employee = fetchedUsers.find(u => u.role?.toLowerCase() === 'employee');
-      setCurrentUser(employee);
-
-      // 2. Setup Products & Rewards
       setProducts(fetchedProducts.filter(p => !p.isDeleted).slice(0, 4));
-      
       const activeRewards = fetchedRewards.filter(r => !r.isDeleted);
       setRewards(activeRewards.slice(0, 4));
 
-      // 3. Calculate Dynamic Points & Stats
-      const myRewards = activeRewards.filter(r => r.email === employee.email);
+      // 4. PROCESS PERSONALIZED DATA
+      // Only get rewards that belong to this specific user
+      const myRewards = activeRewards.filter(r => r.email === loggedInEmail);
       setAllUserRewards(myRewards);
+      // Grab points straight from the database object!
+      setUserPoints(actualEmployee?.points || 0); 
 
-      let claimedCount = myRewards.filter(r => r.status?.toLowerCase() === 'redeemed').length;
-      let totalEarned = myRewards.reduce((total, reward) => {
-        if (reward.status?.toLowerCase() === 'redeemed') {
-          return total + (reward.points || 0);
-        }
-        return total;
-      }, 0);
-      
-      setUserPoints(totalEarned); 
+      // 5. CALCULATE STATS
+      // Count how many items they've successfully claimed
+      const claimedCount = myRewards.filter(r => r.status?.toLowerCase() === 'redeemed').length;
+      const dateString = actualEmployee?.createdAt?.$date || actualEmployee?.createdAt;
+      const joinDate = dateString ? 
+      new Date(dateString).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) 
+        : "Recently";
 
+      // 6. BUILD NON-REPETITIVE STAT CARDS
       setStats([
-        { id: 1, title: "Total Points Earned", value: totalEarned.toLocaleString(), icon: Award, trend: "Lifetime earnings", trendUp: true },
-        { id: 2, title: "Rewards Claimed", value: claimedCount.toString(), icon: Gift, trend: "Successfully redeemed", trendUp: true },
-        { id: 3, title: "Department", value: employee?.department || "N/A", icon: Trophy, trend: employee?.employment || "Active", trendUp: true },
-        { id: 4, title: "Available Balance", value: totalEarned.toLocaleString(), icon: Sparkles, trend: "Ready to spend", trendUp: true },
+        {  id: 1,  title: "Rewards Claimed",  value: claimedCount.toString(),  
+           icon: Gift,  trend: "Lifetime redemptions",  trendUp: true 
+        },
+        { 
+          id: 2, title: "Department", value: actualEmployee?.department || "Unassigned", icon: Trophy, 
+          trend: "Active Team", trendUp: true 
+        },
+        { 
+          id: 3,  title: "Role Type",  value: actualEmployee?.employment || "Staff",  icon: Shield,  
+          trend: "Verified Status",  trendUp: true 
+        },
+        { 
+          id: 4, title: "Member Since", value: joinDate, icon: Clock, trend: "Company Tenure", trendUp: true 
+        },
       ]);
 
-      // 4. Default to This Month view
+      // 7. Initialize Graph Data
       generateChartData(myRewards, 'THIS_MONTH');
-
     } catch (error) {
-      console.error("Error fetching employee data:", error);
+      console.error("Error fetching employee dashboard data:", error);
     }
   };
 
@@ -104,11 +118,8 @@ const EmployeeDashboard = () => {
       // Create an entry for every day of the month (1 to 31)
       for (let i = 1; i <= daysInMonth; i++) {
         data.push({
-          name: `${i} ${targetDate.toLocaleString('default', { month: 'short' })}`, // e.g., "15 Mar"
-          day: i,
-          monthIndex: targetDate.getMonth(),
-          year: targetDate.getFullYear(),
-          points: 0
+          name: `${i} ${targetDate.toLocaleString('default', { month: 'short' })}`, day: i, 
+          monthIndex: targetDate.getMonth(), year: targetDate.getFullYear(), points: 0
         });
       }
 
@@ -153,7 +164,6 @@ const EmployeeDashboard = () => {
         }
       });
     }
-
     setGraphData(data);
   };
 
@@ -307,7 +317,7 @@ const EmployeeDashboard = () => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+              <div className="flex-1 pr-2 space-y-4 custom-scrollbar">
                 {rewards.length > 0 ? rewards.map((reward) => (
                   <div key={reward._id?.$oid || reward._id} className="group relative p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-zinc-900 hover:border-zinc-900 transition-all duration-300">
                     <div className="flex justify-between items-start mb-2">
@@ -338,7 +348,7 @@ const EmployeeDashboard = () => {
             </div>
           </div>
 
-          {/* Featured Products */}
+          {/* Featured Products (Marketplace Highlights) */}
           <div className="flex flex-col pt-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div className="flex items-center gap-2.5">
@@ -356,34 +366,49 @@ const EmployeeDashboard = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {products.map((product) => (
-                <div key={product._id?.$oid || product._id} className="group bg-white border border-slate-200 rounded-2xl p-4 transition-all duration-300 hover:border-zinc-900 hover:shadow-xl flex flex-col">
+                <div 
+                  key={product._id?.$oid || product._id} 
+                  onClick={() => navigate('/employee/store')}
+                  className="group bg-white border border-slate-200 rounded-2xl p-3 transition-all duration-500 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col"
+                >
+                  {/* Image Container with Floating Badges */}
                   <div className="aspect-square rounded-xl bg-slate-50 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100">
                     {product.gallery && product.gallery.length > 0 ? (
                       <img 
                         src={product.gallery[0].fileUrl} 
                         alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
                       />
                     ) : (
                       <Package size={40} className="text-slate-300" />
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
-                  </div>
-                  
-                  <div className="flex-1 flex flex-col px-1">
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1.5">{product.category || 'Merch'}</p>
-                    <h4 className="text-sm font-bold text-slate-900 mb-4 line-clamp-2 leading-snug">{product.name}</h4>
                     
-                    <div className="mt-auto flex items-end justify-between pt-4 border-t border-slate-100">
-                      <div>
-                        <p className="text-[9px] text-slate-400 font-bold mb-0.5 uppercase tracking-widest">Cost</p>
-                        <span className="text-lg font-extrabold text-zinc-900 tracking-tight">{product.price} <span className="text-[10px] font-semibold text-zinc-500 uppercase">pts</span></span>
-                      </div>
-                      <button className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-zinc-900 group-hover:border-zinc-900 group-hover:text-white transition-all duration-300 text-slate-600 bg-white">
-                        <ShoppingCart size={16} />
-                      </button>
+                    {/* Subtle dark overlay on hover */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+
+                    {/* Category Badge (Top Left) */}
+                    <div className="absolute top-3 left-0 flex min-w-0 max-w-full">
+                      <span className="bg-black text-white text-[9px] font-black uppercase tracking-[0.2em] px-2.5 py-1.5 rounded-md shadow-sm truncate">
+                        {product.category || 'Merch'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Text Content */}
+                  <div className="flex-1 flex flex-col px-2 pb-2">
+                    <h4 className="text-base font-black text-slate-900 mb-1 line-clamp-1 leading-snug group-hover:text-black transition-colors">
+                      {product.name}
+                    </h4>
+                    <p className="text-xs font-medium text-slate-500 line-clamp-2">
+                      {product.description || "Premium employee reward item."}
+                    </p>
+                    
+                    {/* Hover Animated "View in Store" Link */}
+                    <div className="mt-4 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400 group-hover:text-black transition-colors">
+                      <span>View in Store</span>
+                      <ArrowRight size={14} className="transform -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
                     </div>
                   </div>
                 </div>

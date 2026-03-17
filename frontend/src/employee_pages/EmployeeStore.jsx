@@ -243,10 +243,10 @@ const EmployeeStore = () => {
                     {/* Pricing & Cart Controls */}
                     <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-slate-100">
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Exchange At</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Price At</span>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-black text-black tracking-tighter italic leading-none">{product.price}</span>
-                          <span className="text-[10px] font-bold text-zinc-400 uppercase">$</span>
+                          <span className="text-[16px] font-bold text-zinc-400 uppercase">₹</span>
                         </div>
                       </div>
 

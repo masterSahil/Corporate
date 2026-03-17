@@ -280,7 +280,7 @@ const Settings = () => {
                           type="text"
                           name="department"
                           value={formData.department}
-                          onChange={handleChange}
+                          onChange={handleChange} placeholder='Department'
                           className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
                         />
                       </div>

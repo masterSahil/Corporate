@@ -100,20 +100,62 @@ module.exports.createReward = async (req, res) => {
 module.exports.updateReward = async (req, res) => {
     try {
         const { title, category, description, email, isDeleted, points, status } = req.body;
-        let finalStatus = status;
         
-        if (!status && email !== undefined) {
-            finalStatus = email ? "Issued" : "Unassigned";
+        // 1. Fetch the OLD reward first so we know who it belonged to
+        const oldReward = await rewardSchema.findById(req.params.id);
+        if (!oldReward) {
+            return res.status(404).json({ success: false, message: "Reward not found" });
         }
 
+        let finalStatus = status || oldReward.status;
+        let finalPoints = points !== undefined ? points : oldReward.points;
+
+        // Check if the reward was already accepted/redeemed by the user
+        const wasClaimed = oldReward.status === 'redeemed';
+
+        if (wasClaimed) {
+            // SCENARIO 1: Admin removed the email (Unassigned)
+            if (!email || email === "") {
+                // Find the user using the OLD email from the database
+                const originalUser = await userSchema.findOne({ email: oldReward.email });
+                if (originalUser) {
+                    // Deduct the points (and make sure it doesn't go below 0)
+                    const newTotal = Math.max(0, originalUser.points - oldReward.points);
+                    await userSchema.findByIdAndUpdate(originalUser._id, { points: newTotal });
+                }
+                
+                finalStatus = "Unassigned";
+            } 
+            // SCENARIO 2: Admin changed the points (e.g., made them less)
+            else if (points !== undefined && points !== oldReward.points) {
+                const user = await userSchema.findOne({ email: oldReward.email });
+                if (user) {
+                    // Calculate the difference. 
+                    // Example: Old points = 500, New points = 300. Difference = -200.
+                    const difference = points - oldReward.points;
+                    const newTotal = Math.max(0, (user.points || 0) + difference);
+                    
+                    await userSchema.findByIdAndUpdate(user._id, { points: newTotal });
+                }
+            }
+        } else {
+            // If the reward was never claimed, just set the status normally
+            if (!status) {
+                finalStatus = (email && email !== "") ? "Issued" : "Unassigned";
+            }
+        }
+
+        // 2. Finally, update the reward itself
         const updated = await rewardSchema.findByIdAndUpdate(req.params.id, 
-            { title, category, description, email, isDeleted, points, status: finalStatus, createdAt: new Date() },
-            { returnDocument: 'after' });
+            {title, category, description, email, isDeleted, points: finalPoints, 
+                status: finalStatus, updatedAt: new Date()}, { returnDocument: 'after' }
+        );
 
         res.status(200).json({
             success: true,
             reward: updated,
-        })
+        });
+
     } catch (error) {
         res.status(500).json({
             success: false,

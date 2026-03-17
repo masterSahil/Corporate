@@ -189,7 +189,7 @@ module.exports.CreateUser = async (req, res) => {
 
 module.exports.UpdatedUser = async (req, res) => {
   try {
-    const { username, email, password, gender, phoneNumber, role, department, employment, profile } = req.body;
+    const { username, email, password, gender, phoneNumber, role, department, employment, points, profile } = req.body;
 
     const user = await UserSchema.findById(req.params.id);
 
@@ -200,7 +200,7 @@ module.exports.UpdatedUser = async (req, res) => {
       });
     }
 
-    const userData = { username, email, gender, phoneNumber, role, department, employment };
+    const userData = { username, email, gender, phoneNumber, role, department, employment, points };
 
     // password update
     if (password) {
@@ -361,7 +361,7 @@ module.exports.LoginUser = async (req, res) => {
             })
         }
 
-        const token = jwt.sign({userId: user._id, role: user.role, email: user.email}, process.env.SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({userId: user._id, role: user.role, email: user.email}, process.env.SECRET, { expiresIn: '7d' });
         
         // Deploy with https = secure: true; sameSite: "none"
         res.cookie("corporate_token", token, {
@@ -412,7 +412,7 @@ module.exports.LogOut = async (req, res) => {
             httpOnly: true,      // so JS cannot access it (good security)
             secure: false,       // set true if using HTTPS
             sameSite: "lax",     // "none" for cross-origin on HTTPS
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            // maxAge: 168 * 60 * 60 * 1000 
         });
 
         res.status(200).json({
