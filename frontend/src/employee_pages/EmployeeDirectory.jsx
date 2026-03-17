@@ -95,21 +95,21 @@ const EmployeeDirectory = () => {
 
               {/* Role Filter Dropdown */}
               <div className="relative flex items-center">
-                <Filter size={16} className="absolute left-4 text-white pointer-events-none z-10" />
+                <Filter size={16} className="absolute left-4 pointer-events-none z-10" />
                 <select 
                   value={selectedRole}
                   onChange={(e) => {
                     setSelectedRole(e.target.value);
                     setSelectedDept("All"); // Reset dept when role changes
                   }}
-                  className="appearance-none bg-black text-white pl-10 pr-10 py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-zinc-800 shadow-lg cursor-pointer outline-none border-none"
+                  className="appearance-none pl-10 pr-10 py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg cursor-pointer outline-none border-none"
                 >
                   <option value="All">All Roles</option>
                   <option value="super_admin">Super Admin</option>
                   <option value="admin">Admin</option>
                   <option value="employee">Employee</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-4 text-white pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-4 pointer-events-none" />
               </div>
 
               {/* Dynamic Department Filter (Visible only if Employee selected) */}
