@@ -25,50 +25,33 @@ const EmployeeCart = () => {
   const navigate = useNavigate();
 
   const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const [resProducts, resRole, resRewards, resCart] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true })
-      ]);
+  try {
+    setIsLoading(true);
+    const [resProducts, resRole, resCart] = await Promise.all([
+      axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
+      axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
+      axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true })
+    ]);
 
-      const fetchedProducts = resProducts.data?.product || [];
-      const userId = resRole.data?.user?._id;
-      const userEmail = resRole.data?.user?.email;
-      setCurrentUserId(userId);
+    const user = resRole.data.user;
+    setCurrentUserId(user._id);
+    setUserPoints(user.points || 0);
 
-      // 1. Calculate Available Balance (Only 'Redeemed' status)
-      const userRewards = resRewards.data?.reward?.filter(r => r.email === userEmail) || [];
-      const calculatedPoints = userRewards.reduce((total, reward) => {
-        if (reward.status?.toLowerCase() === 'redeemed') {
-          return total + (reward.points || 0);
-        }
-        return total;
-      }, 0);
-      setUserPoints(calculatedPoints);
+    const fetchedProducts = resProducts.data?.product || [];
+    const userCartRaw = resCart.data?.cart?.filter(item => item.buyerId === user._id) || [];
+    
+    const mergedCart = userCartRaw.map(cartItem => {
+      const productDetail = fetchedProducts.find(p => p._id === cartItem.productId);
+      return { ...cartItem, product: productDetail || null };
+    }).filter(item => item.product);
 
-      // 2. Filter Cart for Current User & Merge with Product Data
-      const userCartRaw = resCart.data?.cart?.filter(item => item.buyerId === userId) || [];
-      
-      const mergedCart = userCartRaw.map(cartItem => {
-        const productDetail = fetchedProducts.find(p => p._id === cartItem.productId);
-        return {
-          ...cartItem,
-          product: productDetail || null 
-        };
-      }).filter(item => item.product);
-
-      setCartItems(mergedCart);
-
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load cart data.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setCartItems(mergedCart);
+  } catch (error) {
+    toast.error("Failed to load cart data.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -120,41 +103,56 @@ const EmployeeCart = () => {
     }
   }, [cartTotalRs, applyPoints, pointsInput]);
 
-  // Handle manual points input
   const handlePointsChange = (e) => {
-    let val = parseInt(e.target.value, 10);
-    
-    if (isNaN(val) || val < 0) {
-      setPointsInput("");
-      return;
-    }
-    
-    // Prevent entering more points than they have, or more than the cart total
-    const maxAllowed = Math.min(userPoints, cartTotalRs);
-    if (val > maxAllowed) {
-      val = maxAllowed;
-    }
-    
-    setPointsInput(val);
+    setPointsInput(e.target.value);
   };
 
   const handleTogglePoints = () => {
     setApplyPoints(!applyPoints);
     if (!applyPoints) {
-      setPointsInput(Math.min(userPoints, cartTotalRs)); // Auto-fill max when turned on
+      setPointsInput(Math.min(userPoints, cartTotalRs).toString()); 
     } else {
-      setPointsInput(""); // Clear when turned off
+      setPointsInput(""); 
     }
   };
 
-  const discountRs = applyPoints ? (Number(pointsInput) || 0) : 0;
+  // Convert the input string to a float safely for math
+  const parsedPoints = parseFloat(pointsInput) || 0;
+  
+  // Validation Logic 
+  let pointsError = null;
+  if (applyPoints && pointsInput !== "") {
+    if (parsedPoints < 0) {
+      pointsError = "Points cannot be negative.";
+    } else if (parsedPoints > userPoints) {
+      pointsError = `You only have ${userPoints} points available.`;
+    } else if (parsedPoints > cartTotalRs) {
+      pointsError = `Points cannot exceed the cart total (₹${cartTotalRs}).`;
+    }
+  }
+
+  // Only apply the discount if there is NO error
+  const discountRs = pointsError ? 0 : parsedPoints;
   const finalTotalRs = cartTotalRs - discountRs;
 
-  const checkout = async() => {
+  // --- CHECKOUT FUNCTION ---
+  const checkout = async () => {
+    if (pointsError) {
+      toast.error("Please fix the points error before checking out."); return;
+    }
     try {
-      console.log(cartItems);
-    } catch (error) {
+      const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
+
+      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/checkout`, 
+        {userId: currentUserId, items: cleanItems, pointsUsed: discountRs}, { withCredentials: true });
       
+      toast.success(res.data.message || "Checkout successful!");
+      setPointsInput("");
+      setApplyPoints(false);
+      fetchData(); 
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Checkout failed");
+      console.log(error, error.response?.data?.message);
     }
   }
 
@@ -307,23 +305,21 @@ const EmployeeCart = () => {
                       </label>
 
                       {applyPoints && (
-                        <div className="flex items-center gap-2 mt-3">
-                          <div className="relative flex-1">
-                            <input
-                              type="number"
-                              value={pointsInput}
-                              onChange={handlePointsChange}
-                              placeholder="Enter points"
-                              className="w-full bg-black border border-zinc-700 text-white text-xs font-bold rounded-xl pl-3 pr-10 py-3 outline-none focus:border-zinc-500 transition-all placeholder:text-zinc-600"
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-zinc-500 uppercase tracking-widest">pts</span>
+                        <div className="flex flex-col mt-3">
+                          <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                              <input type="number" step="any" value={pointsInput}
+                                onChange={handlePointsChange} placeholder="Enter points"
+                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs font-bold rounded-xl pl-3 pr-10 py-3 outline-none transition-all placeholder:text-zinc-600`}
+                              />
+                              <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-widest ${pointsError ? 'text-rose-500' : 'text-zinc-500'}`}>pts</span>
+                            </div>
+                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors border border-zinc-700"> Max </button>
                           </div>
-                          <button
-                            onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs))}
-                            className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors border border-zinc-700"
-                          >
-                            Max
-                          </button>
+                          
+                          {pointsError && (
+                            <p className="text-[10px] font-bold text-rose-400 mt-2 ml-1">{pointsError}</p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -357,19 +353,14 @@ const EmployeeCart = () => {
                   </div>
 
                   {/* Checkout Button */}
-                  <button onClick={checkout}
-                    disabled={isLoading}
-                    className="w-full py-3.5 md:py-4 rounded-lg flex items-center justify-center gap-2 text-xs md:text-xs font-black uppercase tracking-widest transition-all bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                  >
+                  <button onClick={checkout} disabled={isLoading || !!pointsError} 
+                    className="w-full py-3.5 md:py-4 rounded-lg flex items-center justify-center gap-2 text-xs md:text-xs font-black uppercase tracking-widest transition-all bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed" >
                     Proceed to Checkout
                   </button>
 
-                  <p className="text-center text-[9px] md:text-[10px] font-bold text-zinc-600 mt-4 md:mt-6 uppercase tracking-widest">
-                    Discounts calculated securely.
-                  </p>
+                  <p className="text-center text-[9px] md:text-[10px] font-bold text-zinc-600 mt-4 md:mt-6 uppercase tracking-widest"> Discounts calculated securely. </p>
                 </div>
               </div>
-
             </div>
           )}
         </div>

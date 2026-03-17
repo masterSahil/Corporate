@@ -21,31 +21,22 @@ const EmployeeStore = () => {
   const navigate = useNavigate();
 
   const getData = async () => {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
-      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
-      const res3 = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
-      
-      setProducts(res.data.product);
-      const userId = res2.data.user._id;
-      setCurrentUserId(userId);
-      const currentUserRewards = res3.data.reward.filter(r => r.email === res2.data.user.email);
-      const calculatedPoints = currentUserRewards.reduce((total, currentReward) => {
-        if (currentReward.status?.toLowerCase() === 'redeemed') {
-          return total + (currentReward.points || 0);
-        }
-        return total; 
-      }, 0);
-      setUserPoints(calculatedPoints);
+  try {
+    const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
+    const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
+    
+    setProducts(res.data.product);
+    const user = res2.data.user;
+    setCurrentUserId(user._id);
+    setUserPoints(user.points || 0); 
 
-      // Fetch all carts and filter for this specific user to set initial UI state
-      const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true });
-      const userCart = cartRes.data.cart.filter(item => item.buyerId === userId);
-      setCartItems(userCart);
-    } catch (error) {
-      toast.error(error.message || "Failed to fetch data");
-    }
-  };
+    const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true });
+    const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
+    setCartItems(userCart);
+  } catch (error) {
+    toast.error("Failed to fetch data");
+  }
+};
 
   useEffect(() => {
     getData();

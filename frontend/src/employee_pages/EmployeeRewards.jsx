@@ -10,16 +10,24 @@ const EmployeeRewards = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Filter");
 
+  // --- NEW LOGIC STATES ---
+  const [userPoints, setUserPoints] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
   const getRewards = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
       const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
       
       const allRewards = res.data.reward || [];
-      const userEmail = role_check.data.user.email;
+      const user = role_check.data.user; // Get live user data
       
       setRewards(allRewards);
-      setMyRewards(allRewards.filter(r => r.email === userEmail));
+      setMyRewards(allRewards.filter(r => r.email === user.email));
+      
+      // Sync points and ID
+      setUserPoints(user.points || 0);
+      setCurrentUserId(user._id);
     } catch (error) {
       console.error("Error fetching rewards:", error);
     }
@@ -29,22 +37,28 @@ const EmployeeRewards = () => {
     getRewards();
   }, []);
 
-  // --- ACTIONS ---
+  // --- UPDATED ACTIONS LOGIC ---
   const handleAcceptReward = async (rewardId) => {
-    setMyRewards(prevRewards => 
-      prevRewards.map(reward => 
-        reward._id === rewardId ? { ...reward, isAccepted: true, status: 'redeemed' } : reward
-      )
-    );
+    const rewardToAccept = myRewards.find(r => r._id === rewardId);
+    if (!rewardToAccept) return;
 
     try {
       const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${rewardId}`, {status: "redeemed"}, { withCredentials: true });
-      const email = res.data.reward.email;
-      const res2 = await axios.post(`${import.meta.env.VITE_API_KEY}/fetch-user`, {email}, { withCredentials: true });
-      const id = res2.data.users._id;
-      const user_Points = res2.data.users.points;
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, {points: user_Points + res.data.reward.points}, { withCredentials: true });
-      console.log("Accept reward clicked and updated for ID:", rewardId);
+      
+      // Calculate new balance
+      const rewardPoints = res.data.reward.points || 0;
+      const newBalance = userPoints + rewardPoints;
+
+      // Update Database
+      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, {points: newBalance}, { withCredentials: true });
+      
+      // Update UI States
+      setUserPoints(newBalance);
+      setMyRewards(prevRewards => 
+        prevRewards.map(reward => 
+          reward._id === rewardId ? { ...reward, isAccepted: true, status: 'redeemed' } : reward
+        )
+      );
     } catch (error) {
       console.error("Error accepting reward:", error);
     }
@@ -61,8 +75,6 @@ const EmployeeRewards = () => {
     });
   };
 
-  // BROAD CATCH: If it's not explicitly accepted, it stays in Pending. 
-  // (Adjust 'isAccepted' or 'status === accepted' based on your actual MongoDB schema)
   const myPendingRewards = myRewards.filter(r => r.status !== 'redeemed' && r.isAccepted !== true); 
   const myAcceptedRewards = myRewards.filter(r => r.status === 'redeemed' || r.isAccepted === true);
 
@@ -70,8 +82,7 @@ const EmployeeRewards = () => {
   const filteredAcceptedRewards = filterLogic(myAcceptedRewards);
   const filteredAllRewards = filterLogic(rewards);
 
-  // Stats calculation (Only counting accepted rewards for stats)
-  const myTotalPoints = myAcceptedRewards.reduce((acc, curr) => acc + (curr.points || 0), 0);
+  // Keep count logic for badges
   const myTotalCount = myAcceptedRewards.length;
 
   return (
@@ -105,7 +116,7 @@ const EmployeeRewards = () => {
               <div className="flex gap-8 border-l border-white/10 pl-0 md:pl-8">
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 uppercase mb-1">My Points</p>
-                  <p className="text-3xl font-bold">{myTotalPoints.toLocaleString()}<span className="text-sm ml-1 text-slate-500">pts</span></p>
+                  <p className="text-3xl font-bold">{userPoints.toLocaleString()}<span className="text-sm ml-1 text-slate-500">pts</span></p>
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 uppercase mb-1">Badges Earned</p>
@@ -147,10 +158,7 @@ const EmployeeRewards = () => {
             </div>
           </div>
 
-          {/* =========================================
-              3. SECTION: PENDING REWARDS (To Accept)
-                 This entirely disappears if empty!
-              ========================================= */}
+          {/* 3. SECTION: PENDING REWARDS */}
           {filteredPendingRewards.length > 0 && (
             <section className="mb-12">
               <div className="flex items-center gap-2 mb-6">
@@ -195,9 +203,7 @@ const EmployeeRewards = () => {
             </section>
           )}
 
-          {/* =========================================
-              4. SECTION: MY ACHIEVEMENTS (Accepted)
-              ========================================= */}
+          {/* 4. SECTION: MY ACHIEVEMENTS */}
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <div className="h-6 w-1 bg-slate-300 rounded-full"></div>
@@ -208,7 +214,7 @@ const EmployeeRewards = () => {
             {filteredAcceptedRewards.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredAcceptedRewards.map((reward) => (
-                  <div key={reward._id} className="group bg-white border border-slate-200 rounded-xl p-5 transition-all flex flex-col h-full">
+                  <div key={reward._id} className="group bg-white border-dashed hover:border border-black rounded-xl p-5 transition-all flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-blue-50 border-blue-100 text-blue-700">
                         <CheckCircle2 size={13} />
@@ -236,9 +242,9 @@ const EmployeeRewards = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white border border-dashed border-slate-200 rounded-xl py-12 flex flex-col items-center justify-center text-center">
+              <div className="bg-white hover:border hover:border-dashed border-black rounded-xl py-12 flex flex-col items-center justify-center text-center">
                 <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                  <Award className="text-slate-400" size={24} />
+                  <Award size={24} />
                 </div>
                 <h3 className="font-bold text-xl text-slate-900">No accepted rewards yet</h3>
                 <p className="text-slate-500 text-md">Rewards you accept will appear here.</p>
@@ -248,9 +254,7 @@ const EmployeeRewards = () => {
 
           <hr className="border-slate-200 mb-12" />
 
-          {/* =========================================
-              5. SECTION: GLOBAL REWARDS GALLERY
-              ========================================= */}
+          {/* 5. SECTION: GLOBAL REWARDS GALLERY */}
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <div className="h-6 w-1 bg-slate-800 rounded-full"></div>
@@ -290,8 +294,8 @@ const EmployeeRewards = () => {
               </div>
             ) : (
               <div className="text-center py-20 bg-white border hover:border-black border-dashed border-slate-200 rounded-xl">
-                <Globe className="mx-auto text-slate-400 mb-4" size={40} />
-                <p className="text-slate-500 text-md">No results found for this criteria.</p>
+                <Globe className="mx-auto mb-4" size={40} />
+                <p className="text-md">No results found for this criteria.</p>
               </div>
             )}
           </section>

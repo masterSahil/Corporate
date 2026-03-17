@@ -8,4 +8,7 @@ router.post('/cart', cartController.createCart);
 router.put('/cart/:id', cartController.updateCart);
 router.delete('/cart/:id', cartController.deleteCart);
 
+// checkout cart
+router.post('/checkout', cartController.checkout);
+
 module.exports = router;
