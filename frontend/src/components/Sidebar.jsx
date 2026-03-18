@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { 
   LayoutDashboard, Shield, Users, Box, Gift, Settings, 
-  ChevronDown, ChevronRight, X, Menu, FileText 
+  ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart 
 } from 'lucide-react';
 import { theme } from './theme'; 
 
@@ -51,6 +51,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       { label: '2. View, Update & Delete', path: '/rewards/manage' },
       { label: '3. Soft Deleted', path: '/rewards/deleted' }
     ]},
+    { name: 'Orders', icon: ShoppingCart, isLink: true, path: '/checkout-orders' },
     { name: 'System Logs', icon: FileText, isLink: true, path: '/system-logs' },
     { name: 'Settings', icon: Settings, isLink: true, path: '/settings' }
   ], []);
@@ -78,7 +79,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   return (
     <>
       {/* --- MOBILE TOP NAVBAR --- */}
-      <div className={`lg:hidden fixed top-0 left-0 right-0 h-16 ${theme.cardBg} border-b ${theme.border} z-30 flex items-center justify-between px-4 shadow-sm`}>
+      <div className={`lg:hidden fixed top-0 left-0 right-0 h-16 ${theme.cardBg} ${theme.border} z-30 flex items-center justify-between px-4 shadow-sm`}>
         <div 
           onClick={() => handleNavigation('/dashboard')} 
           className="flex items-center gap-3 cursor-pointer group"

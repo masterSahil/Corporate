@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { 
-  Menu, Users, Shield, Package, Gift, UserCheck, Zap, 
-  Trash2, Download, Plus, UserPlus, FileText, CheckCircle2, Clock 
-} from "lucide-react";
+import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, UserPlus, FileText, CheckCircle2, Clock, ShoppingCart } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
@@ -19,6 +16,8 @@ const quickActions = [
   { id: 2, label: "Create Reward", icon: Gift, navigate: "/rewards/add" },
   { id: 3, label: "Add Product", icon: Package, navigate: "/products/add" },
   { id: 4, label: "Audit Logs", icon: FileText, navigate: "/system-logs" },
+  { id: 5, label: "Orders", icon: ShoppingCart, navigate: "/checkout-orders" },
+  { id: 6, label: "Settings", icon: FileText, navigate: "/settings" },
 ];
 
 const Dashboard = () => {
@@ -28,21 +27,24 @@ const Dashboard = () => {
   const [deletedUsers, setDeletedUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [rewards, setRewards] = useState([]);
+  const [joiningDate, setJoiningDate] = useState(null);
 
   // --- DATA FETCHING ---
   const getData = async () => {
     try {
-      const [resUsers, resDeleted, resProducts, resRewards] = await Promise.all([
+      const [resUsers, resDeleted, resProducts, resRewards, loggedInAdmin] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true })
+        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
       ]);
 
       if (resUsers.data?.success) setUsers(resUsers.data.users || []);
       if (resDeleted.data?.success) setDeletedUsers(resDeleted.data.users || []);
       if (resProducts.data?.success) setProducts(resProducts.data.product || []);
       if (resRewards.data?.success) setRewards(resRewards.data.reward || []);
+      setJoiningDate(loggedInAdmin.data.user.createdAt);
     } catch (error) {
       toast.error(error.message || "Failed to fetch data");
       console.error(error);
@@ -52,6 +54,15 @@ const Dashboard = () => {
   useEffect(() => {
     getData();
   }, []);
+
+  const formatDateTimeParts = (dateString) => {
+  const date = new Date(dateString);
+
+  const formattedDate = date.toLocaleDateString("en-IN", {day: "2-digit", month: "2-digit", year: "numeric"});
+  const formattedTime = date.toLocaleTimeString("en-IN", {hour: "2-digit", minute: "2-digit", hour12: true});
+
+  return { formattedDate, formattedTime };
+};
 
   // --- DYNAMIC DATA CALCULATIONS ---
   // 1. User & Admin Metrics
@@ -65,7 +76,7 @@ const Dashboard = () => {
   const uniqueRewardCategories = new Set(rewards.map(r => r.category)).size;
 
   const topStats = [
-    { id: 1, title: "Total Employees", value: totalEmployeesCount.toString(), icon: Users, badge: null, badgeColor: "" },
+    { id: 1, title: "Joining Date", value: "-", icon: Users, badge: null, badgeColor: "" },
     { id: 2, title: "Total Admins", value: adminsCount.toString(), icon: Shield, badge: null, badgeColor: "" },
     { id: 3, title: "Total Products", value: products.length.toString(), icon: Package, badge: null, badgeColor: "" },
     { id: 4, title: "Rewards Issued", value: rewards.length.toString(), icon: Gift, badge: null, badgeColor: "" },
@@ -175,23 +186,21 @@ const Dashboard = () => {
               <p className="text-zinc-500 text-sm mt-1">Real-time management and analytics across the enterprise.</p>
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              <button 
-                onClick={handleExportCSV} 
-                className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all shadow-sm"
-              >
+              <button onClick={handleExportCSV} 
+                className="flex-1 sm:flex-none px-5 py-2.5 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 hover:bg-zinc-50 transition-all shadow-sm">
                 <Download size={18} /> Export
               </button>
             </div>
           </div>
 
           {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {topStats.map((stat) => {
               const Icon = stat.icon;
               return (
                 <div key={stat.id} className={`${theme.cardBg} p-6 rounded-2xl border ${stat.alert ? 'border-red-100' : theme.border} shadow-sm hover:shadow-md transition-shadow group`}>
                   <div className="flex justify-between items-start mb-4">
-                    <div className={`p-2.5 rounded-xl group-hover:scale-110 transition-transform ${stat.alert ? 'bg-red-50 text-red-600' : 'bg-zinc-100 text-zinc-900'}`}>
+                    <div className={`p-2.5 rounded-xl transition-transform ${stat.alert ? 'bg-red-50 text-red-600' : 'bg-zinc-100 text-zinc-900'}`}>
                       <Icon size={20} />
                     </div>
                     {stat.badge && (
@@ -201,14 +210,31 @@ const Dashboard = () => {
                     )}
                   </div>
                   <p className="text-[10px] font-bold tracking-wider uppercase text-zinc-500">{stat.title}</p>
-                  <p className="text-2xl font-bold text-zinc-900 mt-1 tracking-tight">{stat.value}</p>
+                  {stat.title === "Joining Date" && joiningDate ? (
+                    (() => {
+                      const { formattedDate, formattedTime } = formatDateTimeParts(joiningDate);
+                      return (
+                        <div className="flex items-center gap-2 mt-1">
+                          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+                            {formattedDate}
+                          </h1>
+                          <span className="text-sm mt-2 text-zinc-500 font-medium">
+                            {formattedTime}
+                          </span>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="text-2xl font-bold text-zinc-900 mt-1 tracking-tight">
+                      {stat.value}
+                    </p>
+                  )}
                 </div>
               );
             })}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             {/* Department Chart */}
             <div className={`${theme.cardBg} p-6 lg:p-8 rounded-2xl border ${theme.border} shadow-sm flex flex-col`}>
               <h2 className="text-lg font-bold text-zinc-900 mb-6">Department Spread</h2>
@@ -244,13 +270,20 @@ const Dashboard = () => {
             {/* Quick Actions */}
             <div className={`${theme.cardBg} p-6 lg:p-8 rounded-2xl border ${theme.border} shadow-sm`}>
               <h2 className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-3 lg:gap-4">
-                {quickActions.map((action) => {
+              <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3 lg:gap-4">
+                {quickActions.map((action, index) => {
                   const ActionIcon = action.icon;
                   return (
-                    <Link to={action.navigate} key={action.id} className="flex flex-col items-center justify-center p-6 bg-zinc-50 rounded-xl hover:bg-zinc-900 hover:text-white transition-all duration-300 group border border-zinc-200 hover:border-zinc-900">
-                      <ActionIcon className="mb-3 text-zinc-600 group-hover:text-white transition-colors" size={24} />
-                      <span className="text-xs font-bold">{action.label}</span>
+                    <Link to={action.navigate} key={action.id}
+                      className={`flex flex-col items-center justify-center p-6 bg-zinc-50 rounded-xl
+                        hover:bg-zinc-900 hover:text-white transition-all duration-300 group
+                        border border-zinc-200 hover:border-zinc-900
+                        ${index >= 4 ? "lg:hidden xl:flex" : ""}`}>
+                      <ActionIcon className="mb-3 text-zinc-600 group-hover:text-white transition-colors"
+                        size={24}/>
+                      <span className="text-xs font-bold text-center">
+                        {action.label}
+                      </span>
                     </Link>
                   );
                 })}

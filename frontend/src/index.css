@@ -30,3 +30,26 @@ input[type="password"]::-webkit-textfield-decoration-container {
     appearance: none;
     -webkit-appearance: none;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.slate.300') transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: theme('colors.slate.300');
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: theme('colors.slate.400');
+}

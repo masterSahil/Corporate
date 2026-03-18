@@ -1,4 +1,3 @@
-import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 
 // Auth & Core Pages
@@ -31,14 +30,19 @@ import AddReward from "./pages/Rewards/AddRewards";
 import ViewRewards from "./pages/Rewards/ViewRewards";
 import UpdateReward from "./pages/Rewards/UpdateReward";
 import SoftDeletedRewards from "./pages/Rewards/DeletedRewards";
+
+// Orders
+import AdminOrder from "./pages/Orders/AdminOrder";
+
+// Employees Portal
 import EmployeeDashboard from "./employee_pages/EmployeeDashboard";
 import EmployeeStore from "./employee_pages/EmployeeStore";
 import EmployeeCart from "./employee_pages/EmployeeCart";
-import EmployeeHistory from "./employee_pages/EmployeeHistory";
 import EmployeeDirectory from "./employee_pages/EmployeeDirectory";
 import EmployeeProfile from "./employee_pages/EmployeeProfile";
 import ProductDetails from "./employee_pages/ProductDetails";
 import EmployeeRewards from "./employee_pages/EmployeeRewards";
+import EmployeeOrder from "./employee_pages/EmployeeOrder";
 
 const MainRoutes = ({ loggedIn, role }) => {
   return (
@@ -86,9 +90,12 @@ const MainRoutes = ({ loggedIn, role }) => {
       <Route path="/employee/rewards" element={loggedIn && role === "employee" ? <EmployeeRewards /> : <Navigate to="/" />} />
       <Route path="/employee/store/:id" element={loggedIn && role === "employee" ? <ProductDetails /> : <Navigate to="/" />} />
       <Route path="/employee/cart" element={loggedIn && role === "employee" ? <EmployeeCart /> : <Navigate to="/" />} />
-      <Route path="/employee/orders" element={loggedIn && role === "employee" ? <EmployeeHistory /> : <Navigate to="/" />} />
+      <Route path="/employee/orders" element={loggedIn && role === "employee" ? <EmployeeOrder /> : <Navigate to="/" />} />
       <Route path="/employee/directory" element={loggedIn && role === "employee" ? <EmployeeDirectory /> : <Navigate to="/" />} />
       <Route path="/employee/settings" element={loggedIn && role === "employee" ? <EmployeeProfile /> : <Navigate to="/" />} />
+
+      {/* Admin Orders */}
+      <Route path="/checkout-orders" element={loggedIn && (role === "super_admin" || role === "admin") ? <AdminOrder /> : <Navigate to="/" />} />
 
       {/* System Logs */}
       <Route path="/system-logs" element={loggedIn && (role === "super_admin" || role === "admin") ? <SystemLogs /> : <Navigate to="/" />} />

@@ -46,10 +46,7 @@ const EmployeeSidebar = ({ isOpen, setIsOpen }) => {
 
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-sm transition-opacity" 
-          onClick={() => setIsOpen(false)} 
-        />
+        <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-sm transition-opacity"/>
       )}
 
       {/* Sidebar Drawer */}
@@ -58,7 +55,7 @@ const EmployeeSidebar = ({ isOpen, setIsOpen }) => {
         {/* Logo Section */}
         <div className={`h-16 flex items-center justify-between px-6 border-b ${theme.border} shrink-0`}>
           <div onClick={() => handleNavigation('/employee/dashboard')} className="flex items-center gap-3 cursor-pointer group">
-            <div className="bg-black p-1.5 rounded-lg shadow-md transition-transform group-hover:scale-105">
+            <div className="bg-black p-1.5 rounded-lg shadow-md transition-transform">
               <Shield size={20} className="text-white" strokeWidth={2.5} />
             </div>
             <div>

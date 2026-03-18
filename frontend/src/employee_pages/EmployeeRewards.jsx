@@ -242,7 +242,7 @@ const EmployeeRewards = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white hover:border hover:border-dashed border-black rounded-xl py-12 flex flex-col items-center justify-center text-center">
+              <div className="bg-white border border-white hover:border-dashed hover:border-black rounded-xl py-12 flex flex-col items-center justify-center text-center">
                 <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
                   <Award size={24} />
                 </div>

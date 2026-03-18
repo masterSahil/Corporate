@@ -5,7 +5,6 @@ import {
   ShoppingCart, ArrowRight, Loader2, Sparkles, Receipt, Check
 } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
-import { theme } from "../components/theme";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
 
@@ -170,7 +169,7 @@ const EmployeeCart = () => {
           </button>
         </div>
 
-        <div className="max-w-6xl mx-auto w-full p-4 md:p-6 lg:p-8 flex-1 flex flex-col">
+        <div className="max-w-7xl mx-auto w-full p-6 flex-1 flex flex-col">
           
           {/* Top Navigation & Title */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
@@ -182,7 +181,7 @@ const EmployeeCart = () => {
                 <ArrowLeft size={20} />
               </button>
               <div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Shopping Cart</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">Shopping Cart</h1>
                 <p className="text-xs md:text-sm font-bold text-slate-500 mt-1">Review items and apply your points.</p>
               </div>
             </div>
@@ -203,11 +202,11 @@ const EmployeeCart = () => {
             </div>
           ) : cartItems.length === 0 ? (
             /* Empty State */
-            <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-200 p-6 md:p-8 text-center shadow-sm">
+            <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200 p-6 md:p-8 text-center shadow-sm">
               <div className="w-20 h-20 md:w-24 md:h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
                 <ShoppingCart size={32} className="text-slate-300 md:w-10 md:h-10" />
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-2">Your cart is empty</h2>
+              <h2 className="text-xl md:text-2xl font-bold mb-2">Your cart is empty</h2>
               <p className="text-sm text-slate-500 font-medium mb-8 max-w-md">Looks like you haven't added any products to your cart yet. Head over to the store to see what's new.</p>
               <button 
                 onClick={() => navigate('/employee/store')}
