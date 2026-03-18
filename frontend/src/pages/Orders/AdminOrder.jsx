@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Loader2, Search, Menu, Calendar, 
-  Hash, ChevronDown, ImageIcon, Clock, User, Mail, CreditCard
-} from "lucide-react";
+import { Loader2, Search, Menu, Calendar, Hash, ChevronDown, ImageIcon, Clock, User, Mail, CreditCard } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
@@ -15,14 +13,15 @@ const AdminOrders = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      // Fetch Orders, Products, and Users simultaneously
       const [resOrders, resProducts, resUsers] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}/orders`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }) // Assuming this endpoint exists for admins
+        axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }) 
       ]);
 
-      const allOrders = resOrders.data.orders || [];
+      const allOrders = (resOrders.data.orders || []).sort(
+        (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+      );
       const allProducts = resProducts.data.product || [];
       const allUsers = resUsers.data.users || [];
 
@@ -34,13 +33,10 @@ const AdminOrders = () => {
         // 2. Find Product Images
         const itemsWithData = order.items.map(item => {
           const product = allProducts.find(p => p._id === (item.productId?.$oid || item.productId));
-          return {
-            ...item,
-            image: product?.gallery?.[0]?.fileUrl || null,
+          return { ...item, image: product?.gallery?.[0]?.fileUrl || null, 
             category: product?.category || "General"
           };
         });
-
         return { ...order, buyer, items: itemsWithData };
       });
 
@@ -97,9 +93,8 @@ const AdminOrders = () => {
 
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="text" placeholder="Search ID or Customer..." 
-                  className="w-full md:w-96 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-slate-200 outline-none transition-all shadow-sm"
+                <input type="text" placeholder="Search ID " 
+                  className="w-full md:w-96 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-md text-sm outline-none transition-all shadow-sm"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
@@ -191,7 +186,7 @@ const AdminOrders = () => {
                       </div>
 
                       {/* Right: Actions (3 cols) */}
-                      <div className="lg:col-span-3 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-slate-100 pt-6 lg:pt-0 lg:pl-8">
+                      <div className="lg:col-span-3 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-slate-300 pt-6 lg:pt-0 lg:pl-8">
                         <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Checkout Summary</p>
                           <div className="space-y-1 mb-6">

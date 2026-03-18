@@ -190,7 +190,7 @@ const EmployeeDashboard = () => {
           </button>
         </div>
 
-        <div className="max-w-7xl mx-auto py-8 px-4 space-y-8 pb-12">
+        <div className="max-w-7xl mx-auto p-6 space-y-8 pb-12">
           {/* Welcome Banner */}
           <section className="relative rounded-2xl overflow-hidden bg-zinc-950 flex flex-col justify-end p-8 sm:p-10 text-white shadow-xl border border-zinc-800">
             <div className="absolute top-[-50%] left-[-10%] w-96 h-96 bg-zinc-600/20 blur-[120px] rounded-full pointer-events-none"></div>
