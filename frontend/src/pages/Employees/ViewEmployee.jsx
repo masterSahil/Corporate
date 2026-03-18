@@ -159,17 +159,11 @@ const ViewEmployees = () => {
                         {/* Employee Info (Profile Image & Username) */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            {employee.profile?.imageUrl ? (
-                              <img src={employee.profile.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                              <img src={employee?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
                                 alt={employee.username} 
                                 className="w-10 h-10 rounded-full object-cover border border-zinc-200"
                               />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600">
-                                {employee.username?.charAt(0).toUpperCase()}
-                              </div>
-                            )}
-                            <div>
+                              <div>
                               <p className="font-bold text-slate-900">{employee.username}</p>
                               <p className={`text-xs ${theme.textMuted} lg:hidden`}>{employee.email}</p>
                             </div>
