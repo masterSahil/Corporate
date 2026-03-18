@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Menu, Search, Mail, ShieldCheck, Shield, 
-  User, MoreHorizontal, Filter, Users, 
-  Globe, Phone, Verified, MessageSquare, ChevronDown
-} from "lucide-react";
+import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import { theme } from "../components/theme";
 import axios from "axios";
@@ -148,7 +144,8 @@ const EmployeeDirectory = () => {
                       </div>
 
                       <div className="w-32 h-32 rounded-lg overflow-hidden transition-all duration-500 border border-white/10 shrink-0">
-                        <img src={user?.profile?.imageUrl} className="w-full h-full object-cover" alt="" />
+                        <img src={user?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                        className="w-full h-full object-cover" alt="profile" />
                       </div>
 
                       <div className="relative z-10 flex-1 text-center lg:text-left">
@@ -184,8 +181,7 @@ const EmployeeDirectory = () => {
                     <div key={user._id} className="bg-white hover:shadow-2xl hover:shadow-black/5 transition-all p-6 rounded-xl group border-2 border-slate-100 hover:border-black flex flex-col items-center text-center">
                       <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 p-1 ring-2 ring-transparent group-hover:ring-black/5 transition-all overflow-hidden">
-                          <img 
-                            src={user?.profile?.imageUrl} 
+                          <img src={user?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
                             className="w-full h-full object-cover rounded-full transition-all duration-700" 
                             alt={user.username} 
                           />
@@ -233,8 +229,7 @@ const EmployeeDirectory = () => {
                     <div key={user._id} className="bg-white hover:shadow-2xl hover:shadow-black/5 transition-all p-6 rounded-xl group border-2 border-slate-100 hover:border-black flex flex-col items-center text-center">
                       <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 p-1 ring-2 ring-transparent group-hover:ring-black/5 transition-all overflow-hidden">
-                          <img 
-                            src={user?.profile?.imageUrl} 
+                          <img src={user?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
                             className="w-full h-full object-cover rounded-full transition-all duration-700" 
                             alt={user.username} 
                           />

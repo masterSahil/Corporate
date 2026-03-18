@@ -375,8 +375,7 @@ const EmployeeDashboard = () => {
                   {/* Image Container with Floating Badges */}
                   <div className="aspect-square rounded-xl bg-slate-50 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100">
                     {product.gallery && product.gallery.length > 0 ? (
-                      <img 
-                        src={product.gallery[0].fileUrl} 
+                      <img src={product.gallery[0].fileUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
                         alt={product.name} 
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
                       />

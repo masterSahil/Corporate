@@ -175,7 +175,7 @@ const Settings = () => {
               <div className="flex items-center gap-5 mb-8">
                 <div className="relative w-20 h-20 rounded-full bg-zinc-200 border border-zinc-300 overflow-hidden shrink-0 flex items-center justify-center group cursor-pointer shadow-sm">
                   {formData.profile ? (
-                    <img src={formData.profile?.imageUrl}
+                    <img src={formData.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"}
                       alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User size={32} className="text-zinc-400" />

@@ -76,8 +76,7 @@ const ProductDetails = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <img
-                                        src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url}
+                                    <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url}
                                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-102"
                                         alt={product.name}
                                     />
