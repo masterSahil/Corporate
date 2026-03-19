@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { 
-    ChevronLeft, ArrowRight, Minus, Plus, ShieldCheck, 
-    Truck, RefreshCw, Package, ShoppingBag, Star, 
-    Edit3, CheckCircle2, Trash2, Save, X 
+import {
+    ChevronLeft, ArrowRight, Minus, Plus, ShieldCheck,
+    Truck, RefreshCw, Package, ShoppingBag, Star,
+    Edit3, CheckCircle2, Trash2, Save, X
 } from "lucide-react";
 import axios from "axios";
 import EmployeeSidebar from "./EmployeeSidebar";
@@ -12,17 +12,17 @@ import { toast } from "../ui/Toaster";
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    
+
     // Core States
     const [product, setProduct] = useState(null);
     const [activeMedia, setActiveMedia] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    
+
     // Cart Logic States
     const [currentUserId, setCurrentUserId] = useState(null);
     const [currentUserName, setCurrentUserName] = useState(null);
-    const [cartItem, setCartItem] = useState(null); 
+    const [cartItem, setCartItem] = useState(null);
 
     // Review States
     const [reviews, setReviews] = useState([]);
@@ -47,7 +47,7 @@ const ProductDetails = () => {
             setProduct(foundProduct);
 
             const user = roleRes.data.user;
-            setCurrentUserId(user._id); 
+            setCurrentUserId(user._id);
             setCurrentUserName(user.username);
 
             // Correctly mapping usernames from individual review records
@@ -55,10 +55,10 @@ const ProductDetails = () => {
                 .filter(r => r.productId === id)
                 .map(r => ({
                     id: r._id,
-                    buyerId: r.buyerId, 
+                    buyerId: r.buyerId?._id || r.buyerId,
                     user: r.buyerId?.username || "User",
                     rating: r.rate,
-                    comment: r.review, 
+                    comment: r.review,
                     date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"
                 }));
 
@@ -82,8 +82,8 @@ const ProductDetails = () => {
         if (!currentUserId || !product) return;
         if (product.quantity <= 0) return toast.error("Product is out of stock.");
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, { 
-                buyerId: currentUserId, productId: product._id, quantity: 1 
+            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, {
+                buyerId: currentUserId, productId: product._id, quantity: 1
             }, { withCredentials: true });
             setCartItem(res.data.cart);
             toast.success("Added to Cart");
@@ -116,7 +116,7 @@ const ProductDetails = () => {
         e.preventDefault();
         if (!newReview.comment.trim()) return toast.error("Please write a comment.");
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/rating`, 
+            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/rating`,
                 { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating, username: currentUserName },
                 { withCredentials: true });
 
@@ -143,8 +143,8 @@ const ProductDetails = () => {
     const handleUpdateReview = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`, 
-            { review: editData.comment, rate: editData.rating }, { withCredentials: true });
+            await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`,
+                { review: editData.comment, rate: editData.rating }, { withCredentials: true });
 
             setReviews(reviews.map(r => r.id === editingReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
             setEditingReviewId(null);
@@ -155,7 +155,7 @@ const ProductDetails = () => {
         }
     };
 
-    const averageRating = reviews.length > 0 ? 
+    const averageRating = reviews.length > 0 ?
         (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
     if (isLoading || !product) return (
@@ -178,12 +178,12 @@ const ProductDetails = () => {
 
                 <div className="max-w-7xl w-full mx-auto px-6 py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start mb-16">
-                        
+
                         {/* LEFT: Image Section */}
                         <div className="w-full flex flex-col gap-4">
                             <div className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden relative flex items-center justify-center group shadow-sm">
-                                <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} alt={product.name} 
-                                    className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105"/>
+                                <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} alt={product.name}
+                                    className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
                             </div>
                             <div className="flex gap-3 overflow-auto pb-2 no-scrollbar">
                                 {product.gallery?.map((media, idx) => (
@@ -259,7 +259,7 @@ const ProductDetails = () => {
                                     </h3>
                                     <p className="text-sm text-zinc-500 mt-1">{reviews.length} total reviews • {averageRating} Avg Rating</p>
                                 </div>
-                                <button onClick={() => setIsWritingReview(!isWritingReview)} 
+                                <button onClick={() => setIsWritingReview(!isWritingReview)}
                                     className={`flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-bold transition-all border ${isWritingReview ? "bg-zinc-100 text-zinc-600 border-zinc-200" : "bg-white text-zinc-900 border-zinc-200 shadow-sm hover:bg-zinc-50"}`}>
                                     {isWritingReview ? "Cancel" : <><Edit3 size={16} /> Write Review</>}
                                 </button>
@@ -278,8 +278,8 @@ const ProductDetails = () => {
                                                 ))}
                                             </div>
                                         </div>
-                                        <textarea rows="5" value={newReview.comment} placeholder="Your feedback..." onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} 
-                                            className="w-full rounded-lg border border-zinc-200 p-5 text-sm resize-none outline-none bg-white shadow-sm focus:border-zinc-900"/>
+                                        <textarea rows="5" value={newReview.comment} placeholder="Your feedback..." onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                            className="w-full rounded-lg border border-zinc-200 p-5 text-sm resize-none outline-none bg-white shadow-sm focus:border-zinc-900" />
                                         <button type="submit" className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-4 rounded-lg text-sm font-bold shadow-lg">Submit Review</button>
                                     </form>
                                 </div>
@@ -326,11 +326,11 @@ const ProductDetails = () => {
                                                                 </button>
                                                             ))}
                                                         </div>
-                                                        <textarea value={editData.comment} onChange={(e) => setEditData({ ...editData, comment: e.target.value })} 
+                                                        <textarea value={editData.comment} onChange={(e) => setEditData({ ...editData, comment: e.target.value })}
                                                             className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-lg text-sm outline-none focus:bg-white transition-all resize-none" rows="4" />
                                                         <div className="flex gap-2">
-                                                            <button type="submit" className="bg-zinc-900 text-white px-6 py-3 rounded-lg text-xs font-bold flex items-center gap-1"><Save size={16}/> Save</button>
-                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="bg-zinc-100 text-zinc-600 px-6 py-3 rounded-lg text-xs font-bold flex items-center gap-1"><X size={16}/> Cancel</button>
+                                                            <button type="submit" className="bg-zinc-900 text-white px-6 py-3 rounded-lg text-xs font-bold flex items-center gap-1"><Save size={16} /> Save</button>
+                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="bg-zinc-100 text-zinc-600 px-6 py-3 rounded-lg text-xs font-bold flex items-center gap-1"><X size={16} /> Cancel</button>
                                                         </div>
                                                     </form>
                                                 ) : (
@@ -341,7 +341,7 @@ const ProductDetails = () => {
                                                                 <div>
                                                                     <div className="flex items-center gap-2">
                                                                         <h4 className="text-[15px] font-bold text-zinc-900">{review.user}</h4>
-                                                                        <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-100"><CheckCircle2 size={10}/> Verified</span>
+                                                                        <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-100"><CheckCircle2 size={10} /> Verified</span>
                                                                     </div>
                                                                     <div className="flex gap-0.5">
                                                                         {[...Array(5)].map((_, i) => (<Star key={i} size={12} className={i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-zinc-100"} />))}
@@ -352,8 +352,21 @@ const ProductDetails = () => {
                                                                 <span className="text-[12px] font-bold uppercase">{review.date}</span>
                                                                 {review.buyerId === currentUserId && (
                                                                     <div className="flex items-center gap-1 bg-zinc-50 p-1 rounded-lg border border-zinc-100">
-                                                                        <button onClick={() => { setEditingReviewId(review.id); setEditData({ rating: review.rating, comment: review.comment }); }} className="p-2 hover:text-yellow-500 rounded-lg transition-all"><Edit3 size={15} /></button>
-                                                                        <button onClick={() => handleDeleteReview(review.id)} className="p-2 hover:text-rose-600 rounded-lg transition-all"><Trash2 size={15} /></button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setEditingReviewId(review.id);
+                                                                                setEditData({ rating: review.rating, comment: review.comment });
+                                                                            }}
+                                                                            className="p-2 hover:text-yellow-500 rounded-lg transition-all"
+                                                                        >
+                                                                            <Edit3 size={15} />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleDeleteReview(review.id)}
+                                                                            className="p-2 hover:text-rose-600 rounded-lg transition-all"
+                                                                        >
+                                                                            <Trash2 size={15} />
+                                                                        </button>
                                                                     </div>
                                                                 )}
                                                             </div>
