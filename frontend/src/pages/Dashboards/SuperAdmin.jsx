@@ -43,7 +43,7 @@ const Dashboard = () => {
       if (resUsers.data?.success) setUsers(resUsers.data.users || []);
       if (resDeleted.data?.success) setDeletedUsers(resDeleted.data.users || []);
       if (resProducts.data?.success) setProducts(resProducts.data.product || []);
-      if (resRewards.data?.success) setRewards(resRewards.data.reward || []);
+      if (resRewards.data?.success) setRewards(resRewards.data.reward.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3) || []);
       setJoiningDate(loggedInAdmin.data.user.createdAt);
     } catch (error) {
       toast.error(error.message || "Failed to fetch data");

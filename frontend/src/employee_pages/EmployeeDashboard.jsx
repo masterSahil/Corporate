@@ -317,8 +317,8 @@ const EmployeeDashboard = () => {
               </div>
 
               <div className="flex-1 pr-2 space-y-4 custom-scrollbar">
-                {rewards.length > 0 ? rewards.map((reward) => (
-                  <div key={reward._id?.$oid || reward._id} className="group relative p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-zinc-900 hover:border-zinc-900 transition-all duration-300">
+                {rewards.length > 0 ? rewards.map((reward, key) => (
+                  <div key={key} className="group relative p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-zinc-900 hover:border-zinc-900 transition-all duration-300">
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 group-hover:text-zinc-400 line-clamp-1 pr-2">{reward.category}</span>
                       {reward.points ? (
