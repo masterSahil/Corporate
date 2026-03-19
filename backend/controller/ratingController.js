@@ -35,7 +35,7 @@ module.exports.getRating = async(req, res) => {
 module.exports.createRating = async(req, res) => {
     try {
         const {productId, buyerId, rate, review} = req.body;
-        const rating = new ratingSchema({productId, buyerId, rate, review});
+        const rating = new ratingSchema({productId, buyerId, rate, review, createdAt: Date.now()});
 
         await rating.save();
         res.status(200).json({
@@ -53,7 +53,7 @@ module.exports.createRating = async(req, res) => {
 module.exports.updateRating = async(req, res) => {
     try {
         const {productId, buyerId, rate, review} = req.body;
-        const rating = await ratingSchema.findByIdAndUpdate(req.params.id, {productId, buyerId, rate, review}, {returnDocument: 'after'});
+        const rating = await ratingSchema.findByIdAndUpdate(req.params.id, {productId, buyerId, rate, review, createdAt: Date.now()}, {returnDocument: 'after'});
 
         await rating.save();
         res.status(200).json({
