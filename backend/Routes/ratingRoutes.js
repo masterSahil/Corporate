@@ -5,7 +5,7 @@ const router = express.Router();
 router.get("/rating-all", ratingController.getAllRatings);
 router.get("/rating", ratingController.getRating);
 router.post("/rating", ratingController.createRating);
-router.put("/rating", ratingController.updateRating);
-router.delete("/rating", ratingController.deleteRating);
+router.put("/rating/:id", ratingController.updateRating);
+router.delete("/rating/:id", ratingController.deleteRating);
 
 module.exports = router;

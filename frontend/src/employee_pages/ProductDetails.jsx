@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-    ChevronLeft, ArrowRight, Minus, Plus,
-    ShieldCheck, Truck, RefreshCw, Package,
-    Play, Info, ShoppingBag, Star, Edit3
+import { 
+    ChevronLeft, ArrowRight, Minus, Plus, ShieldCheck, 
+    Truck, RefreshCw, Package, ShoppingBag, Star, 
+    Edit3, CheckCircle2, Trash2, Save, X 
 } from "lucide-react";
 import axios from "axios";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { toast } from "../ui/Toaster";
-
-// Mock Reviews Data
-const mockReviews = [
-    { id: 1, user: "Sarah M.", rating: 5, comment: "Absolutely incredible! The build quality is premium, and the sound isolation completely blocks out my noisy office.", date: "2 days ago" },
-    { id: 2, user: "James K.", rating: 4, comment: "Really solid product. Battery life is fantastic. Only giving 4 stars because the carrying case feels a bit flimsy.", date: "1 week ago" }
-];
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -31,9 +25,13 @@ const ProductDetails = () => {
     const [cartItem, setCartItem] = useState(null); 
 
     // Review States
-    const [reviews, setReviews] = useState(mockReviews);
+    const [reviews, setReviews] = useState([]);
     const [isWritingReview, setIsWritingReview] = useState(false);
     const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+
+    // Edit States
+    const [editingReviewId, setEditingReviewId] = useState(null);
+    const [editData, setEditData] = useState({ rating: 5, comment: "" });
 
     const fetchMasterData = async () => {
         try {
@@ -49,50 +47,48 @@ const ProductDetails = () => {
             setProduct(foundProduct);
 
             const user = roleRes.data.user;
-            setCurrentUserId(user._id); setCurrentUserName(user.username);
+            setCurrentUserId(user._id); 
+            setCurrentUserName(user.username);
 
-            // Filter reviews for THIS product and map them to match your UI
+            // Correctly mapping usernames from individual review records
             const productReviews = reviewRes.data.rating
                 .filter(r => r.productId === id)
                 .map(r => ({
                     id: r._id,
-                    user: currentUserName,
+                    buyerId: r.buyerId, 
+                    user: r.username || "User", 
                     rating: r.rate,
                     comment: r.review, 
                     date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"
                 }));
 
-            setReviews(productReviews.length > 0 ? productReviews : mockReviews);
+            setReviews(productReviews);
 
             const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
-            const existingCartItem = userCart.find(c => c.productId === id);
-            setCartItem(existingCartItem || null);
+            setCartItem(userCart.find(c => c.productId === id) || null);
 
         } catch (err) {
             console.error("Error fetching data:", err);
-            toast.error("Failed to load product details.");
+            toast.error("Failed to load details.");
         } finally {
             setIsLoading(false);
         }
     };
-    useEffect(() => {
-        fetchMasterData();
-    }, []);
+
+    useEffect(() => { fetchMasterData() }, []);
 
     // --- CART ACTIONS ---
     const addToCart = async () => {
         if (!currentUserId || !product) return;
         if (product.quantity <= 0) return toast.error("Product is out of stock.");
-
         try {
             const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, { 
                 buyerId: currentUserId, productId: product._id, quantity: 1 
             }, { withCredentials: true });
-            
             setCartItem(res.data.cart);
             toast.success("Added to Cart");
         } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to add product");
+            toast.error("Failed to add product");
         }
     };
 
@@ -111,54 +107,68 @@ const ProductDetails = () => {
                 setCartItem(res.data.cart);
             }
         } catch (error) {
-            toast.error("Failed to update quantity");
+            toast.error("Update failed");
         }
     };
 
     // --- REVIEW ACTIONS ---
     const handleSubmitReview = async (e) => {
-    try {
         e.preventDefault();
         if (!newReview.comment.trim()) return toast.error("Please write a comment.");
+        try {
+            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/rating`, 
+                { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating, username: currentUserName },
+                { withCredentials: true });
 
-        const res = await axios.post(`${import.meta.env.VITE_API_KEY}/rating`, 
-            { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating },
-            { withCredentials: true });
+            const saved = res.data.rating;
+            setReviews([{ id: saved._id, buyerId: currentUserId, user: currentUserName, rating: saved.rate, comment: saved.review, date: "Just now" }, ...reviews]);
+            setIsWritingReview(false);
+            setNewReview({ rating: 5, comment: "" });
+            toast.success("Review posted!");
+        } catch (error) {
+            toast.error("Error posting review");
+        }
+    };
 
-        const savedRating = res.data.rating;
-        const formattedReview = {
-            id: savedRating._id,
-            user: currentUserName, 
-            rating: savedRating.rate,
-            comment: savedRating.review,
-        };
+    const handleDeleteReview = async (reviewId) => {
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_KEY}/rating/${reviewId}`, { withCredentials: true });
+            setReviews(reviews.filter(r => r.id !== reviewId));
+            toast.success("Review deleted");
+        } catch (error) {
+            toast.error("Failed to delete review");
+        }
+    };
 
-        setReviews([formattedReview, ...reviews]);
-        setIsWritingReview(false);
-        setNewReview({ rating: 5, comment: "" });
+    const handleUpdateReview = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`, 
+                { review: editData.comment, rate: editData.rating }, { withCredentials: true });
+            setReviews(reviews.map(r => r.id === editingReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
+            setEditingReviewId(null);
+            toast.success("Review updated!");
+        } catch (error) {
+            toast.error("Update failed");
+            console.log(error)
+        }
+    };
 
-        toast.success("Review posted successfully!");
-    } catch (error) {
-        toast.error(error.response?.data?.message || "Error posting review");
-        console.error(error);
-    }
-};
+    const averageRating = reviews.length > 0 
+        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
+        : 0;
 
-    if (isLoading || !product) {
-        return (
-            <div className="h-screen flex items-center justify-center bg-white">
-                <div className="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isLoading || !product) return (
+        <div className="h-screen flex items-center justify-center bg-white">
+            <div className="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div>
+        </div>
+    );
 
     return (
         <div className="flex h-screen w-full bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-hidden">
             <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
             <main className="flex-1 overflow-y-auto bg-white scroll-smooth custom-scrollbar relative flex flex-col">
-                
-                {/* Top Nav */}
                 <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-100 px-6 py-4 flex justify-between items-center">
                     <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">
                         <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Store
@@ -166,52 +176,30 @@ const ProductDetails = () => {
                     <span className="text-xs font-medium text-zinc-400 hidden sm:block">Product / {product._id.slice(-8)}</span>
                 </nav>
 
-                <div className="max-w-300 w-full mx-auto px-6 py-8 lg:py-12">
-                    
-                    {/* Top Section: Split 50/50 Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-
-                        {/* LEFT: Image Gallery (Shrink-wrapped to avoid whitespace) */}
+                <div className="max-w-7xl w-full mx-auto px-6 py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start mb-16">
+                        
+                        {/* LEFT: Image Section */}
                         <div className="w-full flex flex-col gap-4">
                             <div className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden relative flex items-center justify-center group shadow-sm">
-                                {product.gallery?.length > 0 ? (
-                                    product.gallery[activeMedia]?.fileType?.includes("video") || product.gallery[activeMedia]?.url?.endsWith(".mp4") ? (
-                                        <video src={product.gallery[activeMedia].fileUrl || product.gallery[activeMedia].url} autoPlay muted loop playsInline className="w-full h-auto max-h-150 object-contain" />
-                                    ) : (
-                                        <img 
-                                            src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} 
-                                            alt={product.name} 
-                                            className="w-full h-auto max-h-150 object-contain transition-transform duration-700 group-hover:scale-105" 
-                                        />
-                                    )
-                                ) : (
-                                    <div className="h-100 flex items-center justify-center"><Package size={80} className="text-zinc-200" /></div>
-                                )}
+                                <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} alt={product.name} 
+                                    className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105"/>
                             </div>
-
-                            {/* Thumbnails */}
-                            {product.gallery?.length > 1 && (
-                                <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                                    {product.gallery.map((media, idx) => (
-                                        <button key={idx} onClick={() => setActiveMedia(idx)}
-                                            className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white
-                                            ${activeMedia === idx ? 'border-zinc-900' : 'border-zinc-100 opacity-60 hover:opacity-100'}`} >
-                                            <img src={media.fileUrl || media.url} className="w-full h-full object-cover" alt="" />
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            <div className="flex gap-3 overflow-auto pb-2 no-scrollbar">
+                                {product.gallery?.map((media, idx) => (
+                                    <button key={idx} onClick={() => setActiveMedia(idx)}
+                                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white ${activeMedia === idx ? 'border-zinc-900' : 'border-zinc-100 opacity-60 hover:opacity-100'}`} >
+                                        <img src={media.fileUrl || media.url} className="w-full h-full object-cover" alt="" />
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* RIGHT: Product Info, Cart, and Trust Badges */}
+                        {/* RIGHT: Product Details */}
                         <div className="flex flex-col">
-                            
-                            {/* Title & Price Info */}
                             <div className="mb-6">
                                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                                    <span className="px-3 py-1 bg-zinc-900 text-white text-[11px] font-semibold uppercase tracking-wider rounded-full">
-                                        {product.brand || "Exclusive"}
-                                    </span>
+                                    <span className="px-3 py-1 bg-zinc-900 text-white text-[11px] font-semibold uppercase tracking-wider rounded-full">{product.brand || "Exclusive"}</span>
                                     <span className="text-sm font-medium text-zinc-500">{product.category}</span>
                                 </div>
                                 <h1 className="text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3 leading-tight">{product.name}</h1>
@@ -221,11 +209,8 @@ const ProductDetails = () => {
                                 </div>
                             </div>
 
-                            <p className="text-zinc-600 text-sm sm:text-base leading-relaxed mb-8">
-                                {product.description || "Premium quality product designed for excellence. Fits perfectly into your lifestyle with outstanding durability and functionality."}
-                            </p>
+                            <p className="text-zinc-600 text-sm sm:text-base leading-relaxed mb-8">{product.description}</p>
 
-                            {/* Cart Action Box */}
                             <div className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-6 mb-6">
                                 <div className="flex justify-between items-center mb-5">
                                     <span className="text-sm font-medium text-zinc-600">Availability</span>
@@ -233,27 +218,22 @@ const ProductDetails = () => {
                                         {product.quantity > 0 ? `${product.quantity} In Stock` : "Out of Stock"}
                                     </span>
                                 </div>
-
                                 {cartItem ? (
                                     <div className="flex flex-col sm:flex-row gap-3">
                                         <div className="flex items-center gap-4 bg-zinc-50 rounded-xl p-1.5 border border-zinc-200 w-full sm:w-1/2 justify-between">
-                                            <button onClick={() => updateQuantity(cartItem.quantity - 1)} className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-white hover:shadow-sm transition-all"><Minus size={18} /></button>
+                                            <button onClick={() => updateQuantity(cartItem.quantity - 1)} className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-white hover:shadow-sm"><Minus size={18} /></button>
                                             <span className="font-semibold text-lg">{cartItem.quantity}</span>
-                                            <button onClick={() => updateQuantity(cartItem.quantity + 1)} className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-white hover:shadow-sm transition-all"><Plus size={18} /></button>
+                                            <button onClick={() => updateQuantity(cartItem.quantity + 1)} className="w-10 h-10 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-white hover:shadow-sm"><Plus size={18} /></button>
                                         </div>
-                                        <button className="w-full sm:w-1/2 bg-zinc-900 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 opacity-80 cursor-default">
-                                            <ShoppingBag size={18} /> Added to Cart
-                                        </button>
+                                        <button className="w-full sm:w-1/2 bg-zinc-900 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 opacity-80"><ShoppingBag size={18} /> Added to Cart</button>
                                     </div>
                                 ) : (
-                                    <button onClick={addToCart} disabled={product.quantity <= 0} className="w-full bg-zinc-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                        <span className="font-semibold">Add to Cart</span>
-                                        <ArrowRight size={18} />
+                                    <button onClick={addToCart} disabled={product.quantity <= 0} className="w-full bg-zinc-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 disabled:opacity-50 transition-colors">
+                                        <span className="font-semibold">Add to Cart</span><ArrowRight size={18} />
                                     </button>
                                 )}
                             </div>
 
-                            {/* Trust Badges - Moved Back Here */}
                             <div className="grid grid-cols-3 gap-3">
                                 {[
                                     { icon: ShieldCheck, title: "1 Yr Warranty" },
@@ -266,74 +246,133 @@ const ProductDetails = () => {
                                     </div>
                                 ))}
                             </div>
-
                         </div>
                     </div>
 
-                    {/* Bottom Section: Reviews Only */}
-                    <div className="mt-16 pt-12 border-t border-zinc-200">
-                        <div className="max-w-4xl mx-auto">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    {/* REVIEWS SECTION */}
+                    <section className="mt-16 pt-12 border-t border-zinc-200">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
                                 <div>
-                                    <h3 className="text-2xl font-semibold text-zinc-900 flex items-center gap-2">
-                                        <Star size={24} className="fill-yellow-400 text-yellow-400" /> Customer Reviews
+                                    <h3 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+                                        <Star size={24} className="fill-black text-black" /> Reviews
                                     </h3>
-                                    <p className="text-sm text-zinc-500 mt-1">Based on {reviews.length} reviews for this product</p>
+                                    <p className="text-sm text-zinc-500 mt-1">{reviews.length} total reviews • {averageRating} Avg Rating</p>
                                 </div>
-                                <button onClick={() => setIsWritingReview(!isWritingReview)} className="bg-white border border-zinc-200 text-sm font-semibold text-zinc-900 px-5 py-2.5 rounded-xl hover:bg-zinc-50 flex items-center gap-2 transition-colors shadow-sm">
-                                    <Edit3 size={16} /> {isWritingReview ? "Cancel Review" : "Write a Review"}
+                                <button onClick={() => setIsWritingReview(!isWritingReview)} 
+                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-bold transition-all border ${isWritingReview ? "bg-zinc-100 text-zinc-600 border-zinc-200" : "bg-white text-zinc-900 border-zinc-200 shadow-sm hover:bg-zinc-50"}`}>
+                                    {isWritingReview ? "Cancel" : <><Edit3 size={16} /> Write Review</>}
                                 </button>
                             </div>
 
-                            {/* Write Review Form */}
-                            {isWritingReview && (
-                                <form onSubmit={handleSubmitReview} className="mb-10 p-6 sm:p-8 bg-zinc-50 border border-zinc-100 rounded-2xl animate-in fade-in slide-in-from-top-4">
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-medium text-zinc-700 mb-2">Overall Rating</label>
-                                        <div className="flex gap-2">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <button key={star} type="button" onClick={() => setNewReview({ ...newReview, rating: star })} className="focus:outline-none transition-transform hover:scale-110">
-                                                    <Star size={28} className={newReview.rating >= star ? "fill-yellow-400 text-yellow-400" : "text-zinc-300"} />
-                                                </button>
-                                            ))} 
-                                        </div>
-                                    </div>
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-medium text-zinc-700 mb-2">Your Experience</label>
-                                        <textarea rows="4" placeholder="What did you like or dislike?" value={newReview.comment} onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} className="w-full rounded-xl border border-zinc-200 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 p-4 text-sm resize-none shadow-sm" />
-                                    </div>
-                                    <button type="submit" className="bg-zinc-900 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-zinc-800 transition-colors shadow-sm">
-                                        Submit Review
-                                    </button>
-                                </form>
-                            )}
-
-                            {/* Reviews List Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {reviews.map((review) => (
-                                    <div key={review.id} className="p-6 border border-zinc-100 rounded-2xl bg-white shadow-sm">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-sm font-bold text-zinc-700">
-                                                    {review?.user?.charAt(0) || "?"}
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-sm font-semibold text-zinc-900">{review.user}</h4>
-                                                    <div className="flex items-center gap-1 mt-1">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <Star key={i} size={12} className={i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-zinc-200"} />
-                                                        ))}
-                                                    </div>
-                                                </div>
+                            {isWritingReview ? (
+                                <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-6 animate-in fade-in slide-in-from-top-4">
+                                    <form onSubmit={handleSubmitReview} className="space-y-8">
+                                        <div>
+                                            <label className="block text-sm font-bold text-zinc-700 mb-4 uppercase tracking-widest">Your Rating</label>
+                                            <div className="flex gap-4">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <button key={star} type="button" onClick={() => setNewReview({ ...newReview, rating: star })} className="transition-transform hover:scale-110">
+                                                        <Star size={30} className={newReview.rating >= star ? "fill-yellow-400 text-yellow-400" : "text-zinc-300"} />
+                                                    </button>
+                                                ))}
                                             </div>
-                                            <span className="text-xs text-zinc-400">{review.date}</span>
                                         </div>
-                                        <p className="text-sm text-zinc-600 leading-relaxed">{review.comment}</p>
+                                        <textarea rows="5" value={newReview.comment} placeholder="Your feedback..." onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} 
+                                            className="w-full rounded-lg border border-zinc-200 p-5 text-sm resize-none outline-none bg-white shadow-sm focus:border-zinc-900"/>
+                                        <button type="submit" className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-4 rounded-lg text-sm font-bold shadow-lg">Submit Review</button>
+                                    </form>
+                                </div>
+                            ) : (
+                                <div className="space-y-10">
+                                    {/* Star Breakdown */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 bg-zinc-100 p-6 rounded-lg border border-zinc-100">
+                                        <div className="flex flex-col justify-center items-center sm:items-start">
+                                            <span className="text-5xl font-black text-zinc-900">{averageRating}</span>
+                                            <div className="flex gap-1 my-2">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={18} className={i < Math.round(averageRating) ? "fill-black text-black" : "text-zinc-200"} />
+                                                ))}
+                                            </div>
+                                            <p className="text-xs font-bold text-zinc-600 uppercase tracking-widest">Average Rating</p>
+                                        </div>
+                                        <div className="space-y-2.5">
+                                            {[5, 4, 3, 2, 1].map((star) => {
+                                                const count = reviews.filter(r => r.rating === star).length;
+                                                const perc = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                                                return (
+                                                    <div key={star} className="flex items-center gap-3">
+                                                        <span className="text-xs font-bold text-zinc-500 w-3">{star}</span>
+                                                        <div className="flex-1 h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-zinc-900 rounded-full" style={{ width: `${perc}%` }} />
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-zinc-600 w-8">{Math.round(perc)}%</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {/* Review List - Responsive Grid */}
+                                    <div className="grid grid-cols-1 gap-6">
+                                        {reviews.length > 0 ? reviews.map((review) => (
+                                            <div key={review.id} className="group relative p-6 md:p-8 border rounded-xl bg-white border-zinc-300 hover:shadow-2xl hover:shadow-zinc-200/40 transition-all duration-500">
+                                                {editingReviewId === review.id ? (
+                                                    <form onSubmit={handleUpdateReview} className="space-y-6">
+                                                        <div className="flex gap-2 p-3 bg-zinc-100 w-fit rounded-lg border border-zinc-100">
+                                                            {[1, 2, 3, 4, 5].map((s) => (
+                                                                <button key={s} type="button" onClick={() => setEditData({ ...editData, rating: s })}>
+                                                                    <Star size={24} className={editData.rating >= s ? "fill-yellow-400 text-yellow-400" : "text-zinc-200"} />
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        <textarea value={editData.comment} onChange={(e) => setEditData({ ...editData, comment: e.target.value })} 
+                                                            className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-lg text-sm outline-none focus:bg-white transition-all resize-none" rows="4" />
+                                                        <div className="flex gap-2">
+                                                            <button type="submit" className="bg-zinc-900 text-white px-6 py-3 rounded-lg text-xs font-bold flex items-center gap-1"><Save size={16}/> Save</button>
+                                                            <button type="button" onClick={() => setEditingReviewId(null)} className="bg-zinc-100 text-zinc-600 px-6 py-3 rounded-lg text-xs font-bold flex items-center gap-1"><X size={16}/> Cancel</button>
+                                                        </div>
+                                                    </form>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-12 h-12 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-lg">{review.user.charAt(0).toUpperCase()}</div>
+                                                                <div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <h4 className="text-[15px] font-bold text-zinc-900">{review.user}</h4>
+                                                                        <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-100"><CheckCircle2 size={10}/> Verified</span>
+                                                                    </div>
+                                                                    <div className="flex gap-0.5">
+                                                                        {[...Array(5)].map((_, i) => (<Star key={i} size={12} className={i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-zinc-100"} />))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-3 sm:self-start">
+                                                                <span className="text-[12px] font-bold uppercase">{review.date}</span>
+                                                                {review.buyerId === currentUserId && (
+                                                                    <div className="flex items-center gap-1 bg-zinc-50 p-1 rounded-lg border border-zinc-100">
+                                                                        <button onClick={() => { setEditingReviewId(review.id); setEditData({ rating: review.rating, comment: review.comment }); }} className="p-2 hover:text-yellow-500 rounded-lg transition-all"><Edit3 size={15} /></button>
+                                                                        <button onClick={() => handleDeleteReview(review.id)} className="p-2 hover:text-rose-600 rounded-lg transition-all"><Trash2 size={15} /></button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-zinc-600 text-[15px] leading-relaxed italic md:pl-16 relative">"{review.comment}"</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )) : (
+                                            <div className="py-24 text-center border-2 border-dashed border-zinc-100 rounded-lg bg-zinc-50/30">
+                                                <Package size={32} className="mx-auto text-zinc-200 mb-6" />
+                                                <h5 className="text-xl font-bold text-zinc-900 mb-2">No reviews yet</h5>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    </section>
                 </div>
             </main>
         </div>
