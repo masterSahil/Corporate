@@ -151,10 +151,6 @@ const EmployeeRewards = () => {
                 </select>
                 <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
               </div>
-
-              <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-800 transition-all shadow-sm">
-                <History size={14} /> Claim History
-              </button>
             </div>
           </div>
 
@@ -214,7 +210,7 @@ const EmployeeRewards = () => {
             {filteredAcceptedRewards.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredAcceptedRewards.map((reward) => (
-                  <div key={reward._id} className="group bg-white border-dashed hover:border border-black rounded-xl p-5 transition-all flex flex-col h-full">
+                  <div key={reward._id} className="group bg-white border-dashed border border-white hover:border-black rounded-xl p-5 transition-all flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-blue-50 border-blue-100 text-blue-700">
                         <CheckCircle2 size={13} />
@@ -268,11 +264,14 @@ const EmployeeRewards = () => {
                   <div key={reward._id} className="group bg-white border hover:border-black border-dashed border-slate-200 rounded-xl p-5 transition-all hover:shadow-md flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-slate-50 border-slate-100 text-slate-600">
-                        <Globe size={13} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Available</span>
+                        <Globe className="group-hover:text-black" size={13} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider group-hover:text-black">Available</span>
                       </div>
                       <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                        <Calendar size={12} /> {new Date(reward.createdAt).toLocaleDateString()}
+                        <Calendar className="group-hover:text-black" size={12} />
+                        <span className="group-hover:text-black"> 
+                          {new Date(reward.createdAt).toLocaleDateString()}
+                        </span>
                       </span>
                     </div>
                     <div className="mb-5">
@@ -286,7 +285,7 @@ const EmployeeRewards = () => {
                         <span className="text-xl font-bold text-slate-900">{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
                       </div>
                       <div className="p-2.5 bg-slate-50 rounded-lg text-slate-400">
-                        <Trophy size={18} />
+                        <Trophy className="group-hover:text-black" size={18} />
                       </div>
                     </div>
                   </div>

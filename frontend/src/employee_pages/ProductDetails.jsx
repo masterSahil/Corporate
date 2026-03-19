@@ -166,7 +166,7 @@ const ProductDetails = () => {
                     <span className="text-xs font-medium text-zinc-400 hidden sm:block">Product / {product._id.slice(-8)}</span>
                 </nav>
 
-                <div className="max-w-[1200px] w-full mx-auto px-6 py-8 lg:py-12">
+                <div className="max-w-300 w-full mx-auto px-6 py-8 lg:py-12">
                     
                     {/* Top Section: Split 50/50 Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
@@ -176,16 +176,16 @@ const ProductDetails = () => {
                             <div className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden relative flex items-center justify-center group shadow-sm">
                                 {product.gallery?.length > 0 ? (
                                     product.gallery[activeMedia]?.fileType?.includes("video") || product.gallery[activeMedia]?.url?.endsWith(".mp4") ? (
-                                        <video src={product.gallery[activeMedia].fileUrl || product.gallery[activeMedia].url} autoPlay muted loop playsInline className="w-full h-auto max-h-[600px] object-contain" />
+                                        <video src={product.gallery[activeMedia].fileUrl || product.gallery[activeMedia].url} autoPlay muted loop playsInline className="w-full h-auto max-h-150 object-contain" />
                                     ) : (
                                         <img 
                                             src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} 
                                             alt={product.name} 
-                                            className="w-full h-auto max-h-[600px] object-contain transition-transform duration-700 group-hover:scale-105" 
+                                            className="w-full h-auto max-h-150 object-contain transition-transform duration-700 group-hover:scale-105" 
                                         />
                                     )
                                 ) : (
-                                    <div className="h-[400px] flex items-center justify-center"><Package size={80} className="text-zinc-200" /></div>
+                                    <div className="h-100 flex items-center justify-center"><Package size={80} className="text-zinc-200" /></div>
                                 )}
                             </div>
 

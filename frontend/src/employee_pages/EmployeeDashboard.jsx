@@ -192,7 +192,7 @@ const EmployeeDashboard = () => {
 
         <div className="max-w-7xl mx-auto p-6 space-y-8 pb-12">
           {/* Welcome Banner */}
-          <section className="relative rounded-2xl overflow-hidden bg-zinc-950 flex flex-col justify-end p-8 sm:p-10 text-white shadow-xl border border-zinc-800">
+          <section className="relative rounded-2xl overflow-hidden bg-zinc-950 flex flex-col justify-end p-6 text-white shadow-xl border border-zinc-800">
             <div className="absolute top-[-50%] left-[-10%] w-96 h-96 bg-zinc-600/20 blur-[120px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-80 h-80 bg-zinc-400/10 blur-[100px] rounded-full pointer-events-none"></div>
             
@@ -211,7 +211,7 @@ const EmployeeDashboard = () => {
               </div>
 
               <div className="bg-white/10 border border-white/10 rounded-2xl p-6 w-full md:w-auto shrink-0 flex flex-col items-start md:items-end shadow-lg">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Available Balance</span>
+                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Available Points</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-extrabold text-white tracking-tight">{userPoints.toLocaleString()}</span>
                   <span className="text-xl font-bold text-zinc-400">pts</span>

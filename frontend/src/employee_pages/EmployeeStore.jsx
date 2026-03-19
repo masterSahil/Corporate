@@ -111,13 +111,13 @@ const EmployeeStore = () => {
         <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8 md:space-y-10">
           
           {/* Store Header / Points Banner */}
-          <section className="relative rounded-2xl overflow-hidden bg-black p-6 md:p-8 lg:p-10 text-white shadow-2xl border border-zinc-800">
+          <section className="relative rounded-2xl overflow-hidden bg-black p-6 md:p-8 lg:p-9 text-white shadow-2xl border border-zinc-800">
             <div className="absolute top-[-20%] right-[-5%] w-64 h-64 bg-zinc-500/10 blur-[80px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tighter mb-2 italic">THE PRODUCT STORE</h1>
-                <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium rewards.</p>
+                <h1 className="text-3xl md:text-4xl lg:text-[42px] font-black tracking-tighter mb-2">THE PRODUCT STORE</h1>
+                <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium benefites.</p>
               </div>
 
               <div className="bg-white/10 border border-white/10 rounded-2xl p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
