@@ -50,7 +50,6 @@ const ProductDetails = () => {
             setCurrentUserId(user._id); 
             setCurrentUserName(user.username);
 
-            console.log(reviewRes.data.rating)
             // Correctly mapping usernames from individual review records
             const productReviews = reviewRes.data.rating
                 .filter(r => r.productId === id)
