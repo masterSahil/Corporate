@@ -144,7 +144,8 @@ const ProductDetails = () => {
         e.preventDefault();
         try {
             await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`, 
-                { review: editData.comment, rate: editData.rating }, { withCredentials: true });
+            { review: editData.comment, rate: editData.rating }, { withCredentials: true });
+
             setReviews(reviews.map(r => r.id === editingReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
             setEditingReviewId(null);
             toast.success("Review updated!");
@@ -154,9 +155,8 @@ const ProductDetails = () => {
         }
     };
 
-    const averageRating = reviews.length > 0 
-        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
-        : 0;
+    const averageRating = reviews.length > 0 ? 
+        (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
     if (isLoading || !product) return (
         <div className="h-screen flex items-center justify-center bg-white">
