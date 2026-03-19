@@ -2,7 +2,7 @@ const ratingSchema = require("../model/rating")
 
 module.exports.getAllRatings = async(req, res) => {
     try {
-        const rating = await ratingSchema.find();
+        const rating = await ratingSchema.find().populate("buyerId", "username");;
 
         res.status(200).json({
             success: true,
