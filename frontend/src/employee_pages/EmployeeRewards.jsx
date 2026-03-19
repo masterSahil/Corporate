@@ -217,7 +217,10 @@ const EmployeeRewards = () => {
                         <span className="text-[10px] font-bold uppercase tracking-wider">Accepted</span>
                       </div>
                       <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                        <Calendar size={12} /> {new Date(reward.createdAt).toLocaleDateString()}
+                        <Calendar className="group-hover:text-black" size={12} /> 
+                        <span className="group-hover:text-black">
+                          {new Date(reward.createdAt).toLocaleDateString()}
+                        </span>
                       </span>
                     </div>
                     <div className="mb-5">
@@ -231,7 +234,7 @@ const EmployeeRewards = () => {
                         <span className="text-xl font-bold text-slate-900">+{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
                       </div>
                       <div className="p-2.5 bg-slate-100 text-slate-400 rounded-lg">
-                        <Award size={18} />
+                        <Award className="group-hover:text-black" size={18} />
                       </div>
                     </div>
                   </div>
