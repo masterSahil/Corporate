@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Menu, Box, UploadCloud, Tag, DollarSign, Package, LayoutGrid, AlignLeft, X, ImageIcon, Globe } from "lucide-react";
+import { Menu, Box, UploadCloud, Tag, DollarSign, Package, LayoutGrid, AlignLeft, X, ImageIcon, Globe, IndianRupee } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/theme";
 import axios from "axios"
@@ -211,7 +211,7 @@ const AddProduct = () => {
               {/* Pricing & Inventory Block */}
               <div className={`${theme.cardBg} border ${theme.border} rounded-xl p-6 lg:p-8 shadow-sm`}>
                 <div className={`flex items-center gap-2 mb-6 pb-4 border-b ${theme.border}`}>
-                  <DollarSign size={20} className="text-slate-900" />
+                  <IndianRupee size={20} className="text-slate-900" />
                   <h2 className="text-lg font-bold text-slate-900">Pricing & Inventory</h2>
                 </div>
 
@@ -220,7 +220,7 @@ const AddProduct = () => {
                   <div className="flex flex-col gap-2 mb-6">
                     <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Regular Price</label>
                     <div className="relative flex items-center">
-                      <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                      <IndianRupee size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
                       <input
                         type="number"
                         name="price"
@@ -241,7 +241,7 @@ const AddProduct = () => {
                       {formData.discountType === 'percentage' ? (
                         <span className={`absolute left-4 font-bold ${theme.textMuted} pointer-events-none`}>%</span>
                       ) : (
-                        <DollarSign size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                        <IndianRupee size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
                       )}
 
                       {/* Value Input */}
