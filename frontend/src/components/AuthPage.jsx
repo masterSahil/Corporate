@@ -70,10 +70,10 @@ const CorporateLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex w-full overflow-y-auto bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
+    <div className="min-h-screen flex w-full bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
       
       {/* Left Side: Auth Form */}
-      <div className="flex flex-col w-full lg:w-1/2 p-8 lg:p-16 xl:p-24 justify-between relative z-10">
+      <div className="flex flex-col w-full lg:w-1/2 p-8 lg:p-12 overflow-y-auto lg:overflow-y-hidden h-screen">
         
         {/* Header/Logo */}
         <div className="flex items-center gap-2.5">
