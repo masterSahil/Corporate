@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { 
   LayoutDashboard, Shield, Users, Box, Gift, Settings, 
-  ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart 
+  ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart, 
+  Loader2
 } from 'lucide-react';
 import { theme } from './Theme'; 
 
