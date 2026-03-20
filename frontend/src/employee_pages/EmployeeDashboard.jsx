@@ -463,9 +463,19 @@ const EmployeeDashboard = () => {
                   </a>
                 </div>
               ))}
+              {admins.length === 0 && <>
+                <div className="w-full bg-white border border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-sm">
+                  <div className="p-4 bg-slate-50 rounded-full mb-4 border border-slate-100">
+                    <Shield size={32} className="text-slate-400" />
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">No Administrators Found</h4>
+                  <p className="text-sm text-slate-500">
+                    Team leaders and system administrators have not been assigned or loaded yet.
+                  </p>
+                </div>
+              </>}
             </div>
           </div>
-
         </div>
       </main>
     </div>
