@@ -365,66 +365,65 @@ const EmployeeDashboard = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-              {products.map((product) => (
-                <div 
-                  key={product._id?.$oid || product._id} 
-                  onClick={() => navigate('/employee/store')}
-                  className="group bg-white border border-slate-200 rounded-2xl p-3 transition-all duration-500 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col"
-                >
-                  {/* Image Container with Floating Badges */}
-                  <div className="aspect-square rounded-xl bg-slate-50 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100">
-                    {product.gallery && product.gallery.length > 0 ? (
-                      <img src={product.gallery[0].fileUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
-                      />
-                    ) : (
-                      <Package size={40} className="text-slate-300" />
-                    )}
-                    
-                    {/* Subtle dark overlay on hover */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+            {products.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+                {products.map((product) => (
+                  <div 
+                    key={product._id?.$oid || product._id} 
+                    onClick={() => navigate('/employee/store')}
+                    className="group bg-white border border-slate-200 rounded-2xl p-3 transition-all duration-500 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col"
+                  >
+                    {/* Image Container with Floating Badges */}
+                    <div className="aspect-square rounded-xl bg-slate-50 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100">
+                      {product.gallery && product.gallery.length > 0 ? (
+                        <img src={product.gallery[0].fileUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
+                        />
+                      ) : (
+                        <Package size={40} className="text-slate-300" />
+                      )}
+                      
+                      {/* Subtle dark overlay on hover */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
 
-                    {/* Category Badge (Top Left) */}
-                    <div className="absolute top-3 left-0 flex min-w-0 max-w-full">
-                      <span className="bg-black text-white text-[9px] font-black uppercase tracking-[0.2em] px-2.5 py-1.5 rounded-md shadow-sm truncate">
-                        {product.category || 'Merch'}
-                      </span>
+                      {/* Category Badge (Top Left) */}
+                      <div className="absolute top-3 left-0 flex min-w-0 max-w-full">
+                        <span className="bg-black text-white text-[9px] font-black uppercase tracking-[0.2em] px-2.5 py-1.5 rounded-md shadow-sm truncate">
+                          {product.category || 'Merch'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Text Content */}
+                    <div className="flex-1 flex flex-col px-2 pb-2">
+                      <h4 className="text-base font-black text-slate-900 mb-1 line-clamp-1 leading-snug group-hover:text-black transition-colors">
+                        {product.name}
+                      </h4>
+                      <p className="text-xs font-medium text-slate-500 line-clamp-2">
+                        {product.description || "Premium employee reward item."}
+                      </p>
+                      
+                      {/* Hover Animated "View in Store" Link */}
+                      <div className="mt-4 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400 group-hover:text-black transition-colors">
+                        <span>View in Store</span>
+                        <ArrowRight size={14} className="transform -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
+                      </div>
                     </div>
                   </div>
-
-                  {/* Text Content */}
-                  <div className="flex-1 flex flex-col px-2 pb-2">
-                    <h4 className="text-base font-black text-slate-900 mb-1 line-clamp-1 leading-snug group-hover:text-black transition-colors">
-                      {product.name}
-                    </h4>
-                    <p className="text-xs font-medium text-slate-500 line-clamp-2">
-                      {product.description || "Premium employee reward item."}
-                    </p>
-                    
-                    {/* Hover Animated "View in Store" Link */}
-                    <div className="mt-4 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400 group-hover:text-black transition-colors">
-                      <span>View in Store</span>
-                      <ArrowRight size={14} className="transform -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
-                    </div>
-                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="w-full bg-white border border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+                <div className="p-4 bg-slate-50 rounded-full mb-4 border border-slate-100">
+                  <Package size={32} className="text-slate-400" />
                 </div>
-              ))}
-              {products.length === 0 && (
-                <>
-                  <div className="w-full bg-white border border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
-                    <div className="p-4 bg-slate-100 rounded-full mb-4 border border-slate-100">
-                      <Package size={32} />
-                    </div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-2">Marketplace is Empty</h4>
-                    <p className="text-sm text-slate-500 max-w-sm">
-                      There are currently no items available in the store. Check back later to spend your points on new rewards!
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Marketplace is Empty</h4>
+                <p className="text-sm text-slate-500 max-w-sm">
+                  There are currently no items available in the store. Check back later to spend your points on new rewards!
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Team Leaders / Directory */}
@@ -439,42 +438,43 @@ const EmployeeDashboard = () => {
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-              {admins.map((user) => (
-                <div key={user._id?.$oid || user._id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-                  <div className="relative shrink-0">
-                    {user.profile?.imageUrl ? (
-                      <img src={user.profile.imageUrl} alt={user.username} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200">
-                        <UserCircle size={28} className="text-slate-400" />
-                      </div>
-                    )}
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-slate-900 truncate capitalize">{user.username}</h4>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{user.role?.replace('_', ' ')}</p>
-                  </div>
+            {admins.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                {admins.map((user) => (
+                  <div key={user._id?.$oid || user._id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+                    <div className="relative shrink-0">
+                      {user.profile?.imageUrl ? (
+                        <img src={user.profile.imageUrl} alt={user.username} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200">
+                          <UserCircle size={28} className="text-slate-400" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-bold text-slate-900 truncate capitalize">{user.username}</h4>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{user.role?.replace('_', ' ')}</p>
+                    </div>
 
-                  <a href={`mailto:${user.email}`} className="p-2.5 bg-slate-50 hover:bg-zinc-900 hover:text-white border border-slate-200 hover:border-zinc-900 text-slate-600 rounded-xl transition-colors shrink-0">
-                    <Mail size={16} />
-                  </a>
-                </div>
-              ))}
-              {admins.length === 0 && <>
-                <div className="w-full bg-white border border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-sm">
-                  <div className="p-4 bg-slate-50 rounded-full mb-4 border border-slate-100">
-                    <Shield size={32} className="text-slate-400" />
+                    <a href={`mailto:${user.email}`} className="p-2.5 bg-slate-50 hover:bg-zinc-900 hover:text-white border border-slate-200 hover:border-zinc-900 text-slate-600 rounded-xl transition-colors shrink-0">
+                      <Mail size={16} />
+                    </a>
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">No Administrators Found</h4>
-                  <p className="text-sm text-slate-500">
-                    Team leaders and system administrators have not been assigned or loaded yet.
-                  </p>
+                ))}
+              </div>
+            ) : (
+              <div className="w-full bg-white border border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-sm">
+                <div className="p-4 bg-slate-50 rounded-full mb-4 border border-slate-100">
+                  <Shield size={32} className="text-slate-400" />
                 </div>
-              </>}
-            </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-2">No Administrators Found</h4>
+                <p className="text-sm text-slate-500">
+                  Team leaders and system administrators have not been assigned or loaded yet.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>
