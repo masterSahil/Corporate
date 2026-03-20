@@ -8,6 +8,7 @@ import axios from "axios";
 const AddReward = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [validEmail, setValidEmail] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -45,6 +46,7 @@ const AddReward = () => {
     try {
       const err = validateForm();
       if (err) { toast.warning(err); return }
+      setLoading(true);
       await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {withCredentials: true});
 
       resetForm();
@@ -52,6 +54,8 @@ const AddReward = () => {
     } catch (error) {
       toast.error("Failed to Add Rewards")
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,8 +84,10 @@ const AddReward = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Create and assign incentives directly to specific employees.</p>
             </div>
             <div className="relative group flex-1 sm:flex-none">
-              <button onClick={handleSubmit} className={`w-full px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-colors bg-black hover:bg-zinc-800`} >
-                Assign Reward
+              <button onClick={handleSubmit} disabled={loading}
+                className={`w-full px-6 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all  ${loading ? "bg-zinc-400 cursor-not-allowed" : "bg-black hover:bg-zinc-800"}`}
+              >
+                {loading ? "Assigning..." : "Assign Reward"}
               </button>
             </div>
           </div>
