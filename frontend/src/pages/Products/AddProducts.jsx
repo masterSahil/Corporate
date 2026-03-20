@@ -257,7 +257,7 @@ const AddProduct = () => {
                         className={`bg-zinc-100 border ${theme.border} text-slate-700 text-sm font-bold rounded-r-lg px-3 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all cursor-pointer`}
                       >
                         <option value="percentage">Percent (%)</option>
-                        <option value="flat">Flat ($)</option>
+                        <option value="flat">Flat (₹)</option>
                       </select>
                     </div>
                   </div>

@@ -172,7 +172,7 @@ const UpdateProduct = () => {
                 <h2 className="text-lg font-bold text-slate-900 mb-4">Pricing & Inventory</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Price ($)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Price (₹)</label>
                     <input type="number" name="price" min="0" value={formData.price} onChange={handleInputChange} required className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-sm focus:border-black focus:ring-1 focus:ring-black outline-none transition-all" />
                   </div>
                   <div>
@@ -187,7 +187,7 @@ const UpdateProduct = () => {
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5">Discount Type</label>
                     <select name="discountType" value={formData.discountType} onChange={handleInputChange} className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-sm focus:border-black focus:ring-1 focus:ring-black outline-none transition-all">
                       <option value="percentage">Percentage (%)</option>
-                      <option value="flat">Flat Amount ($)</option>
+                      <option value="flat">Flat Amount (₹)</option>
                     </select>
                   </div>
                 </div>

@@ -222,7 +222,7 @@ const SoftDeletedProducts = () => {
                       } else {
                         finalPrice = finalPrice - product.discount;
                         if (finalPrice < 0) finalPrice = 0;
-                        discountBadgeText = `$${product.discount}`;
+                        discountBadgeText = `${product.discount}`;
                       }
                     }
 
@@ -264,15 +264,15 @@ const SoftDeletedProducts = () => {
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="font-bold text-slate-900 text-sm opacity-70">
-                             ${finalPrice.toFixed(2)}
+                             ₹{finalPrice.toFixed(2)}
                             </span>
                             {hasDiscount && (
                               <div className="flex items-center gap-1.5 mt-0.5 opacity-70">
                                 <span className="text-xs text-slate-400 line-through">
-                                  ${(product.price || 0).toFixed(2)}
+                                  ₹{(product.price || 0).toFixed(2)}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
-                                 {discountBadgeText}
+                                 ₹{discountBadgeText}
                                 </span>
                               </div>
                             )}
