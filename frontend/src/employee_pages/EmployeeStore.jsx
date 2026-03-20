@@ -111,7 +111,7 @@ const EmployeeStore = () => {
         <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8 md:space-y-10">
           
           {/* Store Header / Points Banner */}
-          <section className="relative rounded-2xl overflow-hidden bg-black p-6 md:p-8 lg:p-9 text-white shadow-2xl border border-zinc-800">
+          <section className="relative rounded-lg overflow-hidden bg-black p-6 md:p-8 lg:p-9 text-white shadow-2xl border border-zinc-800">
             <div className="absolute top-[-20%] right-[-5%] w-64 h-64 bg-zinc-500/10 blur-[80px] rounded-full pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -120,7 +120,7 @@ const EmployeeStore = () => {
                 <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium benefites.</p>
               </div>
 
-              <div className="bg-white/10 border border-white/10 rounded-2xl p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
+              <div className="bg-white/10 border border-white/10 rounded-md p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Your Balance</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl md:text-4xl font-black text-white">{userPoints}</span>
@@ -139,7 +139,7 @@ const EmployeeStore = () => {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border-2 border-slate-200 text-slate-900 text-sm rounded-xl pl-12 pr-4 py-3.5 outline-none focus:border-black transition-all shadow-sm font-medium"
+                className="w-full bg-white border-2 border-slate-200 text-slate-900 text-sm rounded-lg pl-12 pr-4 py-3.5 outline-none focus:border-black transition-all shadow-sm font-medium"
               />
             </div>
 
@@ -147,7 +147,7 @@ const EmployeeStore = () => {
             <div className="relative w-full sm:w-64 md:w-72" ref={dropdownRef}>
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className={`w-full flex items-center justify-between px-5 py-3.5 bg-white border-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-sm
+                className={`w-full flex items-center justify-between px-5 py-3.5 bg-white border-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-sm
                   ${isFilterOpen ? "border-black ring-4 ring-slate-100" : "border-slate-200 hover:border-black"}`}
               >
                 <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ const EmployeeStore = () => {
 
               {/* Dropdown Menu */}
               {isFilterOpen && (
-                <div className="absolute top-full mt-2 w-full bg-white border-2 border-black rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="absolute top-full mt-2 w-full bg-white border-2 border-black rounded-lg shadow-2xl overflow-hidden z-50">
                   <div className="max-h-64 overflow-y-auto custom-scrollbar">
                     {categories.map((cat) => (
                       <button
@@ -189,12 +189,12 @@ const EmployeeStore = () => {
                 <div 
                   key={product._id} 
                   onClick={() => navigate(`/employee/store/${product._id}`)}
-                  className="group relative bg-white border-2 border-slate-200 rounded-2xl p-4 transition-all duration-300 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col h-full">
+                  className="group relative bg-white border-2 border-slate-200 rounded-lg p-4 transition-all duration-300 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col h-full">
                   {/* Image Container with Sleek Hover Overlay */}
-                  <div className="aspect-4/3 rounded-xl bg-slate-100 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100 group-hover:border-slate-200 transition-colors">
+                  <div className="aspect-4/3 rounded-lg bg-slate-100 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100 group-hover:border-slate-200 transition-colors">
                     {product.gallery && product.gallery.length > 0 ? (
                       <img src={product.gallery[0].fileUrl} alt={product.name} 
-                        className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-700 ease-out" 
+                        className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-700 ease-out" 
                       />
                     ) : (
                       <Package size={40} className="text-slate-300" />
@@ -202,7 +202,7 @@ const EmployeeStore = () => {
                     
                     {/* Dark Glass Overlay on Hover */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                      <div className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 rounded-xl flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-2xl">
+                      <div className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 rounded-md flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-2xl">
                         <Eye size={14} /> View
                       </div>
                     </div>
@@ -271,7 +271,7 @@ const EmployeeStore = () => {
 
           {/* Empty State */}
           {filteredProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 mx-4 md:mx-0">
+            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-lg border-2 border-dashed border-slate-200 mx-4 md:mx-0">
               <Package size={60} className="text-slate-200 mb-5" />
               <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest text-center">No products found</h3>
               <button onClick={() => {setSearchQuery(""); setSelectedCategory("All")}}
