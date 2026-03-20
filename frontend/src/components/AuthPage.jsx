@@ -57,7 +57,7 @@ const CorporateLogin = () => {
     try {
       e.preventDefault();
       if (!validate()) return;
-      await axios.post(import.meta.env.VITE_API_KEY, formData, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_API_KEY}`, formData, { withCredentials: true });
       
       toast.success("Registration Successful");
       setFormData({ email: '', password: '' });
