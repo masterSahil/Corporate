@@ -321,8 +321,8 @@ module.exports.RegisterUser = async (req, res) => {
         // Deploy with https = secure: true; sameSite: "none"
         res.cookie("corporate_token", token, {
             httpOnly: true,      // so JS cannot access it (good security)
-            secure: false,       // set true if using HTTPS
-            sameSite: "lax",     // "none" for cross-origin on HTTPS
+            secure: true,       // set true if using HTTPS
+            sameSite: "none",     // "none" for cross-origin on HTTPS
             maxAge: 168 * 60 * 60 * 1000 // 7 days
         });
 
@@ -366,8 +366,8 @@ module.exports.LoginUser = async (req, res) => {
         // Deploy with https = secure: true; sameSite: "none"
         res.cookie("corporate_token", token, {
             httpOnly: true,      // so JS cannot access it (good security)
-            secure: false,       // set true if using HTTPS
-            sameSite: "lax",     // "none" for cross-origin on HTTPS
+            secure: true,       // set true if using HTTPS
+            sameSite: "none",     // "none" for cross-origin on HTTPS
             maxAge: 168 * 60 * 60 * 1000 // 7 days
         });
 
@@ -410,8 +410,8 @@ module.exports.LogOut = async (req, res) => {
     try {
         res.clearCookie("corporate_token", {
             httpOnly: true,      // so JS cannot access it (good security)
-            secure: false,       // set true if using HTTPS
-            sameSite: "lax",     // "none" for cross-origin on HTTPS
+            secure: true,       // set true if using HTTPS
+            sameSite: "none",     // "none" for cross-origin on HTTPS
             // maxAge: 168 * 60 * 60 * 1000 
         });
 
