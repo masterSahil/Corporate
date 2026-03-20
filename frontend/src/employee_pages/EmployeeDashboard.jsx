@@ -192,7 +192,7 @@ const EmployeeDashboard = () => {
 
         <div className="max-w-7xl mx-auto p-6 space-y-8 pb-12">
           {/* Welcome Banner */}
-          <section className="relative rounded-2xl overflow-hidden bg-zinc-950 flex flex-col justify-end p-6 text-white shadow-xl border border-zinc-800">
+          <section className="relative rounded-lg overflow-hidden bg-zinc-950 flex flex-col justify-end p-6 text-white shadow-xl border border-zinc-800">
             <div className="absolute top-[-50%] left-[-10%] w-96 h-96 bg-zinc-600/20 blur-[120px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-[-20%] right-[-10%] w-80 h-80 bg-zinc-400/10 blur-[100px] rounded-full pointer-events-none"></div>
             
@@ -210,7 +210,7 @@ const EmployeeDashboard = () => {
                 </p>
               </div>
 
-              <div className="bg-white/10 border border-white/10 rounded-2xl p-6 w-full md:w-auto shrink-0 flex flex-col items-start md:items-end shadow-lg">
+              <div className="bg-white/10 border border-white/10 rounded-lg p-6 w-full md:w-auto shrink-0 flex flex-col items-start md:items-end shadow-lg">
                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Available Points</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-extrabold text-white tracking-tight">{userPoints.toLocaleString()}</span>
@@ -225,9 +225,9 @@ const EmployeeDashboard = () => {
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
-                <div key={stat.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
+                <div key={stat.id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 rounded-xl bg-zinc-50 text-zinc-900 group-hover:bg-zinc-900 group-hover:text-white transition-colors duration-300">
+                    <div className="p-3 rounded-lg bg-zinc-50 text-zinc-900 group-hover:bg-zinc-900 group-hover:text-white transition-colors duration-300">
                       <Icon size={20} />
                     </div>
                   </div>
@@ -246,7 +246,7 @@ const EmployeeDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Chart Section */}
-            <div className="lg:col-span-2 bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+            <div className="lg:col-span-2 bg-white p-6 lg:p-8 rounded-lg border border-slate-200 shadow-sm flex flex-col">
               
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div>
@@ -308,7 +308,7 @@ const EmployeeDashboard = () => {
             </div>
 
             {/* Achievements Vertical List */}
-            <div className="bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+            <div className="bg-white p-6 lg:p-8 rounded-lg border border-slate-200 shadow-sm flex flex-col">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-bold text-slate-900">Recent Rewards</h2>
                 <button onClick={() => navigate('/employee/rewards')} className="text-xs font-bold text-slate-500 hover:text-black transition-colors flex items-center gap-1">
@@ -318,7 +318,7 @@ const EmployeeDashboard = () => {
 
               <div className="flex-1 pr-2 space-y-4 custom-scrollbar">
                 {rewards.length > 0 ? rewards.map((reward, key) => (
-                  <div key={key} className="group relative p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-zinc-900 hover:border-zinc-900 transition-all duration-300">
+                  <div key={key} className="group relative p-4 rounded-lg border border-slate-100 bg-slate-50 hover:bg-zinc-900 hover:border-zinc-900 transition-all duration-300">
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 group-hover:text-zinc-400 line-clamp-1 pr-2">{reward.category}</span>
                       {reward.points ? (
@@ -371,10 +371,10 @@ const EmployeeDashboard = () => {
                   <div 
                     key={product._id?.$oid || product._id} 
                     onClick={() => navigate('/employee/store')}
-                    className="group bg-white border border-slate-200 rounded-2xl p-3 transition-all duration-500 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col"
+                    className="group bg-white border border-slate-200 rounded-lg p-3 transition-all duration-500 hover:border-black hover:shadow-2xl cursor-pointer flex flex-col"
                   >
                     {/* Image Container with Floating Badges */}
-                    <div className="aspect-square rounded-xl bg-slate-50 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100">
+                    <div className="aspect-square rounded-lg bg-slate-50 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100">
                       {product.gallery && product.gallery.length > 0 ? (
                         <img src={product.gallery[0].fileUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
                           alt={product.name} 
@@ -414,7 +414,7 @@ const EmployeeDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="w-full bg-white border border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-full bg-white border border-slate-200 rounded-lg p-12 flex flex-col items-center justify-center text-center shadow-sm">
                 <div className="p-4 bg-slate-50 rounded-full mb-4 border border-slate-100">
                   <Package size={32} className="text-slate-400" />
                 </div>
@@ -441,7 +441,7 @@ const EmployeeDashboard = () => {
             {admins.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                 {admins.map((user) => (
-                  <div key={user._id?.$oid || user._id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+                  <div key={user._id?.$oid || user._id} className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
                     <div className="relative shrink-0">
                       {user.profile?.imageUrl ? (
                         <img src={user.profile.imageUrl} alt={user.username} className="w-14 h-14 rounded-full object-cover border border-slate-200" />
@@ -465,7 +465,7 @@ const EmployeeDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="w-full bg-white border border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-full bg-white border border-slate-200 rounded-lg p-10 flex flex-col items-center justify-center text-center shadow-sm">
                 <div className="p-4 bg-slate-50 rounded-full mb-4 border border-slate-100">
                   <Shield size={32} className="text-slate-400" />
                 </div>
