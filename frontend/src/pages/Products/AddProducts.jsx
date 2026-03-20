@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Menu, Box, UploadCloud, Tag, DollarSign, Package, LayoutGrid, AlignLeft, X, ImageIcon, Globe, IndianRupee } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
-import { theme } from "../../components/theme";
+import { theme } from "../../components/Theme";
 import axios from "axios"
 import { toast } from "../../ui/Toaster";
 

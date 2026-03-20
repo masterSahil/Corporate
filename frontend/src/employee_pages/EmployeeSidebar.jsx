@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Store, ShoppingCart, History, 
   Users, Settings, Menu, X, Shield, Coins 
 } from 'lucide-react';
-import { theme } from '../components/theme'; 
+import { theme } from '../components/Theme'; 
 
 const EmployeeSidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();

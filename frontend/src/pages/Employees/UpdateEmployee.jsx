@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Menu, ShieldCheck, User, UploadCloud, Mail, Briefcase, Users, Camera, Lock, Phone, ArrowLeft, Loader2 } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
-import { theme } from "../../components/theme";
+import { theme } from "../../components/Theme";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
 

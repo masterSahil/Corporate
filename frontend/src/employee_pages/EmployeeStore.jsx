@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, Search, Star, Plus, Minus, Package, ChevronDown, Filter, Check, Eye } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
-import { theme } from "../components/theme";
+import { theme } from "../components/Theme";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
 

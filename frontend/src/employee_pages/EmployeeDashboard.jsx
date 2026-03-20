@@ -10,7 +10,7 @@ import {
   Tooltip, ResponsiveContainer 
 } from "recharts";
 import EmployeeSidebar from "./EmployeeSidebar";
-import { theme } from "../components/theme";
+import { theme } from "../components/Theme";
 import axios from "axios";
 
 const EmployeeDashboard = () => {

@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Shield, Users, Box, Gift, Settings, 
   ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart 
 } from 'lucide-react';
-import { theme } from './theme'; 
+import { theme } from './Theme'; 
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [activeMenu, setActiveMenu] = useState('');

@@ -4,7 +4,7 @@ import axios from "axios";
 import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, UserPlus, FileText, CheckCircle2, Clock, ShoppingCart } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Sidebar from "../../components/Sidebar";
-import { theme } from "../../components/theme";
+import { theme } from "../../components/Theme";
 import { toast } from "../../ui/Toaster";
 
 // --- CONSTANTS ---

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Menu, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, Users } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
-import { theme } from "../../components/theme";
+import { theme } from "../../components/Theme";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
 

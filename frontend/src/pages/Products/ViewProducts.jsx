@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, LayoutGrid, ImageIcon } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
-import { theme } from "../../components/theme";
+import { theme } from "../../components/Theme";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "../../ui/Toaster";

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash } from 'lucide-react';
 import Sidebar from './Sidebar';
-import { theme } from './theme';
+import { theme } from './Theme';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/ContextApi';

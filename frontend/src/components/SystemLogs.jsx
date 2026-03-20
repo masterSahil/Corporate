@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Users, Package, Gift, Trash2, ShieldAlert, Clock, Download } from "lucide-react";
 import Sidebar from "./Sidebar";
-import { theme } from "./theme";
+import { theme } from "./Theme";
 import axios from "axios";
 
 const SystemLogs = () => {

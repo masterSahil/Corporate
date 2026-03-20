@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
-import { theme } from "../components/theme";
+import { theme } from "../components/Theme";
 import axios from "axios";
 
 const EmployeeDirectory = () => {

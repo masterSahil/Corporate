@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Menu, Gift, Tag, AlignLeft, UserCheck, Hash, ShieldCheck, CheckCircle2, Mail, Coins } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
-import { theme } from "../../components/theme";
+import { theme } from "../../components/Theme";
 import { toast } from "../../ui/Toaster";
 import axios from "axios";
 
