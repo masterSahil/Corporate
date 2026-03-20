@@ -10,6 +10,7 @@ import { theme } from './Theme';
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [activeMenu, setActiveMenu] = useState('');
   const [userRole, setUserRole] = useState('admin'); 
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,6 +22,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       }
     } catch (error) {
       console.error("Error fetching user role:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -88,7 +91,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <Shield size={20} className="text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>{userRole === "admin" ? "Admin" : "Super Admin"}</h1>
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 size={16} className={`animate-spin ${theme.textMain}`} />
+                <span className={`text-sm ${theme.textMain}`}>Loading...</span>
+              </div>
+            ) : (
+              <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>
+                {userRole === "admin" ? "Admin" : "Super Admin"}
+              </h1>
+            )}
           </div>
         </div>
         
@@ -121,8 +133,19 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <Shield size={20} className="text-white" strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>{userRole === "admin" ? "Admin" : "Super Admin"}</h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Portal</p>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 size={16} className={`animate-spin ${theme.textMain}`} />
+                  <span className={`text-sm ${theme.textMain}`}>Loading...</span>
+                </div>
+              ) : (
+                <>
+                  <h1 className={`font-bold text-lg leading-tight ${theme.textMain}`}>
+                    {userRole === "admin" ? "Admin" : "Super Admin"}
+                  </h1>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Portal</p>
+                </>
+              )}
             </div>
           </div>
 
