@@ -20,12 +20,15 @@ const SoftDeletedAdmins = () => {
   const isRefreshing = false;
   const getDeletedData = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
       const filtered = res.data.users.filter(u => u.role !== "employee");
       setDeletedAdmins(filtered);
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,12 +48,15 @@ const SoftDeletedAdmins = () => {
 
   const handleRestore = async (id) => {
     try {
+      setLoading(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/restore/${id}`, {}, { withCredentials: true });
       getDeletedData();
       toast.success("Admin Restored Successfully");
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,8 +65,8 @@ const SoftDeletedAdmins = () => {
     e.preventDefault(); 
     if (!deletePassword) return;
 
+    setLoading(true);
     try {
-      setLoading(true);
       await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${deleteId}`, { password: deletePassword }, { withCredentials: true });
       await getDeletedData();
       toast.success("Permanently Deleted Successfully");
