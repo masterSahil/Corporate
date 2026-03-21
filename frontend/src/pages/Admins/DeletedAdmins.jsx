@@ -11,6 +11,7 @@ const SoftDeletedAdmins = () => {
   const [roleFilter, setRoleFilter] = useState("All");
   const [deletedAdmins, setDeletedAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uiLoader, setUiLoader] = useState(false);
   // --- Modal States ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -20,7 +21,7 @@ const SoftDeletedAdmins = () => {
   const isRefreshing = false;
   const getDeletedData = async () => {
     try {
-      setLoading(true);
+      setUiLoader(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
       const filtered = res.data.users.filter(u => u.role !== "employee");
       setDeletedAdmins(filtered);
@@ -28,7 +29,7 @@ const SoftDeletedAdmins = () => {
       toast.error(error);
       console.log(error);
     } finally {
-      setLoading(false);
+      setUiLoader(false);
     }
   };
 
@@ -48,7 +49,7 @@ const SoftDeletedAdmins = () => {
 
   const handleRestore = async (id) => {
     try {
-      setLoading(true);
+      setUiLoader(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/restore/${id}`, {}, { withCredentials: true });
       getDeletedData();
       toast.success("Admin Restored Successfully");
@@ -56,7 +57,7 @@ const SoftDeletedAdmins = () => {
       toast.error(error);
       console.log(error);
     } finally {
-      setLoading(false);
+      setUiLoader(false);
     }
   };
 
