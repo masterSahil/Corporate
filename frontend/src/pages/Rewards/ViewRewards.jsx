@@ -25,14 +25,14 @@ const ViewRewards = () => {
   
   const getData = async() => {
     try {
-      setLoading(false);
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, {withCredentials: true});
       setInitialRewards(res.data.reward)
     } catch (error) {
       toast.error(error)
       console.log(error)
     } finally {
-      setLoading(true);
+      setLoading(false);
     }
   }
 
