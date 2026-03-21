@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Menu, ArrowLeft, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, Users, Loader2 } from "lucide-react";
+import { Menu, ArrowLeft, User, UploadCloud, Eye, EyeOff, Lock, Mail, Phone, Key, Camera, Users, Loader2, RefreshCw } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -118,21 +118,20 @@ const UpdateAdmin = () => {
   };
 
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-slate-400" size={40} />
-      </div>
-    );
-  }
-
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses} flex flex-col`}>
-        
+        {isLoading && (
+          <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+            <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+              <RefreshCw className="animate-spin text-slate-700" size={22} />
+              <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+            </div>
+          </div>
+        )}
+
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}>
