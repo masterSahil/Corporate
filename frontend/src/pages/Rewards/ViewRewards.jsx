@@ -19,21 +19,26 @@ const ViewRewards = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [initialRewards, setInitialRewards] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   
   const getData = async() => {
     try {
+      setLoading(false);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, {withCredentials: true});
       setInitialRewards(res.data.reward)
     } catch (error) {
       toast.error(error)
       console.log(error)
+    } finally {
+      setLoading(true);
     }
   }
 
   const softDelete = async(id) => {
     try {
+      setLoading(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/reward-soft-delete/${id}`, {isDeleted: true, deletedAt: new Date()}, {withCredentials: true})
 
       getData();
@@ -41,6 +46,8 @@ const ViewRewards = () => {
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -63,6 +70,15 @@ const ViewRewards = () => {
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 bg-slate-50 overflow-y-auto ${customScrollbar} flex flex-col`}>
+        
+        {loading && (
+          <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+            <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+              <RefreshCw className="animate-spin text-slate-700" size={22} />
+              <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+            </div>
+          </div>
+        )}
         
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
