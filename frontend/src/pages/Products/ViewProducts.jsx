@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, LayoutGrid, ImageIcon } from "lucide-react";
+import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, LayoutGrid, ImageIcon, RefreshCw } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -11,16 +11,20 @@ const ViewProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const getProducts = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
       setProducts(res.data.product);
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,12 +34,15 @@ const ViewProducts = () => {
 
   const deleteProduct = async (id) => {
     try {
+      setLoading(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`, { isDeleted: true, deletedAt: new Date() }, { withCredentials: true });
       getProducts();
       toast.success("Product Deleted Successfully");
     } catch (error) {
       toast.error(error);
       console.log("Error deleting product:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,6 +87,16 @@ const ViewProducts = () => {
         </div>
 
         <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
+          {loading && (
+            <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+              <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+                <RefreshCw className="animate-spin text-slate-700" size={22} />
+                <span className="text-sm font-semibold text-slate-800">
+                  Loading...
+                </span>
+              </div>
+            </div>
+          )}
           
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-8">

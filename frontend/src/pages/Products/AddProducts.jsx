@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios"
 import { toast } from "../../ui/Toaster";
+import { useNavigate } from "react-router-dom";
 
 const AddProduct = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,6 +24,8 @@ const AddProduct = () => {
     description: "",
     gallery: null,
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,6 +105,7 @@ const AddProduct = () => {
       await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {withCredentials: true});
       resetForm();
       toast.success("Product Added Successfully");
+      navigate("/products/manage");
     } catch (error) {
       toast.error(error);
       console.log(error);

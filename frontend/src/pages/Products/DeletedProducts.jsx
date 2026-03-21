@@ -19,14 +19,20 @@ const SoftDeletedProducts = () => {
   // Added loading state for the overlay with dynamic text
   const [loadingText, setLoadingText] = useState("");
 
+  // Added loading state for UI
+  const [uiLoader, setUiLoader] = useState(false);
+
   const getDeletedData = async () => {
     try {
+      setUiLoader(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-soft-delete-view`, { withCredentials: true });
       setDeletedProducts(res.data.product);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch deleted products");
       console.log(error);
-    } 
+    } finally {
+      setUiLoader(false);
+    }
   };
 
   useEffect(() => {
@@ -46,6 +52,7 @@ const SoftDeletedProducts = () => {
   // Restoring a Product
   const handleRestore = async (id) => {
     try {
+      setUiLoader(true);
       setLoadingText("Restoring product...");
       await axios.put(`${import.meta.env.VITE_API_KEY}/product-restore/${id}`, {}, { withCredentials: true });
       await getDeletedData();
@@ -54,7 +61,7 @@ const SoftDeletedProducts = () => {
       toast.error(error.response?.data?.message || "Failed to restore product");
       console.log(error);
     } finally {
-      setLoadingText(""); 
+      setLoadingText(""); setUiLoader(false);
     }
   };
 
@@ -117,7 +124,17 @@ const SoftDeletedProducts = () => {
         </div>
 
         <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
-          
+          {uiLoader && (
+            <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+              <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+                <RefreshCw className="animate-spin text-slate-700" size={22} />
+                <span className="text-sm font-semibold text-slate-800">
+                  Loading...
+                </span>
+              </div>
+            </div>
+          )}
+        
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-6">
             <div>
