@@ -9,6 +9,7 @@ const CorporateLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const auth_context = useContext(AuthContext);
@@ -37,6 +38,7 @@ const CorporateLogin = () => {
 
   const loginSubmit = async (e) => {
     try {
+      setLoading(true);
       e.preventDefault();
       if (!validate()) return;
 
@@ -50,11 +52,14 @@ const CorporateLogin = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong"); 
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const signupSubmit = async (e) => {
     try {
+      setLoading(true);
       e.preventDefault();
       if (!validate()) return;
       await axios.post(`${import.meta.env.VITE_API_KEY}`, formData, { withCredentials: true });
@@ -66,9 +71,24 @@ const CorporateLogin = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
+          <RefreshCw className="animate-spin text-slate-700" size={22} />
+          <span className="text-sm font-semibold text-slate-800">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen flex w-full bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
       

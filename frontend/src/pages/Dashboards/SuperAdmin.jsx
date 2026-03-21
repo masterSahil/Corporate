@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, UserPlus, FileText, CheckCircle2, Clock, ShoppingCart } from "lucide-react";
+import { Menu, Users, Shield, Package, Gift, UserCheck, Zap, Trash2, Download, UserPlus, FileText, CheckCircle2, Clock, ShoppingCart, RefreshCw } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
@@ -28,10 +28,12 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [rewards, setRewards] = useState([]);
   const [joiningDate, setJoiningDate] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // --- DATA FETCHING ---
   const getData = async () => {
     try {
+      setLoading(true);
       const [resUsers, resDeleted, resProducts, resRewards, loggedInAdmin] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
@@ -48,6 +50,8 @@ const Dashboard = () => {
     } catch (error) {
       toast.error(error.message || "Failed to fetch data");
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,6 +166,19 @@ const Dashboard = () => {
   };
 
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
+          <RefreshCw className="animate-spin text-slate-700" size={22} />
+          <span className="text-sm font-semibold text-slate-800">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   // --- RENDER ---
   return (
