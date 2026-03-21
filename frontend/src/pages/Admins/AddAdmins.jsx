@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
+import { useNavigate } from 'react-router-dom';
 
 const AddAdmin = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,6 +22,7 @@ const AddAdmin = () => {
     profileImage: null,
   });
 
+  const navigate = useNavigate();
   const validateForm = () => {
     if (!formData.username.trim()) return "Full name is required";
     if (!formData.email.trim()) return "Email is required";
@@ -71,6 +73,7 @@ const AddAdmin = () => {
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
       toast.success("Admin Created Successfully");
+      navigate("/admins/manage")
       resetForm();
     } catch (error) {
       toast.error(error);

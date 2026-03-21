@@ -80,7 +80,7 @@ const CorporateLogin = () => {
     <div className="min-h-screen flex w-full bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
 
       {loading && (
-        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-[999]">
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
           <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
             <RefreshCw className="animate-spin text-slate-700" size={22} />
             <span className="text-sm font-semibold text-slate-800">
