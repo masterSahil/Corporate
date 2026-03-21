@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import { toast } from "../../ui/Toaster";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AddReward = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -16,6 +17,8 @@ const AddReward = () => {
     description: "",
     email: "", 
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (field) => (e) => {
     const value = e.target.value;
@@ -51,6 +54,7 @@ const AddReward = () => {
 
       resetForm();
       toast.success("Reward Added Successfully")
+      navigate("/rewards/manage")
     } catch (error) {
       toast.error("Failed to Add Rewards")
       console.log(error);
