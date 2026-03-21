@@ -204,12 +204,12 @@ const SystemLogs = () => {
                 <tbody className="divide-y divide-zinc-100">
                   {isLoading ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center text-zinc-400 gap-3">
-                          <ShieldAlert className="animate-pulse" size={32} />
-                          <p className="text-sm font-medium">Compiling secure audit logs...</p>
+                      <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+                        <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+                          <RefreshCw className="animate-spin text-slate-700" size={22} />
+                          <span className="text-sm font-semibold text-slate-800"> Loading... </span>
                         </div>
-                      </td>
+                      </div>
                     </tr>
                   ) : paginatedLogs.length > 0 ? (
                     paginatedLogs.map((log) => {
