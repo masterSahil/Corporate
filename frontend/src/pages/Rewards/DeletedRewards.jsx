@@ -27,7 +27,7 @@ const SoftDeletedRewards = () => {
       toast.error(error);
       console.log(error);
     } finally {
-      setLoading(false);
+      setLoading(false); setUiLoader(false);
     }
   };
 
