@@ -15,18 +15,22 @@ const SoftDeletedEmployees = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [deletePassword, setDeletePassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [uiLoader, setUiLoader] = useState(false);
 
   const isRefreshing = false;
 
   const getDeletedData = async () => {
     try {
+      setUiLoader(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
       const filteredEmployee = res.data.users.filter(u => u.role === "employee");
       setDeletedEmployees(filteredEmployee);
     } catch (error) {
       toast.error(error);
       console.log(error);
-    } 
+    } finally {
+      setUiLoader(false);
+    }
   };
 
   useEffect(() => {
@@ -45,12 +49,15 @@ const SoftDeletedEmployees = () => {
 
   const handleRestore = async (id) => {
     try {
+      setUiLoader(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/restore/${id}`, {}, { withCredentials: true });
       getDeletedData();
       toast.success("Employee Restored Successfully");
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setUiLoader(false);
     }
   };
 
@@ -104,6 +111,15 @@ const SoftDeletedEmployees = () => {
         </div>
 
         <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
+
+          {loading && (
+            <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+              <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+                <RefreshCw className="animate-spin text-slate-700" size={22} />
+                <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+              </div>
+            </div>
+          )}
           
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-6">
@@ -111,14 +127,9 @@ const SoftDeletedEmployees = () => {
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Trash Bin</h1>
               <p className={`text-base ${theme.textMuted} mt-2`}>Review, restore, or permanently delete removed employee records.</p>
             </div>
-            <button onClick={getDeletedData}
-                disabled={isRefreshing}
-                className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                <RefreshCw 
-                    size={18} 
-                    className={`${isRefreshing ? 'animate-spin text-black' : 'group-hover:rotate-180 text-slate-500'} transition-all duration-500 ease-in-out`} 
-                />
+            <button onClick={getDeletedData} disabled={isRefreshing}
+                className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed" >
+                <RefreshCw size={18} className={`${isRefreshing ? 'animate-spin text-black' : 'group-hover:rotate-180 text-slate-500'} transition-all duration-500 ease-in-out`} />
                 Refresh
             </button>
           </div>
@@ -206,11 +217,8 @@ const SoftDeletedEmployees = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             {employee.profile?.imageUrl ? (
-                              <img 
-                                src={employee.profile.imageUrl} 
-                                alt={employee.username} 
-                                className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"
-                              />
+                              <img src={employee.profile.imageUrl} alt={employee.username} 
+                                className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all" />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600 opacity-60 grayscale group-hover:grayscale-0 transition-all">
                                 {employee.username?.charAt(0).toUpperCase()}
@@ -245,9 +253,7 @@ const SoftDeletedEmployees = () => {
                         </td>
                         
                         {/* Gender */}
-                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                          {employee.gender}
-                        </td>
+                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}> {employee.gender} </td>
 
                         {/* Deleted Date (Prefers deletedAt, falls back to createdAt) */}
                         <td className="px-6 py-4">
@@ -262,11 +268,8 @@ const SoftDeletedEmployees = () => {
                             <button onClick={() => handleRestore(id)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm`} title="Restore Employee">
                               <ArchiveRestore size={14} /> Restore
                             </button>
-                            <button 
-                              onClick={() => { setDeleteId(id); setShowDeleteModal(true); }} 
-                              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-500 hover:bg-rose-100 hover:text-rose-700 border transition-colors shadow-sm`} 
-                              title="Permanently Delete Employee"
-                            >
+                            <button onClick={() => { setDeleteId(id); setShowDeleteModal(true); }} 
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-500 hover:bg-rose-100 hover:text-rose-700 border transition-colors shadow-sm`} title="Permanently Delete Employee" >
                               <Trash2 size={18} /> Delete
                             </button>
                           </div>
@@ -284,42 +287,24 @@ const SoftDeletedEmployees = () => {
                     <h2 className="text-lg font-bold text-rose-600 flex items-center gap-2 mb-2">
                       <Trash2 size={20} /> Confirm Deletion
                     </h2>
-                    <p className="text-sm text-slate-600 mb-5">
-                      Are you sure you want to permanently delete this admin? This cannot be undone. Enter your password to confirm:
-                    </p>
+                    <p className="text-sm text-slate-600 mb-5"> Are you sure you want to permanently delete this admin? This cannot be undone. Enter your password to confirm: </p>
 
                     <div className="relative mb-6">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter password..."
-                        value={deletePassword}
-                        onChange={(e) => setDeletePassword(e.target.value)}
-                        className="w-full p-3 pr-12 bg-zinc-50 border border-zinc-200 rounded-lg text-sm outline-none focus:border-black"
-                        autoFocus
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
-                      >
+                      <input type={showPassword ? "text" : "password"} placeholder="Enter password..." value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)}
+                        className="w-full p-3 pr-12 bg-zinc-50 border border-zinc-200 rounded-lg text-sm outline-none focus:border-black" autoFocus required />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none" >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
 
                     <div className="flex justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteId(null); setShowPassword(false); }}
-                        className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50"
-                      >
+                      <button type="button" onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteId(null); setShowPassword(false); }}
+                        className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50" >
                         Cancel
                       </button>
-                      <button
-                        type="submit"
-                        disabled={!deletePassword || loading}
-                        className="px-4 py-2 text-sm font-bold text-white bg-rose-600 rounded-lg hover:bg-rose-700 disabled:opacity-50"
-                      >
+                      <button type="submit" disabled={!deletePassword || loading}
+                        className="px-4 py-2 text-sm font-bold text-white bg-rose-600 rounded-lg hover:bg-rose-700 disabled:opacity-50" >
                         {loading ? "Deleting..." : "Delete Permanently"}
                       </button>
                     </div>
