@@ -75,8 +75,8 @@ const EmployeeRewards = () => {
     });
   };
 
-  const myPendingRewards = myRewards.filter(r => r.status !== 'redeemed' && r.isAccepted !== true); 
-  const myAcceptedRewards = myRewards.filter(r => r.status === 'redeemed' || r.isAccepted === true);
+  const myPendingRewards = myRewards.filter(r => r.status !== 'redeemed'); 
+  const myAcceptedRewards = myRewards.filter(r => r.status === 'redeemed');
 
   const filteredPendingRewards = filterLogic(myPendingRewards);
   const filteredAcceptedRewards = filterLogic(myAcceptedRewards);
