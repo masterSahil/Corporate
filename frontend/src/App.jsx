@@ -1,4 +1,4 @@
-import { BrowserRouter as Router } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/ContextApi";
 import { useEffect, useState } from "react";
 import { checkLoginApi } from "./auth/Auth";
@@ -12,6 +12,8 @@ export default function App() {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
+
   const verifyLogin_Role = async () => {
     try {
       const login_result = await checkLoginApi();
@@ -19,6 +21,7 @@ export default function App() {
       if (!login_result) {
         setLoggedIn(false); 
         setLoading(false);
+        navigate("/");
         return;
       }
       setLoggedIn(true);
@@ -56,9 +59,9 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ loggedIn, setLoggedIn, role, setRole }}>
-      <Router>
+      {/* <Router> */}
         <MainRoutes loggedIn={loggedIn} role={role} />
-      </Router>
+      {/* </Router> */}
       <Toaster />
     </AuthContext.Provider>
   );
