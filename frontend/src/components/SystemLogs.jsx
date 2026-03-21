@@ -3,6 +3,7 @@ import { Menu, Users, Package, Gift, Trash2, ShieldAlert, Clock, Download } from
 import Sidebar from "./Sidebar";
 import { theme } from "./Theme";
 import axios from "axios";
+import { toast } from "../ui/Toaster";
 
 const SystemLogs = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -86,6 +87,7 @@ const SystemLogs = () => {
       setLogs(compiledLogs);
 
     } catch (error) {
+      toast.error(error.message);
       console.error("Error fetching logs:", error);
     } finally {
       setIsLoading(false);
@@ -253,18 +255,12 @@ const SystemLogs = () => {
               </span>
 
               <div className="flex gap-2">
-                <button
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                  className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                >
+                <button disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}
+                  className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
                   Previous
                 </button>
-                <button
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                  className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                >
+                <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                  className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
                   Next
                 </button>
               </div>
