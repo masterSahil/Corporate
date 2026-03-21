@@ -56,12 +56,15 @@ const ViewAdmins = () => {
 
   const deleteAdmin = async(id) => {
     try {
+      setLoading(true);
       await axios.put(`${import.meta.env.VITE_API_KEY}/delete/${id}`, {isDeleted: true, deletedAt: new Date()});
       toast.success("Admin Deleted Successfully");
       getData();
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
   
