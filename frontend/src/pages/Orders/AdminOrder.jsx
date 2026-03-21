@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Loader2, Search, Menu, Calendar, Hash, ChevronDown, ImageIcon, Clock, User, Mail, CreditCard } from "lucide-react";
+import { Search, Menu, Calendar, Hash, ChevronDown, ImageIcon, Clock, User, Mail, CreditCard, RefreshCw } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
@@ -49,7 +49,7 @@ const AdminOrders = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData() }, []);
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
@@ -101,9 +101,11 @@ const AdminOrders = () => {
             </div>
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-32">
-                <Loader2 className="animate-spin text-slate-400 mb-4" size={32} />
-                <p className="text-slate-500 font-medium tracking-widest text-xs uppercase">Connecting to Database...</p>
+              <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+                <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+                  <RefreshCw className="animate-spin text-slate-700" size={22} />
+                  <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
