@@ -4,6 +4,7 @@ import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
+import { useNavigate } from "react-router-dom";
 
 /* Reusable Card Component */
 const Card = ({ title, icon: Icon, children }) => (
@@ -56,6 +57,8 @@ const AddEmployee = () => {
     employment: "Full-time", role: "employee"
   });
 
+  const navigate = useNavigate();
+
   /* Generic change handler */
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   const handleEmploymentSelect = (employment) => setFormData(prev => ({ ...prev, employment }));
@@ -105,6 +108,7 @@ const AddEmployee = () => {
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
       toast.success("success");
+      navigate("/employees/manage")
       resetForm();
     } catch (error) {
       toast.error(error);
