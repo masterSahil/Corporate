@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Edit2, Trash2, UserPlus, Shield, ShieldCheck, MoreVertical } from "lucide-react";
+import { Menu, Search, Filter, Edit2, Trash2, UserPlus, Shield, ShieldCheck, MoreVertical, RefreshCw } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -11,17 +11,21 @@ const ViewAdmins = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [initialAdmins, setInitialAdmins] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const getData = async() => {
     try {
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, {withCredentials: true});
       const filteredAdmins = res.data.users.filter(u => u.role !== "employee")
       setInitialAdmins(filteredAdmins);
     } catch (error) {
       toast.error(error);
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -73,6 +77,17 @@ const ViewAdmins = () => {
 
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
+
+      {loading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800">
+              Loading...
+            </span>
+          </div>
+        </div>
+      )}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 bg-slate-50 ${customScrollbar} flex flex-col`}>
