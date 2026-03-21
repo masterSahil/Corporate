@@ -161,10 +161,8 @@ const Settings = () => {
 
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}
-          >
+          <button onClick={() => setIsSidebarOpen(true)}
+            className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`} >
             <Menu size={20} /> <span className="text-sm font-medium">Menu</span>
           </button>
         </div>
@@ -197,12 +195,8 @@ const Settings = () => {
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <Camera size={20} className="text-white" />
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
+                  <input type="file" accept="image/*" onChange={handlePhotoUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">Profile Photo</h3>
@@ -218,34 +212,22 @@ const Settings = () => {
                   <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Username</label>
                   <div className="relative flex items-center">
                     <Hash size={18} className={`absolute left-4 ${theme.textMuted}`} />
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      placeholder='Username'
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                    />
+                    <input type="text" name="username" value={formData.username} onChange={handleChange}
+                      placeholder='Username' className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
                   </div>
                 </div>
 
                 {/* Email */}
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-end">
-                    <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Email</label>
-                    <span className="text-[11px] text-slate-400 italic">Ask admin to change</span>
+                    <label className={`text-[11px] font-bold uppercase tracking-wide`}>Email</label>
+                    {/* <span className="text-[11px] text-slate-400 italic">Ask admin to change</span> */}
                   </div>
                   
                   <div className="relative flex items-center">
                     <Mail size={18} className={`absolute left-4 ${theme.textMuted}`} />
-                    <input
-                      type="email"
-                      name="email"
-                      readOnly 
-                      value={formData.email} 
-                      onChange={handleChange}
-                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-500 text-sm rounded-lg pl-11 pr-4 py-3 outline-none cursor-not-allowed transition-all`} 
-                    />
+                    <input type="email" name="email" value={formData.email} onChange={handleChange}
+                      className={`w-full bg-zinc-50 border ${theme.border} text-sm rounded-lg pl-11 pr-4 py-3 outline-none transition-all`}/>
                   </div>
                 </div>
 
