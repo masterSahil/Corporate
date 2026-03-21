@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash } from 'lucide-react';
+import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash, RefreshCw } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { theme } from './Theme';
 import axios from 'axios';
@@ -48,6 +48,7 @@ const Settings = () => {
 
   const getData = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
       setFormData({
         profile: res.data.user.profile ?? null,
@@ -65,6 +66,8 @@ const Settings = () => {
     } catch (error) {
       toast.error(error)
       console.log(error)
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -106,6 +109,7 @@ const Settings = () => {
 
   const updatePassword = async () => {
     try {
+      setLoading(true);
       if (!formData.currentPassword || !formData.newPassword) {
         toast.warning("Please fill both password fields");
         return;
@@ -120,17 +124,22 @@ const Settings = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something Went Wrong");
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   const handleLogout = async () => {
     try {
+      setLoading(true);
       await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
       navigate('/');
       loggedIn.setLoggedIn(false);
       toast.success("Logged out successfully");
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,12 +147,17 @@ const Settings = () => {
 
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
-      {loading && (
-        <div className="fixed top-0 left-0 w-full h-0.75 bg-black z-50 animate-pulse"></div>
-      )}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <main className={`flex-1 flex flex-col bg-slate-50 ${customScrollbarClasses}`}>
+        {loading && (
+          <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+            <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+              <RefreshCw className="animate-spin text-slate-700" size={22} />
+              <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
