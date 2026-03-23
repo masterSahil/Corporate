@@ -63,7 +63,7 @@ const Settings = () => {
       setRole(res.data.user.role);
       setCurrentUserId(res.data.user._id);
     } catch (error) {
-      toast.error(error)
+      toast.error(error?.response?.data?.message || "Failed to Fetch Data");
       console.log(error)
     }
   }
@@ -95,9 +95,9 @@ const Settings = () => {
       await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, { withCredentials: true, });
 
       getData();
-      toast.success("Profile Info Updated")
+      toast.success("Profile Info Updated Successfully");
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to Update Profile Info");
       console.log(error);
     } finally {
       setLoading(false);
@@ -115,10 +115,10 @@ const Settings = () => {
         { email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword },
         { withCredentials: true });
 
-      toast.success("Updated Successfully ...");
+      toast.success("Password Updated Successfully ...");
       setFormData({ newPassword: "", currentPassword: "" });
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Something Went Wrong");
+      toast.error(error?.response?.data?.message || "Failed to Update Password");
       console.log(error);
     }
   }
@@ -130,7 +130,7 @@ const Settings = () => {
       loggedIn.setLoggedIn(false);
       toast.success("Logged out successfully");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || "Failed to Logout");
     }
   };
 

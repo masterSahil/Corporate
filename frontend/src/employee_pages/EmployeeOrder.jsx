@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { 
-  ShoppingBag, Loader2, XCircle, Package, Calendar, 
-  CreditCard, Hash, ImageIcon, ArrowRight 
-} from "lucide-react";
+import { ShoppingBag, Loader2, XCircle, Package, Calendar, CreditCard, Hash, ImageIcon, ArrowRight } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import axios from "axios";
 import { toast } from "../ui/Toaster";
@@ -216,13 +213,11 @@ const EmployeeOrder = () => {
                 Are you sure you want to cancel this order? Your points and product stock will be restored. This action cannot be undone.
               </p>
               <div className="flex justify-end gap-3">
-                <button 
-                  onClick={() => { setShowCancelModal(false); setCancelOrderId(null) }}
+                <button onClick={() => { setShowCancelModal(false); setCancelOrderId(null) }}
                   className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors">
                   Keep Order
                 </button>
-                <button onClick={handleCancel}
-                  className="px-4 py-2 text-sm font-bold text-white bg-rose-600 rounded-lg hover:bg-rose-700 transition-colors">
+                <button onClick={handleCancel} className="px-4 py-2 text-sm font-bold text-white bg-rose-600 rounded-lg hover:bg-rose-700 transition-colors">
                   Yes, Cancel
                 </button>
               </div>

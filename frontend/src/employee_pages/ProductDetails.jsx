@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-    ChevronLeft, ArrowRight, Minus, Plus, ShieldCheck,
-    Truck, RefreshCw, Package, ShoppingBag, Star,
-    Edit3, CheckCircle2, Trash2, Save, X
-} from "lucide-react";
+import { ChevronLeft, ArrowRight, Minus, Plus, ShieldCheck, Truck, RefreshCw, Package, ShoppingBag, Star, Edit3, CheckCircle2, Trash2, Save, X } from "lucide-react";
 import axios from "axios";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { toast } from "../ui/Toaster";
@@ -51,8 +47,7 @@ const ProductDetails = () => {
             setCurrentUserName(user.username);
 
             // Correctly mapping usernames from individual review records
-            const productReviews = reviewRes.data.rating
-                .filter(r => r.productId === id)
+            const productReviews = reviewRes.data.rating.filter(r => r.productId === id)
                 .map(r => ({
                     id: r._id,
                     buyerId: r.buyerId?._id || r.buyerId,
@@ -69,7 +64,7 @@ const ProductDetails = () => {
 
         } catch (err) {
             console.error("Error fetching data:", err);
-            toast.error("Failed to load details.");
+            toast.error("Failed to Fetching Details.");
         } finally {
             setIsLoading(false);
         }
@@ -86,9 +81,9 @@ const ProductDetails = () => {
                 buyerId: currentUserId, productId: product._id, quantity: 1
             }, { withCredentials: true });
             setCartItem(res.data.cart);
-            toast.success("Added to Cart");
+            toast.success("Products Added to Cart Successfully");
         } catch (error) {
-            toast.error("Failed to add product");
+            toast.error("Failed to add product in cart");
         }
     };
 
@@ -98,16 +93,17 @@ const ProductDetails = () => {
             if (newQuantity <= 0) {
                 await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, { withCredentials: true });
                 setCartItem(null);
-                toast.success("Removed from cart");
+                toast.success("Product Removed from Cart Successfully");
             } else {
                 if (newQuantity > product.quantity) return toast.error("Maximum stock reached.");
                 const res = await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, {
                     buyerId: currentUserId, productId: product._id, quantity: newQuantity
                 }, { withCredentials: true });
                 setCartItem(res.data.cart);
+                toast.success("Product Quantity Updated Successfully");
             }
         } catch (error) {
-            toast.error("Update failed");
+            toast.error("Failed to Update Product Quantity");
         }
     };
 
@@ -124,9 +120,9 @@ const ProductDetails = () => {
             setReviews([{ id: saved._id, buyerId: currentUserId, user: currentUserName, rating: saved.rate, comment: saved.review, date: "Just now" }, ...reviews]);
             setIsWritingReview(false);
             setNewReview({ rating: 5, comment: "" });
-            toast.success("Review posted!");
+            toast.success("Review Posted Successfully!");
         } catch (error) {
-            toast.error("Error posting review");
+            toast.error("Error Posting Review");
         }
     };
 
@@ -134,7 +130,7 @@ const ProductDetails = () => {
         try {
             await axios.delete(`${import.meta.env.VITE_API_KEY}/rating/${reviewId}`, { withCredentials: true });
             setReviews(reviews.filter(r => r.id !== reviewId));
-            toast.success("Review deleted");
+            toast.success("Review Deleted Successfully");
         } catch (error) {
             toast.error("Failed to delete review");
         }
@@ -148,9 +144,9 @@ const ProductDetails = () => {
 
             setReviews(reviews.map(r => r.id === editingReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
             setEditingReviewId(null);
-            toast.success("Review updated!");
+            toast.success("Review Updated Successfully!");
         } catch (error) {
-            toast.error("Update failed");
+            toast.error("Failed to Update Review");
             console.log(error)
         }
     };
@@ -158,16 +154,18 @@ const ProductDetails = () => {
     const averageRating = reviews.length > 0 ?
         (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
-    if (isLoading || !product) return (
-        <div className="h-screen flex items-center justify-center bg-white">
-            <div className="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div>
-        </div>
-    );
-
     return (
         <div className="flex h-screen w-full bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-hidden">
             <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
+            {isLoading && (
+                <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+                    <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+                    <RefreshCw className="animate-spin text-slate-700" size={22} />
+                    <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+                    </div>
+                </div>
+            )}
             <main className="flex-1 overflow-y-auto bg-white scroll-smooth custom-scrollbar relative flex flex-col">
                 <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-100 px-6 py-4 flex justify-between items-center">
                     <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">
@@ -182,8 +180,7 @@ const ProductDetails = () => {
                         {/* LEFT: Image Section */}
                         <div className="w-full flex flex-col gap-4">
                             <div className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden relative flex items-center justify-center group shadow-sm">
-                                <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} alt={product.name}
-                                    className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
+                                <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} alt={product.name} className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
                             </div>
                             <div className="flex gap-3 overflow-auto pb-2 no-scrollbar">
                                 {product.gallery?.map((media, idx) => (
@@ -352,19 +349,15 @@ const ProductDetails = () => {
                                                                 <span className="text-[12px] font-bold uppercase">{review.date}</span>
                                                                 {review.buyerId === currentUserId && (
                                                                     <div className="flex items-center gap-1 bg-zinc-50 p-1 rounded-lg border border-zinc-100">
-                                                                        <button
-                                                                            onClick={() => {
+                                                                        <button onClick={() => {
                                                                                 setEditingReviewId(review.id);
                                                                                 setEditData({ rating: review.rating, comment: review.comment });
                                                                             }}
-                                                                            className="p-2 hover:text-yellow-500 rounded-lg transition-all"
-                                                                        >
+                                                                            className="p-2 hover:text-yellow-500 rounded-lg transition-all">
                                                                             <Edit3 size={15} />
                                                                         </button>
-                                                                        <button
-                                                                            onClick={() => handleDeleteReview(review.id)}
-                                                                            className="p-2 hover:text-rose-600 rounded-lg transition-all"
-                                                                        >
+                                                                        <button onClick={() => handleDeleteReview(review.id)}
+                                                                            className="p-2 hover:text-rose-600 rounded-lg transition-all">
                                                                             <Trash2 size={15} />
                                                                         </button>
                                                                     </div>

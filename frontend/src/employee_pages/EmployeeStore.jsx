@@ -134,22 +134,14 @@ const EmployeeStore = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between relative z-30">
             <div className="relative w-full sm:w-1/2 md:w-1/3 group">
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-black transition-colors" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border-2 border-slate-200 text-slate-900 text-sm rounded-lg pl-12 pr-4 py-3.5 outline-none focus:border-black transition-all shadow-sm font-medium"
-              />
+              <input type="text" placeholder="Search products..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-white border-2 border-slate-200 text-slate-900 text-sm rounded-lg pl-12 pr-4 py-3.5 outline-none focus:border-black transition-all shadow-sm font-medium" />
             </div>
 
             {/* Category Dropdown */}
             <div className="relative w-full sm:w-64 md:w-72" ref={dropdownRef}>
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
+              <button onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className={`w-full flex items-center justify-between px-5 py-3.5 bg-white border-2 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-sm
-                  ${isFilterOpen ? "border-black ring-4 ring-slate-100" : "border-slate-200 hover:border-black"}`}
-              >
+                  ${isFilterOpen ? "border-black ring-4 ring-slate-100" : "border-slate-200 hover:border-black"}`}>
                 <div className="flex items-center gap-3">
                   <Filter size={14} />
                   <span className="truncate">{selectedCategory === "All" ? "Filter Category" : selectedCategory}</span>
@@ -162,15 +154,8 @@ const EmployeeStore = () => {
                 <div className="absolute top-full mt-2 w-full bg-white border-2 border-black rounded-lg shadow-2xl overflow-hidden z-50">
                   <div className="max-h-64 overflow-y-auto custom-scrollbar">
                     {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => {
-                          setSelectedCategory(cat);
-                          setIsFilterOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors border-b border-slate-50 last:border-0 text-left
-                          ${selectedCategory === cat ? "bg-black text-white" : "text-slate-600 hover:bg-slate-200"}`}
-                      >
+                      <button key={cat} onClick={() => {setSelectedCategory(cat); setIsFilterOpen(false) }}
+                        className={`w-full flex items-center justify-between px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors border-b border-slate-50 last:border-0 text-left ${selectedCategory === cat ? "bg-black text-white" : "text-slate-600 hover:bg-slate-200"}`}>
                         <span className="truncate pr-2">{cat}</span>
                         {selectedCategory === cat && <Check size={14} className="shrink-0" />}
                       </button>
@@ -194,8 +179,7 @@ const EmployeeStore = () => {
                   <div className="aspect-4/3 rounded-lg bg-slate-100 mb-4 overflow-hidden relative flex items-center justify-center border border-slate-100 group-hover:border-slate-200 transition-colors">
                     {product.gallery && product.gallery.length > 0 ? (
                       <img src={product.gallery[0].fileUrl} alt={product.name} 
-                        className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-700 ease-out" 
-                      />
+                        className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-700 ease-out"/>
                     ) : (
                       <Package size={40} className="text-slate-300" />
                     )}
@@ -244,10 +228,8 @@ const EmployeeStore = () => {
                       {/* Quantity Controls OR Add to Cart Button */}
                       {cartItem ? (
                         <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1 border-2 border-slate-200 shrink-0">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem._id, product._id, cartItem.quantity - 1); }} 
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-slate-600 hover:text-black hover:shadow-md transition-all border border-slate-200"
-                          >
+                          <button onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem._id, product._id, cartItem.quantity - 1); }} 
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-slate-600 hover:text-black hover:shadow-md transition-all border border-slate-200">
                             <Minus size={14} />
                           </button>
                           <span className="font-black text-xs w-5 text-center">{cartItem.quantity}</span>
@@ -274,9 +256,7 @@ const EmployeeStore = () => {
             <div className="flex flex-col items-center justify-center py-24 bg-white rounded-lg border-2 border-dashed border-slate-200 mx-4 md:mx-0">
               <Package size={60} className="text-slate-200 mb-5" />
               <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest text-center">No products found</h3>
-              <button onClick={() => {setSearchQuery(""); setSelectedCategory("All")}}
-                className="mt-4 text-black text-sm font-bold tracking-wider hover:underline transition-all"
-              >
+              <button onClick={() => {setSearchQuery(""); setSelectedCategory("All")}} className="mt-4 text-black text-sm font-bold tracking-wider hover:underline transition-all">
                 CLEAR FILTERS
               </button>
             </div>

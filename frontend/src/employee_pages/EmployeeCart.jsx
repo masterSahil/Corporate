@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Menu, ArrowLeft, Trash2, Plus, Minus, Package, 
-  ShoppingCart, ArrowRight, Loader2, Sparkles, Receipt, Check
-} from "lucide-react";
+import { Menu, ArrowLeft, Trash2, Plus, Minus, Package, ShoppingCart, ArrowRight, Loader2, Sparkles, Receipt, Check } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
@@ -72,7 +69,6 @@ const EmployeeCart = () => {
         productId: productId,
         quantity: newQuantity
       }, { withCredentials: true });
-
     } catch (error) {
       toast.error("Failed to update quantity");
       fetchData(); 
@@ -141,7 +137,6 @@ const EmployeeCart = () => {
     }
     try {
       const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
-
       const res = await axios.post(`${import.meta.env.VITE_API_KEY}/checkout`, 
         {userId: currentUserId, items: cleanItems, pointsUsed: discountRs}, { withCredentials: true });
       

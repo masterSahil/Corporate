@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Menu, ArrowRight, ShoppingCart, Shield, Award, 
-  Package, Mail, Sparkles, UserCircle, TrendingUp, 
-  Trophy, Gift, Clock, ChevronRight
-} from "lucide-react";
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer 
-} from "recharts";
+import { Menu, ArrowRight, Shield, Award, Package, Mail, Sparkles, UserCircle, TrendingUp, Trophy, Gift, Clock, ChevronRight } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { theme } from "../components/Theme";
 import axios from "axios";
+import { toast } from "../ui/Toaster";
 
 const EmployeeDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -97,6 +91,7 @@ const EmployeeDashboard = () => {
       // 7. Initialize Graph Data
       generateChartData(myRewards, 'THIS_MONTH');
     } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to Fetching Employee Data");
       console.error("Error fetching employee dashboard data:", error);
     }
   };

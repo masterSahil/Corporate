@@ -3,6 +3,7 @@ import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown } from
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import { theme } from "../components/Theme";
 import axios from "axios";
+import { toast } from "../ui/Toaster";
 
 const EmployeeDirectory = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -20,6 +21,7 @@ const EmployeeDirectory = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true });
       setAllUsers(res.data.users || []);
     } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to Fetch Directory Data");
       console.error("Error fetching users:", error);
     } finally {
       setIsLoading(false);

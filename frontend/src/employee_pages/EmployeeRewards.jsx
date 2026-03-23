@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Trophy, Search, Filter, Calendar, Award, History, CheckCircle2, Globe } from "lucide-react";
+import { Menu, Trophy, Search, Filter, Calendar, Award, CheckCircle2, Globe } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import axios from "axios";
+import { toast } from "../ui/Toaster";
 
 const EmployeeRewards = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,6 +30,7 @@ const EmployeeRewards = () => {
       setUserPoints(user.points || 0);
       setCurrentUserId(user._id);
     } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to Fetch Rewards Data");
       console.error("Error fetching rewards:", error);
     }
   };
@@ -59,7 +61,9 @@ const EmployeeRewards = () => {
           reward._id === rewardId ? { ...reward, isAccepted: true, status: 'redeemed' } : reward
         )
       );
+      toast.success("Rewards Accepted Successfully");
     } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to Accept Reward");
       console.error("Error accepting reward:", error);
     }
   };
