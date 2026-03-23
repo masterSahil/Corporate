@@ -185,7 +185,7 @@ const ProductDetails = () => {
                     <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">
                         <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Store
                     </button>
-                    <span className="text-xs font-medium text-zinc-400 hidden sm:block">Product / {product._id.slice(-8)}</span>
+                    <span className="text-xs font-medium text-zinc-400 hidden sm:block">Product / {product?._id?.slice(-8)}</span>
                 </nav>
 
                 <div className="max-w-7xl w-full mx-auto px-6 py-8">
