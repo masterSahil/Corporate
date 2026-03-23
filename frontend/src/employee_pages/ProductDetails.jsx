@@ -172,7 +172,7 @@ const ProductDetails = () => {
         <div className="flex h-screen w-full bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-hidden">
             <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-            {isLoading || !product && (
+            {(isLoading || !product) && (
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
                     <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
                     <RefreshCw className="animate-spin text-slate-700" size={22} />
