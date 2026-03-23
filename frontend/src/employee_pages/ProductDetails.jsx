@@ -194,10 +194,10 @@ const ProductDetails = () => {
                         {/* LEFT: Image Section */}
                         <div className="w-full flex flex-col gap-4">
                             <div className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden relative flex items-center justify-center group shadow-sm">
-                                <img src={product?.gallery[activeMedia]?.fileUrl || product?.gallery[activeMedia]?.url} alt={product.name} className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
+                                <img src={product?.gallery[activeMedia]?.fileUrl || product?.gallery[activeMedia]?.url} alt={product?.name} className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
                             </div>
                             <div className="flex gap-3 overflow-auto pb-2 no-scrollbar">
-                                {product.gallery?.map((media, idx) => (
+                                {product?.gallery?.map((media, idx) => (
                                     <button key={idx} onClick={() => setActiveMedia(idx)}
                                         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white ${activeMedia === idx ? 'border-zinc-900' : 'border-zinc-100 opacity-60 hover:opacity-100'}`} >
                                         <img src={media?.fileUrl || media?.url} className="w-full h-full object-cover" alt="Product Gallery" />
@@ -210,23 +210,23 @@ const ProductDetails = () => {
                         <div className="flex flex-col">
                             <div className="mb-6">
                                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                                    <span className="px-3 py-1 bg-zinc-900 text-white text-[11px] font-semibold uppercase tracking-wider rounded-full">{product.brand || "Exclusive"}</span>
-                                    <span className="text-sm font-medium text-zinc-500">{product.category}</span>
+                                    <span className="px-3 py-1 bg-zinc-900 text-white text-[11px] font-semibold uppercase tracking-wider rounded-full">{product?.brand || "Exclusive"}</span>
+                                    <span className="text-sm font-medium text-zinc-500">{product?.category}</span>
                                 </div>
-                                <h1 className="text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3 leading-tight">{product.name}</h1>
+                                <h1 className="text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3 leading-tight">{product?.name}</h1>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-3xl font-bold text-zinc-900">Rs {product.price * (cartItem ? cartItem.quantity : 1)}</span>
-                                    {product.discount > 0 && <span className="text-sm font-semibold bg-rose-50 text-rose-600 px-2 py-1 rounded-md">{product.discount}% OFF</span>}
+                                    <span className="text-3xl font-bold text-zinc-900">Rs {product?.price * (cartItem ? cartItem?.quantity : 1)}</span>
+                                    {product?.discount > 0 && <span className="text-sm font-semibold bg-rose-50 text-rose-600 px-2 py-1 rounded-md">{product?.discount}% OFF</span>}
                                 </div>
                             </div>
 
-                            <p className="text-zinc-600 text-sm sm:text-base leading-relaxed mb-8">{product.description}</p>
+                            <p className="text-zinc-600 text-sm sm:text-base leading-relaxed mb-8">{product?.description}</p>
 
                             <div className="bg-white border border-zinc-200 shadow-sm rounded-2xl p-6 mb-6">
                                 <div className="flex justify-between items-center mb-5">
                                     <span className="text-sm font-medium text-zinc-600">Availability</span>
-                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${product.quantity > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
-                                        {product.quantity > 0 ? `${product.quantity} In Stock` : "Out of Stock"}
+                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${product?.quantity > 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+                                        {product?.quantity > 0 ? `${product?.quantity} In Stock` : "Out of Stock"}
                                     </span>
                                 </div>
                                 {cartItem ? (
@@ -239,7 +239,7 @@ const ProductDetails = () => {
                                         <button className="w-full sm:w-1/2 bg-zinc-900 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 opacity-80"><ShoppingBag size={18} /> Added to Cart</button>
                                     </div>
                                 ) : (
-                                    <button onClick={addToCart} disabled={product.quantity <= 0} className="w-full bg-zinc-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 disabled:opacity-50 transition-colors">
+                                    <button onClick={addToCart} disabled={product?.quantity <= 0} className="w-full bg-zinc-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 disabled:opacity-50 transition-colors">
                                         <span className="font-semibold">Add to Cart</span><ArrowRight size={18} />
                                     </button>
                                 )}
