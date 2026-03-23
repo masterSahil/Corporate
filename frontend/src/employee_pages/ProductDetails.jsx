@@ -194,13 +194,13 @@ const ProductDetails = () => {
                         {/* LEFT: Image Section */}
                         <div className="w-full flex flex-col gap-4">
                             <div className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden relative flex items-center justify-center group shadow-sm">
-                                <img src={product.gallery[activeMedia]?.fileUrl || product.gallery[activeMedia]?.url} alt={product.name} className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
+                                <img src={product?.gallery[activeMedia]?.fileUrl || product?.gallery[activeMedia]?.url} alt={product.name} className="w-full min-h-75 h-auto max-h-125 object-contain transition-transform duration-700 group-hover:scale-105" />
                             </div>
                             <div className="flex gap-3 overflow-auto pb-2 no-scrollbar">
                                 {product.gallery?.map((media, idx) => (
                                     <button key={idx} onClick={() => setActiveMedia(idx)}
                                         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white ${activeMedia === idx ? 'border-zinc-900' : 'border-zinc-100 opacity-60 hover:opacity-100'}`} >
-                                        <img src={media.fileUrl || media.url} className="w-full h-full object-cover" alt="" />
+                                        <img src={media?.fileUrl || media?.url} className="w-full h-full object-cover" alt="Product Gallery" />
                                     </button>
                                 ))}
                             </div>
