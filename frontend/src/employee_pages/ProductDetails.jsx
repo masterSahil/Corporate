@@ -77,6 +77,7 @@ const ProductDetails = () => {
         if (!currentUserId || !product) return;
         if (product.quantity <= 0) return toast.error("Product is out of stock.");
         try {
+            setIsLoading(true);
             const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, {
                 buyerId: currentUserId, productId: product._id, quantity: 1
             }, { withCredentials: true });
@@ -84,12 +85,15 @@ const ProductDetails = () => {
             toast.success("Products Added to Cart Successfully");
         } catch (error) {
             toast.error("Failed to add product in cart");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const updateQuantity = async (newQuantity) => {
         if (!cartItem) return;
         try {
+            setIsLoading(true);
             if (newQuantity <= 0) {
                 await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, { withCredentials: true });
                 setCartItem(null);
@@ -104,6 +108,8 @@ const ProductDetails = () => {
             }
         } catch (error) {
             toast.error("Failed to Update Product Quantity");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -112,9 +118,9 @@ const ProductDetails = () => {
         e.preventDefault();
         if (!newReview.comment.trim()) return toast.error("Please write a comment.");
         try {
+            setIsLoading(true);
             const res = await axios.post(`${import.meta.env.VITE_API_KEY}/rating`,
-                { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating, username: currentUserName },
-                { withCredentials: true });
+                { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating, username: currentUserName }, { withCredentials: true });
 
             const saved = res.data.rating;
             setReviews([{ id: saved._id, buyerId: currentUserId, user: currentUserName, rating: saved.rate, comment: saved.review, date: "Just now" }, ...reviews]);
@@ -123,22 +129,28 @@ const ProductDetails = () => {
             toast.success("Review Posted Successfully!");
         } catch (error) {
             toast.error("Error Posting Review");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleDeleteReview = async (reviewId) => {
         try {
+            setIsLoading(true);
             await axios.delete(`${import.meta.env.VITE_API_KEY}/rating/${reviewId}`, { withCredentials: true });
             setReviews(reviews.filter(r => r.id !== reviewId));
             toast.success("Review Deleted Successfully");
         } catch (error) {
             toast.error("Failed to delete review");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleUpdateReview = async (e) => {
         e.preventDefault();
         try {
+            setIsLoading(true);
             await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`,
                 { review: editData.comment, rate: editData.rating }, { withCredentials: true });
 
@@ -148,6 +160,8 @@ const ProductDetails = () => {
         } catch (error) {
             toast.error("Failed to Update Review");
             console.log(error)
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -162,7 +176,7 @@ const ProductDetails = () => {
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
                     <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
                     <RefreshCw className="animate-spin text-slate-700" size={22} />
-                    <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+                        <span className="text-sm font-semibold text-slate-800"> Loading... </span>
                     </div>
                 </div>
             )}
@@ -186,7 +200,7 @@ const ProductDetails = () => {
                                 {product.gallery?.map((media, idx) => (
                                     <button key={idx} onClick={() => setActiveMedia(idx)}
                                         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white ${activeMedia === idx ? 'border-zinc-900' : 'border-zinc-100 opacity-60 hover:opacity-100'}`} >
-                                        <img src={media.fileUrl || media.url} className="w-full h-full object-cover" alt="" />
+                                        <img src={media.fileUrl} className="w-full h-full object-cover" alt="" />
                                     </button>
                                 ))}
                             </div>

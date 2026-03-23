@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Trophy, Search, Filter, Calendar, Award, CheckCircle2, Globe } from "lucide-react";
+import { Menu, Trophy, Search, Filter, Calendar, Award, CheckCircle2, Globe, RefreshCw } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
@@ -9,6 +9,7 @@ const EmployeeRewards = () => {
   const [rewards, setRewards] = useState([]);
   const [myRewards, setMyRewards] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("Filter");
 
   // --- NEW LOGIC STATES ---
@@ -17,6 +18,7 @@ const EmployeeRewards = () => {
 
   const getRewards = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
       const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
       
@@ -32,6 +34,8 @@ const EmployeeRewards = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Fetch Rewards Data");
       console.error("Error fetching rewards:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,6 +48,7 @@ const EmployeeRewards = () => {
     const rewardToAccept = myRewards.find(r => r._id === rewardId);
     if (!rewardToAccept) return;
 
+    setLoading(true);
     try {
       const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${rewardId}`, {status: "redeemed"}, { withCredentials: true });
       
@@ -65,6 +70,8 @@ const EmployeeRewards = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Accept Reward");
       console.error("Error accepting reward:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +100,14 @@ const EmployeeRewards = () => {
     <div className={`flex h-screen w-full bg-slate-50 font-sans selection:bg-slate-900 selection:text-white overflow-hidden`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
+      {loading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
       <main className="flex-1 overflow-y-auto scroll-smooth">
         {/* Mobile Nav */}
         <div className="lg:hidden p-4 flex justify-between items-center bg-white border-b border-slate-200">

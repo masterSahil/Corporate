@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, Search, Star, Plus, Minus, Package, ChevronDown, Filter, Check, Eye } from "lucide-react";
+import { Menu, Search, Star, Plus, Minus, Package, ChevronDown, Filter, Check, Eye, RefreshCw } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { theme } from "../components/Theme";
 import axios from "axios";
@@ -16,12 +16,14 @@ const EmployeeStore = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [userPoints, setUserPoints] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const getData = async () => {
   try {
+    setLoading(true);
     const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
     const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
     
@@ -34,7 +36,9 @@ const EmployeeStore = () => {
     const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
     setCartItems(userCart);
   } catch (error) {
-    toast.error("Failed to fetch data");
+    toast.error("Failed to Fetch Data");
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -54,17 +58,21 @@ const EmployeeStore = () => {
 
   const addToCart = async (id) => {
     try {
+      setLoading(true);
       const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, { buyerId: currentUserId, productId: id, quantity: 1 }, { withCredentials: true });
       
       setCartItems([...cartItems, res.data.cart]);
       toast.success("Product Added to Cart");
     } catch (error) {
       toast.error(error.message || "Failed to add product");
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateQuantity = async (cartItemId, productId, newQuantity) => {
     try {
+      setLoading(true);
       if (newQuantity <= 0) {
         // Remove from cart database if quantity is 0 or less
         await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, { withCredentials: true });
@@ -83,6 +91,8 @@ const EmployeeStore = () => {
       }
     } catch (error) {
       toast.error(error.message || "Failed to update quantity");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,6 +110,14 @@ const EmployeeStore = () => {
     <div className={`flex h-screen w-full overflow-hidden selection:bg-zinc-200 selection:text-black`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
+      {loading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses}`}>
         {/* Mobile Header Toggle */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">

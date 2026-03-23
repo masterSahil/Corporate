@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown } from "lucide-react";
+import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown, RefreshCw } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import { theme } from "../components/Theme";
 import axios from "axios";
@@ -62,6 +62,14 @@ const EmployeeDirectory = () => {
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-900 selection:text-white`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
+      {isLoading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses}`}>
         
         {/* Mobile Header */}
@@ -269,10 +277,8 @@ const EmployeeDirectory = () => {
                 <Search size={48} className="text-slate-200 mb-4" />
                 <h3 className="text-lg font-bold text-slate-900">No results found</h3>
                 <p className="text-sm text-slate-500">We couldn't find any team members matching your filters.</p>
-                <button 
-                  onClick={() => {setSearchQuery(""); setSelectedRole("All"); setSelectedDept("All");}} 
-                  className="mt-4 text-xs font-bold underline text-black"
-                >
+                <button onClick={() => {setSearchQuery(""); setSelectedRole("All"); setSelectedDept("All");}} 
+                  className="mt-4 text-xs font-bold underline text-black">
                   Clear all filters
                 </button>
               </div>

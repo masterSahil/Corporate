@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ShoppingBag, Loader2, XCircle, Package, Calendar, CreditCard, Hash, ImageIcon, ArrowRight } from "lucide-react";
+import { ShoppingBag, XCircle, Package, Calendar, CreditCard, Hash, ImageIcon, ArrowRight, RefreshCw } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import axios from "axios";
 import { toast } from "../ui/Toaster";
@@ -56,6 +56,7 @@ const EmployeeOrder = () => {
     if (!cancelOrderId) return;
     
     try {
+      setIsLoading(true);
       await axios.patch(`${import.meta.env.VITE_API_KEY}/order-status/${cancelOrderId}`, 
         { status: "Cancelled" }, 
         { withCredentials: true }
@@ -66,6 +67,8 @@ const EmployeeOrder = () => {
       setCancelOrderId(null);
     } catch (error) {
       toast.error(error.response?.data?.message || "Cannot cancel order.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,6 +76,14 @@ const EmployeeOrder = () => {
     <div className="flex h-screen w-full bg-[#f1f5f9] font-sans text-slate-900 overflow-hidden">
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
+      {isLoading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
         <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
@@ -97,12 +108,7 @@ const EmployeeOrder = () => {
             </div>
 
             {/* Content Area */}
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-32">
-                <Loader2 className="animate-spin text-black mb-4" size={40} />
-                <p className="text-slate-400 font-bold tracking-widest text-xs uppercase">Loading Orders...</p>
-              </div>
-            ) : orders.length === 0 ? (
+            {orders.length === 0 ? (
               <div className="bg-white border hover:border-dashed hover:border-black border-slate-300 rounded-3xl p-16 flex flex-col items-center text-center shadow-sm">
                 <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
                   <ShoppingBag size={40} className="text-black" />

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash } from 'lucide-react';
+import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash, RefreshCw } from 'lucide-react';
 import Sidebar from './EmployeeSidebar';
 import { theme } from '../components/Theme';
 import axios from 'axios';
@@ -48,6 +48,7 @@ const Settings = () => {
 
   const getData = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
       setFormData({
         profile: res.data.user.profile ?? null,
@@ -65,6 +66,8 @@ const Settings = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Fetch Data");
       console.log(error)
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -110,27 +113,31 @@ const Settings = () => {
         toast.warning("Please fill both password fields");
         return;
       }
-
+      setLoading(true);
       await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`,
-        { email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword },
-        { withCredentials: true });
+        { email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword }, { withCredentials: true });
 
       toast.success("Password Updated Successfully ...");
       setFormData({ newPassword: "", currentPassword: "" });
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Update Password");
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   const handleLogout = async () => {
     try {
+      setLoading(true);
       await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
       navigate('/');
       loggedIn.setLoggedIn(false);
       toast.success("Logged out successfully");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Logout");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,6 +150,14 @@ const Settings = () => {
       )}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
+      {loading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
       <main className={`flex-1 flex flex-col bg-slate-50 ${customScrollbarClasses}`}>
 
         {/* Mobile Header */}

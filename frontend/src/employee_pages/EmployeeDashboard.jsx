@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, ArrowRight, Shield, Award, Package, Mail, Sparkles, UserCircle, TrendingUp, Trophy, Gift, Clock, ChevronRight } from "lucide-react";
+import { Menu, ArrowRight, Shield, Award, Package, Mail, Sparkles, UserCircle, TrendingUp, Trophy, Gift, Clock, ChevronRight, RefreshCw } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { theme } from "../components/Theme";
@@ -16,6 +16,7 @@ const EmployeeDashboard = () => {
   const [admins, setAdmins] = useState([]);
   const [rewards, setRewards] = useState([]);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   
   // Dynamic UI States
   const [userPoints, setUserPoints] = useState(0);
@@ -29,6 +30,7 @@ const EmployeeDashboard = () => {
   // --- DATA FETCHING & PROCESSING ---
   const getData = async () => {
     try {
+      setLoading(true);
       // 1. Fetch all data in parallel, INCLUDING the current session role
       const [resUsers, resRewards, resProducts, resRole] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }), 
@@ -93,6 +95,8 @@ const EmployeeDashboard = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Fetching Employee Data");
       console.error("Error fetching employee dashboard data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,6 +180,15 @@ const EmployeeDashboard = () => {
   return (
     <div className={`flex h-screen ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-black`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+
+      {loading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses}`}>
         

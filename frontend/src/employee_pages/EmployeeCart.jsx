@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, ArrowLeft, Trash2, Plus, Minus, Package, ShoppingCart, ArrowRight, Loader2, Sparkles, Receipt, Check } from "lucide-react";
+import { Menu, ArrowLeft, Trash2, Plus, Minus, Package, ShoppingCart, ArrowRight, Sparkles, Receipt, Check, RefreshCw } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
@@ -55,6 +55,7 @@ const EmployeeCart = () => {
 
   const updateQuantity = async (cartItemId, productId, newQuantity) => {
     try {
+      setIsLoading(true);
       if (newQuantity <= 0) {
         removeItem(cartItemId);
         return;
@@ -72,17 +73,22 @@ const EmployeeCart = () => {
     } catch (error) {
       toast.error("Failed to update quantity");
       fetchData(); 
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const removeItem = async (cartItemId) => {
     try {
+      setIsLoading(true);
       setCartItems(prev => prev.filter(item => item._id !== cartItemId));
       await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, { withCredentials: true });
       toast.success("Item removed from cart");
     } catch (error) {
       toast.error("Failed to remove item");
       fetchData(); 
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -136,6 +142,7 @@ const EmployeeCart = () => {
       toast.error("Please fix the points error before checking out."); return;
     }
     try {
+      setIsLoading(true);
       const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
       const res = await axios.post(`${import.meta.env.VITE_API_KEY}/checkout`, 
         {userId: currentUserId, items: cleanItems, pointsUsed: discountRs}, { withCredentials: true });
@@ -147,6 +154,8 @@ const EmployeeCart = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Checkout failed");
       console.log(error, error.response?.data?.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -156,6 +165,14 @@ const EmployeeCart = () => {
     <div className={`flex h-screen w-full overflow-hidden bg-slate-50 selection:bg-zinc-200 selection:text-black`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
+      {isLoading && (
+        <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+          <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+            <RefreshCw className="animate-spin text-slate-700" size={22} />
+            <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+          </div>
+        </div>
+      )}
       <main className={`flex-1 flex flex-col ${customScrollbarClasses}`}>
         {/* Mobile Header Toggle */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
@@ -169,10 +186,8 @@ const EmployeeCart = () => {
           {/* Top Navigation & Title */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
             <div className="flex items-center gap-4">
-              <button 
-                onClick={() => navigate('/employee/store')}
-                className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-black hover:text-white hover:border-black transition-all"
-              >
+              <button onClick={() => navigate('/employee/store')}
+                className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-black hover:text-white hover:border-black transition-all">
                 <ArrowLeft size={20} />
               </button>
               <div>
@@ -190,12 +205,7 @@ const EmployeeCart = () => {
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <Loader2 className="animate-spin text-slate-400 mb-4" size={40} />
-              <p className="text-sm font-bold text-slate-500">Loading your cart...</p>
-            </div>
-          ) : cartItems.length === 0 ? (
+          {cartItems.length === 0 ? (
             /* Empty State */
             <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200 p-6 md:p-8 text-center shadow-sm">
               <div className="w-20 h-20 md:w-24 md:h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
@@ -203,10 +213,8 @@ const EmployeeCart = () => {
               </div>
               <h2 className="text-xl md:text-2xl font-bold mb-2">Your cart is empty</h2>
               <p className="text-sm text-slate-500 font-medium mb-8 max-w-md">Looks like you haven't added any products to your cart yet. Head over to the store to see what's new.</p>
-              <button 
-                onClick={() => navigate('/employee/store')}
-                className="flex items-center justify-center gap-2 bg-black text-white px-6 md:px-8 py-3 md:py-3.5 rounded-xl font-bold hover:bg-zinc-800 transition-all shadow-md w-full sm:w-auto"
-              >
+              <button onClick={() => navigate('/employee/store')}
+                className="flex items-center justify-center gap-2 bg-black text-white px-6 md:px-8 py-3 md:py-3.5 rounded-xl font-bold hover:bg-zinc-800 transition-all shadow-md w-full sm:w-auto">
                 Browse Store <ArrowRight size={18} />
               </button>
             </div>
