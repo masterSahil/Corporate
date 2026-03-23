@@ -37,23 +37,23 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { name: 'Dashboard', icon: LayoutDashboard, isLink: true, path: '/dashboard' },
     { name: 'Admins', icon: Shield, requiresSuperAdmin: true, subs: [
       { label: '1. Add Admins', path: '/admins/add' },
-      { label: '2. View, Update & Delete', path: '/admins/manage' },
-      { label: '3. Soft Deleted', path: '/admins/deleted' }
+      { label: '2. Admins Management', path: '/admins/manage' },
+      { label: '3. Archived Admins', path: '/admins/deleted' }
     ]},
     { name: 'Employees', icon: Users, subs: [
       { label: '1. Add Employees', path: '/employees/add' },
-      { label: '2. View, Update & Delete', path: '/employees/manage' },
-      { label: '3. Soft Deleted', path: '/employees/deleted' }
+      { label: '2. Employees Management', path: '/employees/manage' },
+      { label: '3. Archived Employees', path: '/employees/deleted' }
     ]},
     { name: 'Products', icon: Box, subs: [
       { label: '1. Add Products', path: '/products/add' },
-      { label: '2. View, Update & Delete', path: '/products/manage' },
-      { label: '3. Soft Deleted', path: '/products/deleted' }
+      { label: '2. Products Management', path: '/products/manage' },
+      { label: '3. Archived Products', path: '/products/deleted' }
     ]},
     { name: 'Rewards', icon: Gift, subs: [
       { label: '1. Add Rewards', path: '/rewards/add' },
-      { label: '2. View, Update & Delete', path: '/rewards/manage' },
-      { label: '3. Soft Deleted', path: '/rewards/deleted' }
+      { label: '2. Rewards Management', path: '/rewards/manage' },
+      { label: '3. Archived Rewards', path: '/rewards/deleted' }
     ]},
     { name: 'Orders', icon: ShoppingCart, isLink: true, path: '/checkout-orders' },
     { name: 'System Logs', icon: FileText, isLink: true, path: '/system-logs' },
