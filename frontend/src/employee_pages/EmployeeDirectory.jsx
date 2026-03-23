@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown, RefreshCw } from "lucide-react";
+import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown, RefreshCw, X, Phone, Briefcase, Calendar, Award, Building2 } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import { theme } from "../components/Theme";
 import axios from "axios";
@@ -13,6 +13,7 @@ const EmployeeDirectory = () => {
   const [selectedDept, setSelectedDept] = useState("All");
   
   const [allUsers, setAllUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const getData = async () => {
@@ -146,7 +147,7 @@ const EmployeeDirectory = () => {
                   <div className="h-px flex-1 bg-slate-200"></div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   {superAdmins.map((user) => (
                     <div key={user._id} className="relative group overflow-hidden rounded-lg bg-black p-5 text-white flex flex-col lg:flex-row gap-8 items-center transition-all shadow-2xl">
                       <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
@@ -167,9 +168,10 @@ const EmployeeDirectory = () => {
                         <p className="text-white/60 text-sm mb-6 font-medium italic">Chief Technology Officer</p>
                         
                         <div className="flex gap-3 justify-center lg:justify-start">
-                          <a href={`mailto:${user.email}`} className="bg-white text-black px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors flex items-center gap-2">
-                            <Mail size={14} /> Contact
-                          </a>
+                          <button onClick={() => setSelectedUser(user)}
+                          className="p-2.5 rounded-sm text-[11px] font-black uppercase tracking-widest text-white bg-black hover:bg-white hover:text-black border hover:border-solid border-dashed transition-all">
+                          View Profile
+                        </button>
                         </div>
                       </div>
                     </div>
@@ -186,7 +188,7 @@ const EmployeeDirectory = () => {
                   <div className="h-1px flex-1 bg-slate-200"></div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {admins.map((user) => (
                     <div key={user._id} className="bg-white hover:shadow-2xl hover:shadow-black/5 transition-all p-6 rounded-xl group border-2 border-slate-100 hover:border-black flex flex-col items-center text-center">
                       <div className="relative">
@@ -207,7 +209,8 @@ const EmployeeDirectory = () => {
                       </span>
 
                       <div className="mt-6 w-full pt-4 border-t border-slate-50">
-                        <button className="w-full py-2.5 rounded-sm text-[11px] font-black uppercase tracking-widest text-black bg-slate-50 hover:bg-black hover:text-white transition-all">
+                        <button onClick={() => setSelectedUser(user)}
+                          className="w-full py-2.5 rounded-sm text-[11px] font-black uppercase tracking-widest text-black bg-slate-50 hover:bg-black hover:text-white transition-all">
                           View Profile
                         </button>
                       </div>
@@ -234,7 +237,7 @@ const EmployeeDirectory = () => {
                   <div className="h-px flex-1 bg-slate-200"></div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {employees.map((user) => (
                     <div key={user._id} className="bg-white hover:shadow-2xl hover:shadow-black/5 transition-all p-6 rounded-xl group border-2 border-slate-100 hover:border-black flex flex-col items-center text-center">
                       <div className="relative">
@@ -252,7 +255,8 @@ const EmployeeDirectory = () => {
                       </span>
 
                       <div className="mt-6 w-full pt-4 border-t border-slate-50">
-                        <button className="w-full py-2.5 rounded-sm text-[11px] font-black uppercase tracking-widest text-black bg-slate-50 hover:bg-black hover:text-white transition-all">
+                        <button onClick={() => setSelectedUser(user)}
+                          className="w-full py-2.5 rounded-sm text-[11px] font-black uppercase tracking-widest text-black bg-slate-50 hover:bg-black hover:text-white transition-all">
                           View Profile
                         </button>
                       </div>
@@ -270,6 +274,109 @@ const EmployeeDirectory = () => {
                 </div>
               </section>
             )}
+
+            {/* --- PROFILE MODAL OVERLAY --- */}
+            {selectedUser && (
+              <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+                
+                <div className="bg-white w-full max-w-md rounded-lg lg:rounded-xl shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-200 border border-slate-100">
+                  
+                  {/* Header/Cover Area */}
+                  <div className="h-32 bg-slate-50 border-b border-slate-100 relative w-full flex items-start justify-end p-4">
+                    <button onClick={() => setSelectedUser(null)} 
+                      className="bg-white p-2 rounded-full text-slate-400 hover:text-black hover:bg-slate-100 transition-all shadow-sm border border-slate-200">
+                      <X size={18} strokeWidth={2.5} />
+                    </button>
+                  </div>
+
+                  {/* Profile Image (Overlapping) */}
+                  <div className="relative -mt-16 flex justify-center">
+                    <div className="w-32 h-32 bg-white rounded-full p-1.5 shadow-md border border-slate-100">
+                      <img src={selectedUser?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                        className="w-full h-full rounded-full object-cover" alt={selectedUser?.username}/>
+                    </div>
+                  </div>
+
+                  {/* User Core Info */}
+                  <div className="p-6 pt-4 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <h2 className="text-2xl font-bold text-slate-900 capitalize">{selectedUser.username}</h2>
+                      {selectedUser.role === "super_admin" && <Verified size={18} className="text-blue-500" />}
+                    </div>
+                    <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-widest rounded-md border border-slate-200 mb-6">
+                      {selectedUser.role.replace('_', ' ')}
+                    </span>
+
+                    {/* Data Grid */}
+                    <div className="grid grid-cols-1 gap-3 text-left">
+                      
+                      <a href={`mailto:${selectedUser.email}`} className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-400 hover:shadow-sm transition-all cursor-pointer group">
+                        <div className="bg-white p-2 rounded-lg shadow-sm group-hover:scale-105 transition-transform">
+                          <Mail size={16} className="text-slate-500 group-hover:text-blue-500 transition-colors" />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-[10px] uppercase font-bold p-0 text-slate-400 tracking-wider">Email Address</p>
+                          <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                            {selectedUser.email}
+                          </p>
+                        </div>
+                      </a>
+
+                      <a href={selectedUser.phoneNumber ? `tel:${selectedUser.phoneNumber}` : undefined}
+                        className={`flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-100 transition-all ${ selectedUser.phoneNumber ? "hover:border-slate-400 hover:shadow-sm cursor-pointer group" : "opacity-80 cursor-default"}`}>
+                        <div className={`bg-white p-2 rounded-lg shadow-sm transition-transform ${selectedUser.phoneNumber ? "group-hover:scale-105" : ""}`}>
+                          <Phone size={16} className={`text-slate-500 transition-colors ${selectedUser.phoneNumber ? "group-hover:text-green-500" : ""}`} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Phone</p>
+                          <p className={`text-sm font-semibold text-slate-900 transition-colors ${selectedUser.phoneNumber ? "group-hover:text-green-600" : "text-slate-500"}`}>
+                            {selectedUser.phoneNumber || "Not provided"}
+                          </p>
+                        </div>
+                      </a>
+
+                      {selectedUser?.role === "employee" &&
+                      <div className="flex gap-3">
+                        <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-300 transition-colors">
+                          <div className="bg-white p-2 rounded-lg shadow-sm"><Building2 size={16} className="text-slate-500" /></div>
+                          <div className="overflow-hidden">
+                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Dept</p>
+                            <p className="text-sm font-semibold text-slate-900 truncate capitalize">{selectedUser.department || "N/A"}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-300 transition-colors">
+                          <div className="bg-white p-2 rounded-lg shadow-sm"><Briefcase size={16} className="text-slate-500" /></div>
+                          <div className="overflow-hidden">
+                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Type</p>
+                            <p className="text-sm font-semibold text-slate-900 truncate capitalize">{selectedUser.employment || "N/A"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      }
+
+                      {/* Conditional rendering for Employees (Points & Date) */}
+                      <div className="flex gap-3 justify-center mt-1">
+                        {selectedUser?.points !== undefined && (
+                          <div className="flex items-center gap-2">
+                            <Award size={14} className="text-slate-400" />
+                            <span className="text-xs font-bold text-slate-600">{selectedUser?.points} Points</span>
+                          </div>
+                        )}
+                        {selectedUser?.points !== undefined && <span className="text-slate-300">•</span>}
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} className="text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-500">
+                            Joined {new Date(selectedUser?.createdAt?.$date || selectedUser?.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* --- END PROFILE MODAL --- */}
 
             {/* Empty State */}
             {filteredUsers.length === 0 && !isLoading && (
