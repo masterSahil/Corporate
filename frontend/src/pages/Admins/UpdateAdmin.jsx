@@ -49,7 +49,7 @@ const UpdateAdmin = () => {
         navigate(-1);
       }
     } catch (error) {
-      toast.error("Failed to fetch admin:", error);
+      toast.error("Failed to fetch admin");
     } finally {
       setIsLoading(false);
     }

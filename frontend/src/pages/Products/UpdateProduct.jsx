@@ -21,37 +21,38 @@ const UpdateProduct = () => {
     discountType: "percentage", quantity: "", description: "",
   });
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true });
-        const product = res.data.product.find(p => (p._id?.$oid || p._id) === id);
+  const fetchProduct = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true });
+      const product = res.data.product.find(p => (p._id?.$oid || p._id) === id);
 
-        if (product) {
-          setFormData({
-            name: product.name || "",
-            category: product.category || "",
-            brand: product.brand || "",
-            price: product.price || "",
-            discount: product.discount || "",
-            discountType: product.discountType || "percentage",
-            quantity: product.quantity || "",
-            description: product.description || "",
-          });
-          setExistingImages(product.gallery || []);
-        } else {
-          toast.error("Product not found");
-          navigate(-1); 
-        }
-      } catch (error) {
-        toast.error("Failed to fetch product");
-        console.error("Failed to fetch product:", error);
-      } finally {
-        setIsLoading(false);
+      if (product) {
+        setFormData({
+          name: product.name || "",
+          category: product.category || "",
+          brand: product.brand || "",
+          price: product.price || "",
+          discount: product.discount || "",
+          discountType: product.discountType || "percentage",
+          quantity: product.quantity || "",
+          description: product.description || "",
+        });
+        setExistingImages(product.gallery || []);
+      } else {
+        toast.error("Product not found");
+        navigate(-1); 
       }
-    };
+    } catch (error) {
+      toast.error("Failed to fetch product");
+      console.error("Failed to fetch product:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProduct();
-  }, [id, navigate]);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

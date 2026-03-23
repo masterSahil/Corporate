@@ -38,11 +38,7 @@ const ConfirmPasswordModal = ({
             </div>
             <h2 className="text-lg font-bold text-slate-900">{title}</h2>
           </div>
-          <button 
-            onClick={handleClose}
-            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
-            disabled={isLoading}
-          >
+          <button onClick={handleClose} className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors" disabled={isLoading} >
             <X size={20} />
           </button>
         </div>
@@ -59,34 +55,20 @@ const ConfirmPasswordModal = ({
             </label>
             <div className="relative">
               <KeyRound size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input 
-                type="password"
-                placeholder="Enter your password..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoFocus
-                disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-slate-900 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all disabled:opacity-70"
-              />
+              <input type="password" value={password} required autoFocus disabled={isLoading}
+                placeholder="Enter your password..." onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-slate-900 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all disabled:opacity-70" />
             </div>
           </div>
 
           {/* Footer Actions */}
           <div className="flex items-center justify-end gap-3 mt-8">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isLoading}
-              className="px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors disabled:opacity-70"
-            >
+            <button type="button" onClick={handleClose} disabled={isLoading}
+              className="px-4 py-2.5 text-sm font-bold text-slate-600 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors disabled:opacity-70" >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={!password.trim() || isLoading}
-              className="px-4 py-2.5 text-sm font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
-            >
+            <button type="submit" disabled={!password.trim() || isLoading}
+              className="px-4 py-2.5 text-sm font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2" >
               {isLoading ? (
                 <>
                   <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">

@@ -3,7 +3,7 @@ import { AuthContext } from "./context/ContextApi";
 import { useEffect, useState } from "react";
 import { checkLoginApi } from "./auth/Auth";
 import axios from "axios";
-import { Toaster } from "./ui/Toaster";
+import { toast, Toaster } from "./ui/Toaster";
 import { RefreshCw } from "lucide-react";
 import MainRoutes from "./MainRoutes";
 
@@ -34,6 +34,7 @@ export default function App() {
         setRole(null);
       } else {
         console.log(error);
+        toast.error(error?.response?.data?.message || "Something Went Wrong");
       }
     } finally {
       setLoading(false);
@@ -49,9 +50,7 @@ export default function App() {
       <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
         <div className="bg-white rounded-xl shadow-xl px-6 py-5 flex items-center gap-3">
           <RefreshCw className="animate-spin text-slate-700" size={22} />
-          <span className="text-sm font-semibold text-slate-800">
-            Loading...
-          </span>
+          <span className="text-sm font-semibold text-slate-800"> Loading... </span>
         </div>
       </div>
     );
@@ -59,9 +58,7 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ loggedIn, setLoggedIn, role, setRole }}>
-      {/* <Router> */}
         <MainRoutes loggedIn={loggedIn} role={role} />
-      {/* </Router> */}
       <Toaster />
     </AuthContext.Provider>
   );

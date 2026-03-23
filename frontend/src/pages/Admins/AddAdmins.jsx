@@ -77,7 +77,7 @@ const AddAdmin = () => {
       resetForm();
     } catch (error) {
       toast.error(error.response?.data?.message || "Something Went Wrong");
-      console.log(error.response.data);
+      console.log(error.response);
     } finally {
       setIsSubmitting(false);
     }

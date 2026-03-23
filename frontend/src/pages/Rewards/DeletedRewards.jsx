@@ -53,7 +53,7 @@ const SoftDeletedRewards = () => {
       getDeletedData();
       toast.success("Rewards Restored Successfully");
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to Restore Reward");
     } finally {
       setUiLoader(false);
     }

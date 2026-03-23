@@ -80,8 +80,7 @@ const ToastItem = ({ id, type, message, duration, onRemove }) => {
   };
 
   return (
-    <div
-      className={`
+    <div className={`
         pointer-events-auto bg-white rounded-xl shadow-xl px-5 py-4 
         flex items-start gap-3 w-[calc(100vw-2rem)] sm:w-87.5
         border border-slate-100 transform transition-all duration-300 ease-out
@@ -100,10 +99,7 @@ const ToastItem = ({ id, type, message, duration, onRemove }) => {
         {message}
       </div>
 
-      <button
-        onClick={closeToast}
-        className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors mt-0.5 p-0.5 rounded-md hover:bg-slate-100"
-      >
+      <button onClick={closeToast} className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors mt-0.5 p-0.5 rounded-md hover:bg-slate-100">
         <X size={18} />
       </button>
     </div>

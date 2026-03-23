@@ -54,7 +54,7 @@ const SoftDeletedEmployees = () => {
       getDeletedData();
       toast.success("Employee Restored Successfully");
     } catch (error) {
-      toast.error(error);
+      toast.error(error.response?.data?.message || "Employee Restored Failed");
       console.log(error);
     } finally {
       setUiLoader(false);

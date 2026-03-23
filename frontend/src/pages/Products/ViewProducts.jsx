@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Search, Filter, Edit2, Trash2, Plus, MoreVertical, LayoutGrid, ImageIcon, RefreshCw } from "lucide-react";
+import { Menu, Search, Edit2, Trash2, Plus, LayoutGrid, ImageIcon, RefreshCw } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
