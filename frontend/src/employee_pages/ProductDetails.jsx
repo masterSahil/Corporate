@@ -200,7 +200,7 @@ const ProductDetails = () => {
                                 {product.gallery?.map((media, idx) => (
                                     <button key={idx} onClick={() => setActiveMedia(idx)}
                                         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white ${activeMedia === idx ? 'border-zinc-900' : 'border-zinc-100 opacity-60 hover:opacity-100'}`} >
-                                        <img src={media.fileUrl} className="w-full h-full object-cover" alt="" />
+                                        <img src={media.fileUrl || media.url} className="w-full h-full object-cover" alt="" />
                                     </button>
                                 ))}
                             </div>
