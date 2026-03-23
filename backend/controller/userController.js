@@ -162,11 +162,10 @@ module.exports.CreateUser = async (req, res) => {
         }
 
         const user = await UserSchema.findOne({email});
-        if(user) return res.status(409).json({success: false, message: "User Already Exists"});
+        if(user) return res.status(409).json({success: false, message: "User Already Exists With Same Email"});
 
         const hash_password = await bcrypt.hash(password, 10);
-
-        const userData = { username, email, password: hash_password, gender, phoneNumber, role, department, employment, profile};
+        const userData = {username, email, password: hash_password, gender, phoneNumber, role, department, employment, profile};
 
         if (req.file) {
             userData.profile = { imageUrl: req.file.path, imagePublicId: req.file.filename };

@@ -76,8 +76,8 @@ const AddAdmin = () => {
       navigate("/admins/manage")
       resetForm();
     } catch (error) {
-      toast.error(error);
-      console.log(error);
+      toast.error(error.response?.data?.message || "Something Went Wrong");
+      console.log(error.response.data);
     } finally {
       setIsSubmitting(false);
     }

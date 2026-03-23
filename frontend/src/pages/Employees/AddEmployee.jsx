@@ -111,7 +111,7 @@ const AddEmployee = () => {
       navigate("/employees/manage")
       resetForm();
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Something Went Wrong");
     } finally {
       setIsSubmitting(false);
     }
