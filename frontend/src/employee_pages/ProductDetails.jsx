@@ -39,7 +39,7 @@ const ProductDetails = () => {
                 axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, { withCredentials: true })
             ]);
 
-            const foundProduct = prodRes.data.product.find(p => p._id === id);
+            const foundProduct = prodRes.data.product;
             setProduct(foundProduct);
 
             const user = roleRes.data.user;
