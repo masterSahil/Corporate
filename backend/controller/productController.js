@@ -92,7 +92,7 @@ module.exports.restoreProduct = async(req, res) => {
 
 module.exports.getSingleProduct = async(req, res) => {
     try {
-        const fetched = await productSchema.find(req.params.id);
+        const fetched = await productSchema.findById(req.params.id);
 
         res.status(200).json({
             success: true,
