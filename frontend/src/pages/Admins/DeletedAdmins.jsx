@@ -12,13 +12,19 @@ const SoftDeletedAdmins = () => {
   const [deletedAdmins, setDeletedAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uiLoader, setUiLoader] = useState(false);
+  
   // --- Modal States ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [deletePassword, setDeletePassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // --- Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const adminsPerPage = 8;
+
   const isRefreshing = false;
+  
   const getDeletedData = async () => {
     try {
       setUiLoader(true);
@@ -26,7 +32,7 @@ const SoftDeletedAdmins = () => {
       const filtered = res.data.users.filter(u => u.role !== "employee");
       setDeletedAdmins(filtered);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
       console.log(error);
     } finally {
       setUiLoader(false);
@@ -36,6 +42,11 @@ const SoftDeletedAdmins = () => {
   useEffect(() => {
     getDeletedData();
   }, []);
+
+  // Reset page to 1 when user searches or changes the filter
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter]);
 
   // Date Formatter
   const formatDate = (dateInput) => {
@@ -54,7 +65,7 @@ const SoftDeletedAdmins = () => {
       getDeletedData();
       toast.success("Admin Restored Successfully");
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to restore");
       console.log(error);
     } finally {
       setUiLoader(false);
@@ -96,6 +107,14 @@ const SoftDeletedAdmins = () => {
     return matchesSearch && matchesRole;
   });
 
+  // --- Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredAdmins.length / adminsPerPage));
+  const indexOfLastAdmin = currentPage * adminsPerPage;
+  const indexOfFirstAdmin = indexOfLastAdmin - adminsPerPage;
+  
+  // This is the sliced array you will use in the table
+  const currentAdmins = filteredAdmins.slice(indexOfFirstAdmin, indexOfLastAdmin);
+
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       
@@ -128,13 +147,8 @@ const SoftDeletedAdmins = () => {
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Trash Bin</h1>
               <p className={`text-base ${theme.textMuted} mt-2`}>Review, restore, or permanently delete removed admin records.</p>
             </div>
-            <button onClick={getDeletedData}
-                className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                <RefreshCw 
-                    size={18} 
-                    className={`${isRefreshing ? 'animate-spin text-black' : 'group-hover:rotate-180 text-slate-500'} transition-all duration-500 ease-in-out`} 
-                />
+            <button onClick={getDeletedData} className="group flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed">
+                <RefreshCw size={18} className={`${isRefreshing ? 'animate-spin text-black' : 'group-hover:rotate-180 text-slate-500'} transition-all duration-500 ease-in-out`}/>
                 Refresh
             </button>
           </div>
@@ -156,22 +170,15 @@ const SoftDeletedAdmins = () => {
           <div className={`flex flex-col md:flex-row gap-4 mb-8 p-5 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
             <div className="relative flex-1">
               <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <input 
-                type="text" 
+              <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search deleted admins by username or email..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-              />
+                className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
             </div>
             
             <div className="relative md:w-56">
               <Filter size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <select 
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}
-              >
+              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
+                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}>
                 <option value="All">All Roles</option>
                 <option value="super_admin">Super Admin</option>
                 <option value="admin">Admin</option>
@@ -195,9 +202,9 @@ const SoftDeletedAdmins = () => {
             </div>
           )}
 
-          {/* Data Table */}
+          {/* Data Table Container */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
-            <div className={`overflow-x-auto ${customScrollbar}`}>
+            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
@@ -209,18 +216,15 @@ const SoftDeletedAdmins = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredAdmins.map((admin) => (
+                  {currentAdmins.map((admin) => (
                     <tr key={admin._id} className="hover:bg-zinc-50/50 transition-colors group">
                       
                       {/* User Info (Profile Image & Username) */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {admin.profile?.imageUrl ? (
-                            <img 
-                              src={admin.profile.imageUrl} 
-                              alt={admin.username} 
-                              className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"
-                            />
+                            <img src={admin.profile.imageUrl} alt={admin.username} 
+                              className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"/>
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600 opacity-60 grayscale group-hover:grayscale-0 transition-all">
                               {admin.username.charAt(0).toUpperCase()}
@@ -260,7 +264,6 @@ const SoftDeletedAdmins = () => {
                           </button>
                         </div>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>
@@ -278,11 +281,8 @@ const SoftDeletedAdmins = () => {
                     </p>
 
                     <div className="relative mb-6">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter password..."
-                        value={deletePassword}
-                        onChange={(e) => setDeletePassword(e.target.value)}
+                      <input type={showPassword ? "text" : "password"} placeholder="Enter password..." 
+                        value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)}
                         className="w-full p-3 pr-12 bg-zinc-50 border border-zinc-200 rounded-lg text-sm outline-none focus:border-black" autoFocus required />
                       <button type="button" onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none" >
@@ -303,8 +303,9 @@ const SoftDeletedAdmins = () => {
                   </form>
                 </div>
               )}
+
               {/* Empty State */}
-              {filteredAdmins.length === 0 && (
+              {currentAdmins.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
                   <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
                     <Trash2 size={24} className={theme.textMuted} />
@@ -312,18 +313,34 @@ const SoftDeletedAdmins = () => {
                   <h3 className="text-base font-bold text-slate-900">Trash is empty</h3>
                   <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>No deleted records found matching your current criteria.</p>
                   {searchTerm && (
-                    <button 
-                      onClick={() => { setSearchTerm(""); setRoleFilter("All"); }}
-                      className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors"
-                    >
+                    <button onClick={() => { setSearchTerm(""); setRoleFilter("All"); }}
+                      className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors">
                       Clear Filters
                     </button>
                   )}
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls Footer */}
+            {filteredAdmins.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Previous
+                  </button>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          
         </div>
       </main>
     </div>
