@@ -84,6 +84,16 @@ module.exports.createReward = async (req, res) => {
         const newReward = new rewardSchema({title, category, description, email, points,
             status: email ? "Issued" : "Unassigned"});
 
+        if (email) {
+            const user = await userSchema.findOne({email});
+            if (!user) {
+                return res.status(501).json({
+                    success: false,
+                    message: "Employee Not Exists with this Email",
+                })
+            }
+        }
+
         await newReward.save();
         res.status(200).json({
             success: true,
@@ -142,6 +152,16 @@ module.exports.updateReward = async (req, res) => {
             // If the reward was never claimed, just set the status normally
             if (!status) {
                 finalStatus = (email && email !== "") ? "Issued" : "Unassigned";
+            }
+        }
+
+        if (email) {
+            const user = await userSchema.findOne({email});
+            if (!user) {
+                return res.status(501).json({
+                    success: false,
+                    message: "Employee Not Exists with this Email",
+                })
             }
         }
 

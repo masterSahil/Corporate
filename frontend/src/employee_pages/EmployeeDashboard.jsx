@@ -270,16 +270,12 @@ const EmployeeDashboard = () => {
                   >
                     This Month
                   </button>
-                  <button 
-                    onClick={() => handleChartToggle('LAST_MONTH')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === 'LAST_MONTH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                  >
+                  <button onClick={() => handleChartToggle('LAST_MONTH')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === 'LAST_MONTH' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`} >
                     Last Month
                   </button>
-                  <button 
-                    onClick={() => handleChartToggle('1_YEAR')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === '1_YEAR' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-                  >
+                  <button onClick={() => handleChartToggle('1_YEAR')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chartView === '1_YEAR' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`} >
                     1 Year
                   </button>
                 </div>
@@ -295,12 +291,8 @@ const EmployeeDashboard = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} 
-                      dy={10} 
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} 
+                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} dy={10} 
                       minTickGap={15} // Prevents day labels from overlapping on month view
                     />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} />

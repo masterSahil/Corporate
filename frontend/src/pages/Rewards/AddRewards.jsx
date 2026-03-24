@@ -56,7 +56,7 @@ const AddReward = () => {
       toast.success("Reward Added Successfully")
       navigate("/rewards/manage")
     } catch (error) {
-      toast.error("Failed to Add Rewards")
+      toast.error(error?.response?.data?.message || "Failed to Add Rewards")
       console.log(error);
     } finally {
       setLoading(false);

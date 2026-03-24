@@ -108,7 +108,7 @@ const Dashboard = () => {
   
   const systemInsights = [
     { id: 1, text: "Inventory catalog spans across", highlight: uniqueProductCategories.toString(), suffix: "unique categories.", icon: Package, iconColor: "text-zinc-300" },
-    { id: 2, text: "Rewards have been distributed to", highlight: uniqueRewardRecipients.toString(), suffix: "unique employees.", icon: Gift, iconColor: "text-amber-400" },
+    { id: 2, text: "Total rewards assigned to", highlight: uniqueRewardRecipients.toString(), suffix: "corporate employees.", icon: Gift, iconColor: "text-amber-400" },
   ];
 
   // 5. Activity Feed

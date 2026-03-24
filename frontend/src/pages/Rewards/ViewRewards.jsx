@@ -106,10 +106,8 @@ const ViewRewards = () => {
             {/* Search */}
             <div className="relative flex-1">
               <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <input 
-                type="text" 
+              <input type="text" value={searchTerm}
                 placeholder="Search by reward title or User ID..." 
-                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
               />
@@ -118,11 +116,8 @@ const ViewRewards = () => {
             {/* Category Filter */}
             <div className="relative md:w-64">
               <Tag size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <select 
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}
-              >
+              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}>
                 <option value="All">All Categories</option>
                 <option value="Gift Card">Gift Card</option>
                 <option value="Merchandise">Merchandise</option>
