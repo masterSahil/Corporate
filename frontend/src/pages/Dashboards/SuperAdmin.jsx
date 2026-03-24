@@ -425,7 +425,7 @@ const Dashboard = () => {
                       <tr key={reward.id} className="hover:bg-zinc-50 transition-colors group">
                         <td className="px-6 py-4">
                           <p className="text-sm font-bold text-zinc-900">{reward.title}</p>
-                          <p className="text-xs text-zinc-500">To: {reward.recipient}</p>
+                          <p className="text-xs text-zinc-500">To: {reward.recipient || "Not Assigned"}</p>
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-zinc-700">{reward.value}</td>
                         <td className="px-6 py-4">

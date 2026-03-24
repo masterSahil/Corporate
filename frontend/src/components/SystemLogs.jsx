@@ -166,24 +166,15 @@ const SystemLogs = () => {
             </div>
 
             <div className="flex gap-3 w-full sm:w-auto">
-              <select
-                value={filterType}
-                onChange={(e) => {
-                  setFilterType(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="px-4 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-xl text-sm font-semibold text-zinc-700 outline-none cursor-pointer shadow-sm"
-              >
+              <select value={filterType} onChange={(e) => { setFilterType(e.target.value); setCurrentPage(1) }}
+                className="px-4 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-md text-sm font-semibold text-zinc-700 outline-none cursor-pointer shadow-sm" >
                 {filterOptions.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
 
-              <button 
-                onClick={exportToCSV}
-                disabled={filteredLogs.length === 0}
-                className="flex-1 sm:flex-none px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button onClick={exportToCSV} disabled={filteredLogs.length === 0}
+                className="flex-1 sm:flex-none px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-sm text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                 <Download size={16} /> Export CSV
               </button>
             </div>

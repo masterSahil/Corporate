@@ -93,10 +93,8 @@ const AdminOrders = () => {
 
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input type="text" placeholder="Search ID " 
-                  className="w-full md:w-96 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-md text-sm outline-none transition-all shadow-sm"
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <input type="text" placeholder="Search ID " onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full md:w-96 pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-md text-sm outline-none transition-all shadow-sm"/>
               </div>
             </div>
 
