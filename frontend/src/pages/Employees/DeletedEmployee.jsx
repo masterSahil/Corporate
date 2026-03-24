@@ -17,6 +17,10 @@ const SoftDeletedEmployees = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [uiLoader, setUiLoader] = useState(false);
 
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const employeesPerPage = 8;
+
   const isRefreshing = false;
 
   const getDeletedData = async () => {
@@ -26,7 +30,7 @@ const SoftDeletedEmployees = () => {
       const filteredEmployee = res.data.users.filter(u => u.role === "employee");
       setDeletedEmployees(filteredEmployee);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to Fetch Data");
       console.log(error);
     } finally {
       setUiLoader(false);
@@ -36,6 +40,11 @@ const SoftDeletedEmployees = () => {
   useEffect(() => {
     getDeletedData();
   }, []);
+
+  // --- NEW: Reset page to 1 when search or filter changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, departmentFilter]);
 
   // Date Formatter
   const formatDate = (dateInput) => {
@@ -54,7 +63,7 @@ const SoftDeletedEmployees = () => {
       getDeletedData();
       toast.success("Employee Restored Successfully");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Employee Restored Failed");
+      toast.error(error?.response?.data?.message || "Employee Restored Failed");
       console.log(error);
     } finally {
       setUiLoader(false);
@@ -76,7 +85,7 @@ const SoftDeletedEmployees = () => {
       setDeleteId(null);
       setDeletePassword("");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Delete failed");
+      toast.error(error?.response?.data?.message || "Delete failed");
     } finally {
       setLoading(false);
     }
@@ -96,6 +105,14 @@ const SoftDeletedEmployees = () => {
     const matchesDepartment = departmentFilter === "All" || employee.department === departmentFilter;
     return matchesSearch && matchesDepartment;
   });
+
+  // --- NEW: Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / employeesPerPage));
+  const indexOfLastEmployee = currentPage * employeesPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
+  
+  // This is the array you will actually render in the table
+  const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
 
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
@@ -151,22 +168,15 @@ const SoftDeletedEmployees = () => {
           <div className={`flex flex-col md:flex-row gap-4 mb-8 p-5 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
             <div className="relative flex-1">
               <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <input 
-                type="text" 
+              <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search deleted employees by username or email..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-              />
+                className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
             </div>
             
             <div className="relative md:w-56">
               <Filter size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <select 
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}
-              >
+              <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}
+                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}>
                 {uniqueDepartments.map((dept, idx) => (
                   <option key={idx} value={dept}>
                     {dept === "All" ? "All Departments" : dept}
@@ -191,9 +201,11 @@ const SoftDeletedEmployees = () => {
               </div>
             </div>
           )}
+
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
-            <div className={`overflow-x-auto ${customScrollbar}`}>
+            {/* Added flex-1 to push the footer down */}
+            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
@@ -207,7 +219,8 @@ const SoftDeletedEmployees = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredEmployees.map((employee) => {
+                  {/* Changed from filteredEmployees to currentEmployees */}
+                  {currentEmployees.map((employee) => {
                     const id = employee._id?.$oid || employee._id;
 
                     return (
@@ -287,7 +300,7 @@ const SoftDeletedEmployees = () => {
                     <h2 className="text-lg font-bold text-rose-600 flex items-center gap-2 mb-2">
                       <Trash2 size={20} /> Confirm Deletion
                     </h2>
-                    <p className="text-sm text-slate-600 mb-5"> Are you sure you want to permanently delete this admin? This cannot be undone. Enter your password to confirm: </p>
+                    <p className="text-sm text-slate-600 mb-5"> Are you sure you want to permanently delete this employee? This cannot be undone. Enter your password to confirm: </p>
 
                     <div className="relative mb-6">
                       <input type={showPassword ? "text" : "password"} placeholder="Enter password..." value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)}
@@ -312,7 +325,7 @@ const SoftDeletedEmployees = () => {
                 </div>
               )}
               {/* Empty State */}
-              {filteredEmployees.length === 0 && (
+              {currentEmployees.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
                   <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
                     <Trash2 size={24} className={theme.textMuted} />
@@ -320,18 +333,34 @@ const SoftDeletedEmployees = () => {
                   <h3 className="text-base font-bold text-slate-900">Trash is empty</h3>
                   <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>No deleted records found matching your current criteria.</p>
                   {searchTerm && (
-                    <button 
-                      onClick={() => { setSearchTerm(""); setDepartmentFilter("All"); }}
-                      className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors"
-                    >
+                    <button onClick={() => { setSearchTerm(""); setDepartmentFilter("All"); }}
+                      className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors">
                       Clear Filters
                     </button>
                   )}
                 </div>
               )}
             </div>
+
+            {/* NEW: Pagination Controls Footer */}
+            {filteredEmployees.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Previous
+                  </button>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          
         </div>
       </main>
     </div>

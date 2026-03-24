@@ -13,6 +13,10 @@ const ViewEmployees = () => {
   const [initialEmployees, setInitialEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const employeesPerPage = 8;
+
   const navigate = useNavigate();
 
   const getData = async () => {
@@ -23,7 +27,7 @@ const ViewEmployees = () => {
       const filtered = fetchedUsers.filter(u => u.role === "employee");
       setInitialEmployees(filtered);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to fetch data");
       console.log(error);
     } finally {
       setLoading(false);
@@ -33,6 +37,11 @@ const ViewEmployees = () => {
   useEffect(() => {
     getData();
   }, []);
+
+  // --- NEW: Reset page to 1 when search or filter changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, departmentFilter]);
   
   // Tailwind arbitrary variants for the custom scrollbar
   const customScrollbar = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
@@ -66,7 +75,7 @@ const ViewEmployees = () => {
       toast.success("Employee Successfully Deleted");
       getData();
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to delete");
       console.log(error);
     } finally {
       setLoading(false);
@@ -85,6 +94,14 @@ const ViewEmployees = () => {
     const matchesDepartment = departmentFilter === "All" || employee.department === departmentFilter;
     return matchesSearch && matchesDepartment;
   });
+
+  // --- NEW: Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / employeesPerPage));
+  const indexOfLastEmployee = currentPage * employeesPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
+  
+  // This is the array you will actually render in the table
+  const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
 
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
@@ -149,14 +166,16 @@ const ViewEmployees = () => {
             </div>
           </div>
 
-          {/* Data Table */}
+          {/* Data Table Container */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
-            <div className={`overflow-x-auto ${customScrollbar}`}>
+            
+            {/* Added flex-1 to push pagination down */}
+            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/50 border-b ${theme.border}`}>
                   <tr>
                     <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Employee</th>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:block ${theme.textMuted}`}>Email</th>
+                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:table-cell ${theme.textMuted}`}>Email</th>
                     <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Department</th>
                     <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Type</th>
                     <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
@@ -165,7 +184,8 @@ const ViewEmployees = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredEmployees.map((employee) => {
+                  {/* Changed to map over currentEmployees */}
+                  {currentEmployees.map((employee) => {
                     const id = employee._id?.$oid || employee._id;
 
                     return (
@@ -175,9 +195,7 @@ const ViewEmployees = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                               <img src={employee?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
-                                alt={employee.username} 
-                                className="w-10 h-10 rounded-full object-cover border border-zinc-200"
-                              />
+                                alt={employee.username} className="w-10 h-10 rounded-full object-cover border border-zinc-200"/>
                               <div>
                               <p className="font-bold text-slate-900">{employee.username}</p>
                               <p className={`text-xs ${theme.textMuted} lg:hidden`}>{employee.email}</p>
@@ -186,7 +204,7 @@ const ViewEmployees = () => {
                         </td>
 
                         {/* Email */}
-                        <td className={`px-6 py-4 text-sm hidden lg:block font-medium ${theme.textMuted}`}>
+                        <td className={`px-6 py-4 text-sm hidden lg:table-cell font-medium ${theme.textMuted}`}>
                           {employee.email}
                         </td>
 
@@ -224,15 +242,14 @@ const ViewEmployees = () => {
                             </button>
                           </div>
                         </td>
-
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
               
-              {/* Empty State */}
-              {filteredEmployees.length === 0 && (
+              {/* Empty State properly placed */}
+              {currentEmployees.length === 0 && (
                 <div className="p-12 text-center flex flex-col items-center justify-center">
                   <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3">
                     <Search size={20} className={theme.textMuted} />
@@ -242,8 +259,26 @@ const ViewEmployees = () => {
                 </div>
               )}
             </div>
+
+            {/* NEW: Pagination Footer */}
+            {filteredEmployees.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Previous
+                  </button>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          
         </div>
       </main>
     </div>
