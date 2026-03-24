@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Users, Package, Gift, Trash2, ShieldAlert, Clock, Download, RefreshCw } from "lucide-react";
+import { Menu, Users, Package, Gift, Trash2, ShieldAlert, Clock, Download, RefreshCw, ShoppingCart, Star, ClipboardList } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { theme } from "./Theme";
 import axios from "axios";
@@ -13,7 +13,7 @@ const SystemLogs = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const logsPerPage = 8;
-  const filterOptions = ["All", "User Onboarded", "Record Deleted", "Inventory Added", "Reward Issued"];
+  const filterOptions = ["All", "User Onboarded", "Record Deleted", "Inventory Added", "Reward Issued", "Order Log", "Added to Cart", "Rating Submitted"];
 
   // --- DATA FETCHING ---
   const getLogData = async () => {
@@ -21,11 +21,14 @@ const SystemLogs = () => {
       setIsLoading(true);
       
       // Fetch all data concurrently
-      const [usersRes, deletedRes, productsRes, rewardsRes] = await Promise.all([
+      const [usersRes, deletedRes, productsRes, rewardsRes, ordersRes, cartRes, ratingsRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
         axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true })
+        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/orders`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, { withCredentials: true })
       ]);
 
       const compiledLogs = [];
@@ -75,10 +78,49 @@ const SystemLogs = () => {
           id: `rew-${r._id}`,
           type: "Reward Issued",
           entity: r.title,
-          description: `Issued to: ${r.email}`,
+          description: r.email ? `Issued to: ${r.email}` : "Not Assigned",
           timestamp: r.createdAt || new Date().toISOString(),
           icon: Gift,
           colorClass: "text-amber-600 bg-amber-50 border-amber-100"
+        }));
+      }
+
+      // 5. Process Orders
+      if (ordersRes.data?.success) {
+        ordersRes.data.orders?.forEach(o => compiledLogs.push({
+          id: `ord-${o._id}`,
+          type: "Order Log",
+          entity: `Order ID: ${o._id.substring(0, 8)}...`,
+          description: `${o.items?.length || 0} items | Total: ₹${o.finalTotal} | Status: ${o.status}`,
+          timestamp: o.createdAt || new Date().toISOString(),
+          icon: ClipboardList,
+          colorClass: "text-indigo-600 bg-indigo-50 border-indigo-100"
+        }));
+      }
+
+      // 6. Process Cart Data
+      if (cartRes.data?.success) {
+        cartRes.data.cart?.forEach(c => compiledLogs.push({
+          id: `crt-${c._id}`,
+          type: "Added to Cart",
+          entity: `Product ID: ${c.productId.substring(0, 8)}...`,
+          description: `Qty: ${c.quantity} added by User: ${c.buyerId.substring(0, 8)}...`,
+          timestamp: c.createdAt || new Date().toISOString(),
+          icon: ShoppingCart,
+          colorClass: "text-teal-600 bg-teal-50 border-teal-100"
+        }));
+      }
+
+      // 7. Process Ratings
+      if (ratingsRes.data?.success) {
+        ratingsRes.data.ratings?.forEach(r => compiledLogs.push({
+          id: `rtg-${r._id}`,
+          type: "Rating Submitted",
+          entity: `Product ID: ${r.productId.substring(0, 8)}...`,
+          description: `Rated ${r.rate}/5 | "${r.review?.substring(0, 30)}${r.review?.length > 30 ? '...' : ''}"`,
+          timestamp: r.createdAt || new Date().toISOString(),
+          icon: Star,
+          colorClass: "text-yellow-600 bg-yellow-50 border-yellow-100"
         }));
       }
 
