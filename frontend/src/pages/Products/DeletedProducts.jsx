@@ -10,6 +10,7 @@ const SoftDeletedProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [deletedProducts, setDeletedProducts] = useState([]);
+  
   // --- Modal States ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -22,13 +23,17 @@ const SoftDeletedProducts = () => {
   // Added loading state for UI
   const [uiLoader, setUiLoader] = useState(false);
 
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 8;
+
   const getDeletedData = async () => {
     try {
       setUiLoader(true);
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-soft-delete-view`, { withCredentials: true });
       setDeletedProducts(res.data.product);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch deleted products");
+      toast.error(error?.response?.data?.message || "Failed to fetch deleted products");
       console.log(error);
     } finally {
       setUiLoader(false);
@@ -38,6 +43,11 @@ const SoftDeletedProducts = () => {
   useEffect(() => {
     getDeletedData();
   }, []);
+
+  // --- NEW: Reset page to 1 when search or filter changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
 
   // Date Formatter
   const formatDate = (dateInput) => {
@@ -58,7 +68,7 @@ const SoftDeletedProducts = () => {
       await getDeletedData();
       toast.success("Product Restored Successfully");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to restore product");
+      toast.error(error?.response?.data?.message || "Failed to restore product");
       console.log(error);
     } finally {
       setLoadingText(""); setUiLoader(false);
@@ -81,8 +91,8 @@ const SoftDeletedProducts = () => {
       setDeletePassword("");
       setShowPassword(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Delete failed");
-      console.log(error.response?.data?.message || error);
+      toast.error(error?.response?.data?.message || "Delete failed");
+      console.log(error);
     } finally {
       setLoadingText(""); 
     }
@@ -109,6 +119,14 @@ const SoftDeletedProducts = () => {
     const matchesCategory = categoryFilter === "All" || product.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  // --- NEW: Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  
+  // This is the array you will actually render in the table
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
@@ -208,7 +226,9 @@ const SoftDeletedProducts = () => {
 
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
-            <div className={`overflow-x-auto ${customScrollbar}`}>
+            
+            {/* Added flex-1 to push the footer down */}
+            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
@@ -221,7 +241,8 @@ const SoftDeletedProducts = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredProducts.map((product) => {
+                  {/* Changed to map over currentProducts */}
+                  {currentProducts.map((product) => {
                     const id = product._id?.$oid || product._id;
                     const primaryImage = product.gallery?.[0]?.fileUrl;
                     const initials = product.name ? product.name.substring(0, 2).toUpperCase() : "PR";
@@ -296,7 +317,7 @@ const SoftDeletedProducts = () => {
                           </div>
                         </td>
 
-                        {/* Stock (New Column) */}
+                        {/* Stock */}
                         <td className="px-6 py-4">
                           <div className="flex flex-col items-start gap-1">
                             <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${stockStatus.classes}`}>
@@ -371,8 +392,8 @@ const SoftDeletedProducts = () => {
                   </form>
                 </div>
               )}
-              {/* Empty State */}
-              {filteredProducts.length === 0 && (
+              {/* Empty State - Using currentProducts */}
+              {currentProducts.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
                   <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
                     <Trash2 size={24} className={theme.textMuted} />
@@ -388,6 +409,31 @@ const SoftDeletedProducts = () => {
                 </div>
               )}
             </div>
+
+            {/* NEW: Pagination Footer */}
+            {filteredProducts.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button 
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

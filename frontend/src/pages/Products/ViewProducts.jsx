@@ -13,6 +13,10 @@ const ViewProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 8;
+
   const navigate = useNavigate();
 
   const getProducts = async () => {
@@ -21,7 +25,7 @@ const ViewProducts = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
       setProducts(res.data.product);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to fetch products");
       console.log(error);
     } finally {
       setLoading(false);
@@ -32,6 +36,11 @@ const ViewProducts = () => {
     getProducts();
   }, []);
 
+  // --- NEW: Reset page to 1 when search or filter changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
+
   const deleteProduct = async (id) => {
     try {
       setLoading(true);
@@ -39,7 +48,8 @@ const ViewProducts = () => {
       getProducts();
       toast.success("Product Deleted Successfully");
     } catch (error) {
-      toast.error(error);
+      // Updated error chaining
+      toast.error(error?.response?.data?.message || error.message || "Failed to delete product");
       console.log("Error deleting product:", error);
     } finally {
       setLoading(false);
@@ -65,6 +75,14 @@ const ViewProducts = () => {
 
     return matchesSearch && matchesCategory && isNotDeleted;
   });
+
+  // --- NEW: Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  
+  // This is the array you will actually render in the table
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   // Helper function for stock badge styling
   const getStockStatus = (quantity) => {
@@ -151,7 +169,9 @@ const ViewProducts = () => {
 
           {/* Data Table Card */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
-            <div className={`overflow-x-auto ${customScrollbar}`}>
+            
+            {/* Added flex-1 to push the footer down */}
+            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
@@ -163,7 +183,8 @@ const ViewProducts = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredProducts.map((product) => {
+                  {/* Changed to map over currentProducts */}
+                  {currentProducts.map((product) => {
                     const id = product._id?.$oid || product._id;
                     const stockStatus = getStockStatus(product.quantity);
                     const primaryImage = product.gallery?.[0]?.fileUrl;
@@ -281,8 +302,8 @@ const ViewProducts = () => {
                 </tbody>
               </table>
               
-              {/* Empty State */}
-              {filteredProducts.length === 0 && (
+              {/* Empty State - Using currentProducts */}
+              {currentProducts.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
                   <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
                     <Search size={24} className={theme.textMuted} />
@@ -298,6 +319,32 @@ const ViewProducts = () => {
                 </div>
               )}
             </div>
+
+            {/* NEW: Pagination Footer */}
+            {filteredProducts.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button 
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-700"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-700"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+            
           </div>
           
         </div>
