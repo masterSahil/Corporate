@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, LayoutGrid, Trash2, ArchiveRestore, Info, RefreshCw, Gift, Loader2, EyeOff, Eye } from "lucide-react";
+import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, LayoutGrid, ImageIcon, RefreshCw, Loader2, EyeOff, Eye } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -12,11 +12,16 @@ const SoftDeletedRewards = () => {
   const [deletedRewards, setDeletedRewards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uiLoader, setUiLoader] = useState(false);
+  
   // --- Modal States ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [deletePassword, setDeletePassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const rewardsPerPage = 8;
 
   const getDeletedData = async () => {
     try {
@@ -24,7 +29,7 @@ const SoftDeletedRewards = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-deleted`, { withCredentials: true });
       setDeletedRewards(res.data.reward);
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Failed to fetch deleted rewards");
       console.log(error);
     } finally {
       setLoading(false); setUiLoader(false);
@@ -34,6 +39,11 @@ const SoftDeletedRewards = () => {
   useEffect(() => {
     getDeletedData();
   }, []);
+
+  // --- NEW: Reset page to 1 when search or filter changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
 
   // Date Formatter
   const formatDate = (dateInput) => {
@@ -75,7 +85,7 @@ const SoftDeletedRewards = () => {
       setDeletePassword("");
       setShowPassword(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Delete failed");
+      toast.error(error?.response?.data?.message || "Delete failed");
       console.log(error);
     } finally {
       setLoading(false);
@@ -97,6 +107,14 @@ const SoftDeletedRewards = () => {
     return matchesSearch && matchesCategory;
   });
 
+  // --- NEW: Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredRewards.length / rewardsPerPage));
+  const indexOfLastReward = currentPage * rewardsPerPage;
+  const indexOfFirstReward = indexOfLastReward - rewardsPerPage;
+  
+  // This is the array you will actually render in the table
+  const currentRewards = filteredRewards.slice(indexOfFirstReward, indexOfLastReward);
+
   return (
     <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
@@ -111,6 +129,7 @@ const SoftDeletedRewards = () => {
             </div>
           </div>
         )}
+        
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}>
@@ -180,7 +199,7 @@ const SoftDeletedRewards = () => {
           </div>
 
           {loading && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
+            <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm">
               <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-2xl ring-1 ring-black/5">
                 <Loader2 className="animate-spin text-slate-900" size={20} />
                 <span className="text-sm font-medium text-slate-700">
@@ -189,9 +208,12 @@ const SoftDeletedRewards = () => {
               </div>
             </div>
           )}
+          
           {/* Data Table */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
-            <div className={`overflow-x-auto ${customScrollbar}`}>
+            
+            {/* Added flex-1 to push the footer down */}
+            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
@@ -203,7 +225,8 @@ const SoftDeletedRewards = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredRewards.map((reward) => {
+                  {/* Changed to map over currentRewards */}
+                  {currentRewards.map((reward) => {
                     const id = reward._id?.$oid || reward._id;
                     
                     return (
@@ -294,11 +317,12 @@ const SoftDeletedRewards = () => {
                   </form>
                 </div>
               )}
-              {/* Empty State */}
-              {filteredRewards.length === 0 && (
+              
+              {/* Empty State - Using currentRewards */}
+              {currentRewards.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
                   <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
-                    <Trash2 size={24} className={theme.textMuted} />
+                    <Search size={24} className={theme.textMuted} />
                   </div>
                   <h3 className="text-base font-bold text-slate-900">Trash is empty</h3>
                   <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>No deleted rewards found matching your current criteria.</p>
@@ -313,6 +337,31 @@ const SoftDeletedRewards = () => {
                 </div>
               )}
             </div>
+
+            {/* NEW: Pagination Footer */}
+            {filteredRewards.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                  <button 
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-700"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-700"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           
         </div>
