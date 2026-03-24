@@ -215,12 +215,6 @@ const EmployeeStore = () => {
                         {product.category}
                       </span>
                     </div>
-
-                    {/* Top Right Badge */}
-                    <div className="absolute top-3 right-3 z-10 bg-white/95 backdrop-blur-md px-2 py-1 rounded-lg border border-slate-200 flex items-center gap-1 shadow-sm">
-                      <Star size={10} className="fill-black text-black" />
-                      <span className="text-[10px] font-black text-black">4.8</span>
-                    </div>
                   </div>
 
                   {/* Content Container */}

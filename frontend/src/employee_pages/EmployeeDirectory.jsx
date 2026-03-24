@@ -357,13 +357,16 @@ const EmployeeDirectory = () => {
 
                       {/* Conditional rendering for Employees (Points & Date) */}
                       <div className="flex gap-3 justify-center mt-1">
-                        {selectedUser?.points !== undefined && (
-                          <div className="flex items-center gap-2">
-                            <Award size={14} className="text-slate-400" />
-                            <span className="text-xs font-bold text-slate-600">{selectedUser?.points} Points</span>
-                          </div>
+                        {(selectedUser?.points !== undefined && selectedUser?.role === "employee") && (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <Award size={14} className="text-slate-400" />
+                              <span className="text-xs font-bold text-slate-600">{selectedUser?.points} Points</span>
+                            </div>
+                            <span className="text-slate-300">•</span>
+                          </>
                         )}
-                        {selectedUser?.points !== undefined && <span className="text-slate-300">•</span>}
+                        {/* {selectedUser?.points !== undefined && } */}
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-slate-400" />
                           <span className="text-xs font-semibold text-slate-500">
