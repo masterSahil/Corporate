@@ -21,33 +21,33 @@ const EmployeeCart = () => {
   const navigate = useNavigate();
 
   const fetchData = async () => {
-  try {
-    setIsLoading(true);
-    const [resProducts, resRole, resCart] = await Promise.all([
-      axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
-      axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
-      axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true })
-    ]);
+    try {
+      setIsLoading(true);
+      const [resProducts, resRole, resCart] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true })
+      ]);
 
-    const user = resRole.data.user;
-    setCurrentUserId(user._id);
-    setUserPoints(user.points || 0);
+      const user = resRole.data.user;
+      setCurrentUserId(user._id);
+      setUserPoints(user.points || 0);
 
-    const fetchedProducts = resProducts.data?.product || [];
-    const userCartRaw = resCart.data?.cart?.filter(item => item.buyerId === user._id) || [];
-    
-    const mergedCart = userCartRaw.map(cartItem => {
-      const productDetail = fetchedProducts.find(p => p._id === cartItem.productId);
-      return { ...cartItem, product: productDetail || null };
-    }).filter(item => item.product);
+      const fetchedProducts = resProducts.data?.product || [];
+      const userCartRaw = resCart.data?.cart?.filter(item => item.buyerId === user._id) || [];
+      
+      const mergedCart = userCartRaw.map(cartItem => {
+        const productDetail = fetchedProducts.find(p => p._id === cartItem.productId);
+        return { ...cartItem, product: productDetail || null };
+      }).filter(item => item.product);
 
-    setCartItems(mergedCart);
-  } catch (error) {
-    toast.error("Failed to load cart data.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+      setCartItems(mergedCart);
+    } catch (error) {
+      toast.error("Failed to load cart data.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -185,13 +185,13 @@ const EmployeeCart = () => {
           
           {/* Top Navigation & Title */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <button onClick={() => navigate('/employee/store')}
                 className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-black hover:text-white hover:border-black transition-all">
                 <ArrowLeft size={20} />
               </button>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold">Shopping Cart</h1>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Shopping Cart</h1>
                 <p className="text-xs md:text-sm font-bold text-slate-500 mt-1">Review items and apply your points.</p>
               </div>
             </div>
@@ -220,61 +220,57 @@ const EmployeeCart = () => {
             </div>
           ) : (
             /* Cart Content Grid */
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 pb-12">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8 pb-12">
               
               {/* Left Column: Cart Items List */}
-              <div className="lg:col-span-2 space-y-4">
+              <div className="xl:col-span-2 space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item._id} className="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center shadow-sm hover:shadow-md transition-shadow">
+                  <div key={item._id} className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center shadow-sm hover:shadow-md transition-shadow">
                     
-                    {/* Product Image */}
-                    <div className="w-20 h-24 sm:w-24 sm:h-24 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
-                      {item.product?.gallery && item.product.gallery.length > 0 ? (
-                        <img src={item.product.gallery[0].fileUrl} alt={item.product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <Package size={24} className="text-slate-300" />
-                      )}
+                    {/* Top part on mobile (Image + Details) */}
+                    <div className="flex items-start gap-4 w-full sm:w-auto sm:flex-1">
+                      {/* Product Image */}
+                      <div className="w-24 h-28 sm:w-28 sm:h-28 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                        {item.product?.gallery && item.product.gallery.length > 0 ? (
+                          <img src={item.product.gallery[0].fileUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Package size={24} className="text-slate-300" />
+                        )}
+                      </div>
+
+                      {/* Product Details */}
+                      <div className="flex-1 min-w-0 py-1">
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase text-slate-400 tracking-widest">{item.product?.category || 'Category'}</span>
+                        <h3 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 mt-1 mb-1 sm:mb-2 line-clamp-2">{item.product?.name || 'Unknown Product'}</h3>
+                        <p className="text-sm sm:text-base font-bold leading-none">
+                          ₹{item.product?.price?.toLocaleString()} each
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1 min-w-0 w-full">
-                      <span className="text-[9px] sm:text-[10px] font-black uppercase text-slate-400 tracking-widest">{item.product?.category || 'Category'}</span>
-                      <h3 className="text-sm sm:text-base font-black text-slate-900 mt-1 mb-1 sm:mb-2 truncate">{item.product?.name || 'Unknown Product'}</h3>
-                      <p className="text-base sm:text-lg font-black text-slate-900 leading-none">
-                        ₹{item.product?.price?.toLocaleString()}
-                      </p>
-                    </div>
-
-                    {/* Controls */}
-                    <div className="flex flex-wrap items-center justify-between sm:justify-end w-full sm:w-auto gap-4 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-slate-100">
+                    {/* Controls & Total Price */}
+                    <div className="flex flex-row items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pt-4 sm:pt-0 border-t sm:border-0 border-slate-100 mt-2 sm:mt-0">
                       
                       {/* Quantity Selector */}
                       <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 border border-slate-200 rounded-xl p-1 shrink-0">
-                        <button 
-                          onClick={() => updateQuantity(item._id, item.productId, item.quantity - 1)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-white text-slate-600 border border-slate-200 hover:text-black hover:border-black transition-colors"
-                        >
+                        <button onClick={() => updateQuantity(item._id, item.productId, item.quantity - 1)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-slate-600 border border-slate-200 hover:text-black hover:border-black transition-colors">
                           <Minus size={14} />
                         </button>
-                        <span className="w-4 sm:w-6 text-center font-black text-xs sm:text-sm">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item._id, item.productId, item.quantity + 1)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-black text-white hover:bg-zinc-800 transition-colors"
-                        >
+                        <span className="w-6 text-center font-black text-sm">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item._id, item.productId, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-black text-white hover:bg-zinc-800 transition-colors">
                           <Plus size={14} />
                         </button>
                       </div>
 
                       {/* Total Item Price & Delete */}
                       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                        <div className="text-right hidden min-[400px]:block">
-                          <p className="text-lg sm:text-xl font-black text-slate-900">₹{(item.product?.price * item.quantity).toLocaleString()}</p>
+                        <div className="text-right">
+                          <p className="text-base sm:text-lg md:text-xl font-black text-slate-900">₹{(item.product?.price * item.quantity).toLocaleString()}</p>
                         </div>
-                        <button 
-                          onClick={() => removeItem(item._id)}
-                          className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors shrink-0"
-                          title="Remove item"
-                        >
+                        <button onClick={() => removeItem(item._id)} title="Remove item"
+                          className="w-10 h-10 flex items-center justify-center rounded-lg text-rose-400 bg-white border border-rose-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shrink-0">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -284,8 +280,8 @@ const EmployeeCart = () => {
               </div>
 
               {/* Right Column: Order Summary */}
-              <div className="lg:col-span-1">
-                <div className="bg-black rounded-lg p-5 sm:p-6 md:p-8 text-white lg:sticky top-8 shadow-xl">
+              <div className="xl:col-span-1">
+                <div className="bg-black rounded-lg p-5 sm:p-6 md:p-8 text-white xl:sticky top-8 shadow-xl">
                   <h2 className="text-lg md:text-xl font-black mb-5 md:mb-6 border-b border-zinc-800 pb-4 flex items-center gap-2">
                     <Receipt size={20} className="text-zinc-400" />
                     Order Summary
@@ -293,7 +289,7 @@ const EmployeeCart = () => {
                   
                   {/* Custom Points Input Block */}
                   {userPoints > 0 && (
-                    <div className="mb-6 bg-zinc-900/80 border border-zinc-700 rounded-lg p-4">
+                    <div className="mb-6 bg-zinc-900/80 border border-zinc-700 rounded-lg p-4 sm:p-5">
                       <label className="flex items-center gap-3 cursor-pointer group select-none">
                         <div 
                           onClick={handleTogglePoints}
@@ -303,24 +299,24 @@ const EmployeeCart = () => {
                         >
                           {applyPoints && <Check size={14} className="text-black" />}
                         </div>
-                        <span className="text-xs font-bold text-zinc-300">Use points for discount</span>
+                        <span className="text-xs sm:text-sm font-bold text-zinc-300">Use points for discount</span>
                       </label>
 
                       {applyPoints && (
-                        <div className="flex flex-col mt-3">
-                          <div className="flex items-center gap-2">
+                        <div className="flex flex-col mt-4">
+                          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                             <div className="relative flex-1">
                               <input type="number" step="any" value={pointsInput}
                                 onChange={handlePointsChange} placeholder="Enter points"
-                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs font-bold rounded-md pl-3 pr-10 py-3 outline-none transition-all placeholder:text-zinc-600`}
+                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs sm:text-sm font-bold rounded-xl pl-3 pr-10 py-3.5 outline-none transition-all placeholder:text-zinc-600`}
                               />
                               <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-widest ${pointsError ? 'text-rose-500' : 'text-zinc-500'}`}>pts</span>
                             </div>
-                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-md transition-colors border border-zinc-700"> Max </button>
+                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors border border-zinc-700 w-full sm:w-auto"> Max </button>
                           </div>
                           
                           {pointsError && (
-                            <p className="text-[10px] font-bold text-rose-400 mt-2 ml-1">{pointsError}</p>
+                            <p className="text-[10px] sm:text-xs font-bold text-rose-400 mt-2 ml-1">{pointsError}</p>
                           )}
                         </div>
                       )}
@@ -328,35 +324,30 @@ const EmployeeCart = () => {
                   )}
 
                   <div className="space-y-4 mb-6 md:mb-8">
-                    <div className="flex justify-between items-center text-xs md:text-sm font-bold text-zinc-400">
+                    <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-zinc-400">
                       <span>Subtotal ({cartItems.length} items)</span>
                       <span>₹{cartTotalRs.toLocaleString()}</span>
                     </div>
                     
                     {/* Points Discount Applied */}
                     {discountRs > 0 && (
-                      <div className="flex justify-between items-center text-xs md:text-sm font-bold text-emerald-400">
+                      <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-emerald-400">
                         <span>Points Applied (-{discountRs} pts)</span>
                         <span>- ₹{discountRs.toLocaleString()}</span>
                       </div>
                     )}
-
-                    <div className="flex justify-between items-center text-xs md:text-sm font-bold text-zinc-400 border-b border-zinc-800 pb-4">
-                      <span>Taxes & Fees</span>
-                      <span>₹0</span>
-                    </div>
                     
                     <div className="flex justify-between items-end pt-2">
-                      <span className="text-xs md:text-sm font-black text-white uppercase tracking-widest">Payable Total</span>
+                      <span className="text-xs sm:text-sm font-black text-white uppercase tracking-widest">Payable Total</span>
                       <div className="text-right">
-                        <span className="text-2xl md:text-3xl font-black text-white">₹{finalTotalRs.toLocaleString()}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-white">₹{finalTotalRs.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Checkout Button */}
                   <button onClick={checkout} disabled={isLoading || !!pointsError} 
-                    className="w-full py-3.5 md:py-4 rounded-md flex items-center justify-center gap-2 text-xs md:text-xs font-black uppercase tracking-widest transition-all bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed" >
+                    className="w-full py-4 rounded-lg flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-all bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed" >
                     Proceed to Checkout
                   </button>
 
