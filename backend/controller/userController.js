@@ -350,6 +350,13 @@ module.exports.LoginUser = async (req, res) => {
                 message: "User not registered. Please Register instead.",
             })
         }
+
+        if (user.isDeleted) {
+            return res.status(403).json({
+                success: false,
+                message: "Your account has been deactivated. Contact admin to Login again.",
+            });
+        }
         
         const passwordTrue = await bcrypt.compare(password, user.password);
 
