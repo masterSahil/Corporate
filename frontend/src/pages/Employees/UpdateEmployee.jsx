@@ -45,7 +45,7 @@ const UpdateEmployee = () => {
         navigate(-1);
       }
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message);
       console.error("Failed to fetch employee:", error);
     } finally {
       setIsLoading(false);

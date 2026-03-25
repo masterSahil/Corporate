@@ -108,11 +108,10 @@ const AddAdmin = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure system access and profile settings.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={()=>{resetForm, navigate('/admins/manage')}} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Cancel
               </button>
-              <button onClick={handleSubmit} disabled={isSubmitting} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-zinc-800'} shadow-lg transition-colors`}
-              >
+              <button onClick={handleSubmit} disabled={isSubmitting} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-zinc-800'} shadow-lg transition-colors`}>
                 {isSubmitting ? "Saving..." : "Save Admin"}
               </button>
             </div>
@@ -140,13 +139,7 @@ const AddAdmin = () => {
                     </label>
                     <div className="relative flex items-center">
                       <User size={18} className={`absolute left-4 ${theme.textMuted}`} />
-                      <input
-                        type="text"
-                        value={formData.username}
-                        onChange={handleChange("username")}
-                        placeholder="e.g. Alex Morgan"
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                      />
+                      <input type="text" value={formData.username} onChange={handleChange("username")} placeholder="e.g. Alex Morgan" className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
                     </div>
                   </div>
 

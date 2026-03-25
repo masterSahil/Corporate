@@ -141,7 +141,7 @@ const AddEmployee = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure the professional profile and employment details.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={()=>{resetForm, navigate('/employees/manage')}} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Cancel
               </button>
               <button

@@ -107,7 +107,7 @@ const AddProduct = () => {
       toast.success("Product Added Successfully");
       navigate("/products/manage");
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message);
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -139,7 +139,7 @@ const AddProduct = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure product details, gallery, and inventory.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button onClick={resetForm} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={()=>{resetForm, navigate('/products/manage')}} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Discard
               </button>
               <button
