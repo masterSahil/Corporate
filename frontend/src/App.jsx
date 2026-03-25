@@ -28,6 +28,12 @@ export default function App() {
 
       const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {withCredentials: true});
       setRole(role_check.data.role);
+
+      // Let DeActivated users to logged out
+      if(role_check.data.user.isDeleted) 
+      {
+        return setLoggedIn(false)
+      }
     } catch (error) {
       if (error.response?.status === 401) {
         setLoggedIn(false);
