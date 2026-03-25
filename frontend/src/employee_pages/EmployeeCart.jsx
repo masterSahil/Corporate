@@ -196,7 +196,7 @@ const EmployeeCart = () => {
               </div>
             </div>
             
-            <div className="bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center justify-between sm:justify-start gap-3 shadow-sm shrink-0">
+            <div className="bg-white border border-slate-200 px-4 py-2.5 rounded-md flex items-center justify-between sm:justify-start gap-3 shadow-sm shrink-0">
               <Sparkles size={16} className="text-slate-400 hidden sm:block" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Available Balance</span>
@@ -207,7 +207,7 @@ const EmployeeCart = () => {
 
           {cartItems.length === 0 ? (
             /* Empty State */
-            <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200 p-6 md:p-8 text-center shadow-sm">
+            <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-lg border border-slate-200 p-6 md:p-8 text-center shadow-sm">
               <div className="w-20 h-20 md:w-24 md:h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
                 <ShoppingCart size={32} className="text-slate-300 md:w-10 md:h-10" />
               </div>
@@ -225,7 +225,7 @@ const EmployeeCart = () => {
               {/* Left Column: Cart Items List */}
               <div className="lg:col-span-2 space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item._id} className="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center shadow-sm hover:shadow-md transition-shadow">
+                  <div key={item._id} className="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center shadow-sm hover:shadow-md transition-shadow">
                     
                     {/* Product Image */}
                     <div className="w-20 h-24 sm:w-24 sm:h-24 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
@@ -285,7 +285,7 @@ const EmployeeCart = () => {
 
               {/* Right Column: Order Summary */}
               <div className="lg:col-span-1">
-                <div className="bg-black rounded-3xl p-5 sm:p-6 md:p-8 text-white lg:sticky top-8 shadow-xl">
+                <div className="bg-black rounded-lg p-5 sm:p-6 md:p-8 text-white lg:sticky top-8 shadow-xl">
                   <h2 className="text-lg md:text-xl font-black mb-5 md:mb-6 border-b border-zinc-800 pb-4 flex items-center gap-2">
                     <Receipt size={20} className="text-zinc-400" />
                     Order Summary
@@ -293,7 +293,7 @@ const EmployeeCart = () => {
                   
                   {/* Custom Points Input Block */}
                   {userPoints > 0 && (
-                    <div className="mb-6 bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4">
+                    <div className="mb-6 bg-zinc-900/80 border border-zinc-700 rounded-lg p-4">
                       <label className="flex items-center gap-3 cursor-pointer group select-none">
                         <div 
                           onClick={handleTogglePoints}
@@ -312,11 +312,11 @@ const EmployeeCart = () => {
                             <div className="relative flex-1">
                               <input type="number" step="any" value={pointsInput}
                                 onChange={handlePointsChange} placeholder="Enter points"
-                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs font-bold rounded-xl pl-3 pr-10 py-3 outline-none transition-all placeholder:text-zinc-600`}
+                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs font-bold rounded-md pl-3 pr-10 py-3 outline-none transition-all placeholder:text-zinc-600`}
                               />
                               <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-widest ${pointsError ? 'text-rose-500' : 'text-zinc-500'}`}>pts</span>
                             </div>
-                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors border border-zinc-700"> Max </button>
+                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-md transition-colors border border-zinc-700"> Max </button>
                           </div>
                           
                           {pointsError && (
@@ -356,7 +356,7 @@ const EmployeeCart = () => {
 
                   {/* Checkout Button */}
                   <button onClick={checkout} disabled={isLoading || !!pointsError} 
-                    className="w-full py-3.5 md:py-4 rounded-lg flex items-center justify-center gap-2 text-xs md:text-xs font-black uppercase tracking-widest transition-all bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed" >
+                    className="w-full py-3.5 md:py-4 rounded-md flex items-center justify-center gap-2 text-xs md:text-xs font-black uppercase tracking-widest transition-all bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed" >
                     Proceed to Checkout
                   </button>
 
