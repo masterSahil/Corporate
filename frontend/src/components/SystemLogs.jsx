@@ -113,7 +113,7 @@ const SystemLogs = () => {
 
       // 7. Process Ratings
       if (ratingsRes.data?.success) {
-        ratingsRes.data.ratings?.forEach(r => compiledLogs.push({
+        ratingsRes.data.rating?.forEach(r => compiledLogs.push({
           id: `rtg-${r._id}`,
           type: "Rating Submitted",
           entity: `Product ID: ${r.productId.substring(0, 8)}...`,
@@ -186,6 +186,14 @@ const SystemLogs = () => {
 
       <main className={`flex-1 bg-slate-50 ${customScrollbarClasses} flex flex-col`}>
         
+        {isLoading &&
+          <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
+            <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
+              <RefreshCw className="animate-spin text-slate-700" size={22} />
+              <span className="text-sm font-semibold text-slate-800"> Loading... </span>
+            </div>
+          </div>
+        }
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button
@@ -237,16 +245,7 @@ const SystemLogs = () => {
                 </thead>
 
                 <tbody className="divide-y divide-zinc-100">
-                  {isLoading ? (
-                    <tr>
-                      <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
-                        <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
-                          <RefreshCw className="animate-spin text-slate-700" size={22} />
-                          <span className="text-sm font-semibold text-slate-800"> Loading... </span>
-                        </div>
-                      </div>
-                    </tr>
-                  ) : paginatedLogs.length > 0 ? (
+                  {paginatedLogs.length > 0 ? (
                     paginatedLogs.map((log) => {
                       const LogIcon = log.icon;
                       return (
