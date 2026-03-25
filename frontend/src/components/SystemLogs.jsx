@@ -129,7 +129,7 @@ const SystemLogs = () => {
       setLogs(compiledLogs);
 
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || "Something Went Wrong");;
       console.error("Error fetching logs:", error);
     } finally {
       setIsLoading(false);

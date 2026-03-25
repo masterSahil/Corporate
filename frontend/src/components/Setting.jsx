@@ -14,6 +14,7 @@ const Settings = () => {
   const [role, setRole] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(false)
+  const [originalEmail, setOriginalEmail] = useState("");
   const [formData, setFormData] = useState({
     profile: null,
     username: "",
@@ -61,10 +62,17 @@ const Settings = () => {
         currentPassword: "",
         newPassword: ""
       });
+      setOriginalEmail(res.data.user.email ?? "");
       setRole(res.data.user.role);
       setCurrentUserId(res.data.user._id);
     } catch (error) {
-      toast.error(error)
+      if (error?.response?.status === 401) {
+        // user not authenticated → redirect silently
+        loggedIn.setLoggedIn(false);
+        navigate("/login");
+        return;
+      }
+      toast.error(error?.response?.data?.message || "Something went wrong");
       console.log(error)
     } finally {
       setLoading(false);
@@ -75,18 +83,27 @@ const Settings = () => {
     getData();
   }, [])
 
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
   const submit = async () => {
     try {
-      if (loading) return;
+      // if (loading) return;
+
+      const email = formData.email.trim().toLowerCase();
+
+      if (!emailRegex.test(email)) {
+        toast.error("Please enter a valid email");
+        return;
+      }
       if (formData.phoneNumber.length !== 10) {
         toast.info("Phone number must be exactly 10 digits");
         return;
       }
       setLoading(true);
 
+      const oldEmail = originalEmail;
       const data = new FormData();
       data.append("username", formData.username);
-      data.append("email", formData.email);
+      data.append("email", email);
       data.append("phoneNumber", formData.phoneNumber);
       data.append("gender", formData.gender);
       data.append("department", formData.department);
@@ -95,17 +112,27 @@ const Settings = () => {
       if (formData.profile?.file) {
         data.append("file", formData.profile.file);
       }
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, { withCredentials: true, });
 
+      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, { withCredentials: true });
+      const updatedEmail = res.data?.user?.email;
+
+      if (updatedEmail && updatedEmail !== oldEmail) {
+        toast.info("Email updated. Please login again.");
+
+        await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
+        loggedIn.setLoggedIn(false);
+        navigate("/login");
+        return;
+      }
+      toast.success("Profile Info Updated");
       getData();
-      toast.success("Profile Info Updated")
     } catch (error) {
-      toast.error(error);
+      toast.error(error?.response?.data?.message || "Something Went Wrong");
       console.log(error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const updatePassword = async () => {
     try {
@@ -137,7 +164,7 @@ const Settings = () => {
       loggedIn.setLoggedIn(false);
       toast.success("Logged out successfully");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.message || "Something Went Wrong");;
     } finally {
       setLoading(false);
     }
@@ -221,7 +248,6 @@ const Settings = () => {
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-end">
                     <label className={`text-[11px] font-bold uppercase tracking-wide`}>Email</label>
-                    {/* <span className="text-[11px] text-slate-400 italic">Ask admin to change</span> */}
                   </div>
                   
                   <div className="relative flex items-center">
