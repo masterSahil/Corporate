@@ -97,13 +97,6 @@ const EmployeeCart = () => {
     return total + (item.quantity * (item.product?.price || 0));
   }, 0);
 
-  // Auto-adjust points if cart total drops below currently inputted points
-  useEffect(() => {
-    if (applyPoints && Number(pointsInput) > cartTotalRs) {
-      setPointsInput(cartTotalRs);
-    }
-  }, [cartTotalRs, applyPoints, pointsInput]);
-
   const handlePointsChange = (e) => {
     setPointsInput(e.target.value);
   };
