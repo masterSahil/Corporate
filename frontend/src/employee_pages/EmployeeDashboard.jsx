@@ -178,7 +178,7 @@ const EmployeeDashboard = () => {
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
   return (
-    <div className={`flex h-dvh w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-black`}>
+    <div className={`flex h-screen ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-black`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {loading && (
@@ -190,7 +190,7 @@ const EmployeeDashboard = () => {
         </div>
       )}
 
-      <main className={`flex-1 flex flex-col bg-slate-50 min-h-0 ${customScrollbarClasses}`}>
+      <main className={`flex-1 bg-slate-50 ${customScrollbarClasses}`}>
         
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm transition-all`}>
@@ -198,7 +198,7 @@ const EmployeeDashboard = () => {
           </button>
         </div>
 
-        <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8 pb-24 sm:pb-12">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-8 pb-12">
           {/* Welcome Banner */}
           <section className="relative rounded-lg overflow-hidden bg-zinc-950 flex flex-col justify-end p-6 text-white shadow-xl border border-zinc-800">
             <div className="absolute top-[-50%] left-[-10%] w-96 h-96 bg-zinc-600/20 blur-[120px] rounded-full pointer-events-none"></div>
