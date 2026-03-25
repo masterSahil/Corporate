@@ -93,7 +93,7 @@ const ViewAdmins = () => {
   }
 
   return (
-    <div className={`flex h-screen w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
+    <div className={`flex h-dvh w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
 
       {loading && (
         <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">

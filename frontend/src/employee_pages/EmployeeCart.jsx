@@ -155,7 +155,7 @@ const EmployeeCart = () => {
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
   return (
-    <div className={`flex h-screen w-full overflow-hidden bg-slate-50 selection:bg-zinc-200 selection:text-black`}>
+    <div className={`flex h-dvh w-full overflow-hidden bg-slate-50 selection:bg-zinc-200 selection:text-black`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {isLoading && (

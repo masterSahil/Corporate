@@ -85,7 +85,7 @@ const AdminOrders = () => {
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
   return (
-    <div className="flex h-screen w-full bg-[#f1f5f9] font-sans text-slate-900 overflow-hidden">
+    <div className="flex h-dvh w-full bg-[#f1f5f9] font-sans text-slate-900 overflow-hidden">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

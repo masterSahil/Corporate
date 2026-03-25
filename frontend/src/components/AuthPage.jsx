@@ -77,7 +77,7 @@ const CorporateLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex w-full bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
+    <div className="min-h-dvh flex w-full bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
 
       {loading && (
         <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
@@ -89,7 +89,7 @@ const CorporateLogin = () => {
       )}
 
       {/* Left Side: Auth Form */}
-      <div className="flex flex-col w-full lg:w-1/2 p-8 lg:p-12 overflow-y-auto lg:overflow-y-hidden h-screen">
+      <div className="flex flex-col w-full lg:w-1/2 p-8 lg:p-12 overflow-y-auto lg:overflow-y-hidden h-dvh">
         
         {/* Header/Logo */}
         <div className="flex items-center gap-2.5">

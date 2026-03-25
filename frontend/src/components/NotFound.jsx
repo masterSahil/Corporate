@@ -6,7 +6,7 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-50 overflow-hidden font-sans selection:bg-zinc-200 selection:text-zinc-900">
+    <div className="relative min-h-dvh flex items-center justify-center bg-slate-50 overflow-hidden font-sans selection:bg-zinc-200 selection:text-zinc-900">
       
       {/* Next-Level Background: Subtle Grid & Glowing Orb */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[24px_24px]"></div>

@@ -169,7 +169,7 @@ const ProductDetails = () => {
         (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
     return (
-        <div className="flex h-screen w-full bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-hidden">
+        <div className="flex h-dvh w-full bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-hidden">
             <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
             {(isLoading || !product) && (
