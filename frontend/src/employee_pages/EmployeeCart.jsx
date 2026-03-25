@@ -230,7 +230,7 @@ const EmployeeCart = () => {
                     {/* Top part on mobile (Image + Details) */}
                     <div className="flex items-start gap-4 w-full sm:w-auto sm:flex-1">
                       {/* Product Image */}
-                      <div className="w-24 h-28 sm:w-28 sm:h-28 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="w-28 h-28 sm:w-28 sm:h-28 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
                         {item.product?.gallery && item.product.gallery.length > 0 ? (
                           <img src={item.product.gallery[0].fileUrl} alt={item.product.name} className="w-full h-full object-cover" />
                         ) : (
@@ -308,11 +308,11 @@ const EmployeeCart = () => {
                             <div className="relative flex-1">
                               <input type="number" step="any" value={pointsInput}
                                 onChange={handlePointsChange} placeholder="Enter points"
-                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs sm:text-sm font-bold rounded-xl pl-3 pr-10 py-3.5 outline-none transition-all placeholder:text-zinc-600`}
+                                className={`w-full bg-black border ${pointsError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-zinc-500'} text-white text-xs sm:text-sm font-bold rounded-lg pl-3 pr-10 py-3.5 outline-none transition-all placeholder:text-zinc-600`}
                               />
                               <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-widest ${pointsError ? 'text-rose-500' : 'text-zinc-500'}`}>pts</span>
                             </div>
-                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors border border-zinc-700 w-full sm:w-auto"> Max </button>
+                            <button onClick={() => setPointsInput(Math.min(userPoints, cartTotalRs).toString())} className="px-4 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors border border-zinc-700 w-full sm:w-auto"> Max </button>
                           </div>
                           
                           {pointsError && (
