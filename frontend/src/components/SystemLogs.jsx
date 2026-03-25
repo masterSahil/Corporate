@@ -231,7 +231,7 @@ const SystemLogs = () => {
           </div>
 
           {/* Table Container */}
-          <div className={`${theme.cardBg} rounded-2xl border ${theme.border} shadow-sm overflow-hidden flex flex-col flex-1`}>
+          <div className={`${theme.cardBg} rounded-lg border ${theme.border} shadow-sm overflow-hidden flex flex-col flex-1`}>
             <div className={`overflow-x-auto ${customScrollbarClasses} flex-1`}>
               <table className="w-full text-left whitespace-nowrap">
                 <thead className="bg-zinc-50/80 border-b border-zinc-100 sticky top-0 backdrop-blur-sm z-10">
@@ -281,23 +281,36 @@ const SystemLogs = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex justify-between items-center p-4 border-t border-zinc-100 bg-white">
-              <span className="text-xs text-zinc-500 font-medium">
+            <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t border-zinc-100 bg-white">
+              <span className="text-xs text-zinc-500 font-medium py-3 sm:p-0">
                 Page {currentPage} of {totalPages}
               </span>
 
-              <div className="flex gap-2">
-                <button disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}
-                  className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
-                  Previous
-                </button>
-                <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-                  className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
-                  Next
-                </button>
+              <div>
+                <div className="flex gap-2">
+                  <button disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}
+                    className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
+                    Previous
+                  </button>
+
+                  {/* Page buttons go here */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button key={page} onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 border rounded-lg text-sm font-medium transition-colors
+                          ${currentPage === page ? "bg-black text-white" : "bg-white text-zinc-700 hover:bg-zinc-50"}`}>
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                    className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
+                    Next
+                  </button>
+                </div>
               </div>
             </div>
-
           </div>
         </div>
       </main>
