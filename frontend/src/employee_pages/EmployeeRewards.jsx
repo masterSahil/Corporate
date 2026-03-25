@@ -97,7 +97,7 @@ const EmployeeRewards = () => {
   const myTotalCount = myAcceptedRewards.length;
 
   return (
-    <div className={`flex h-screen w-full bg-slate-50 font-sans selection:bg-slate-900 selection:text-white overflow-hidden`}>
+    <div className={`flex h-dvh w-full bg-slate-50 font-sans selection:bg-slate-900 selection:text-white overflow-hidden`}>
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {loading && (

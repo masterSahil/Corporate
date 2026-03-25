@@ -73,7 +73,7 @@ const EmployeeOrder = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#f1f5f9] font-sans text-slate-900 overflow-hidden">
+    <div className="flex h-dvh w-full bg-[#f1f5f9] font-sans text-slate-900 overflow-hidden">
       <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
       {isLoading && (
