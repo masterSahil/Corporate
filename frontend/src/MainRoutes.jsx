@@ -43,6 +43,7 @@ import EmployeeProfile from "./employee_pages/EmployeeProfile";
 import ProductDetails from "./employee_pages/ProductDetails";
 import EmployeeRewards from "./employee_pages/EmployeeRewards";
 import EmployeeOrder from "./employee_pages/EmployeeOrder";
+import AdminReview from "./pages/Ratings/AdminReviews";
 
 const MainRoutes = ({ loggedIn, role }) => {
   return (
@@ -99,6 +100,9 @@ const MainRoutes = ({ loggedIn, role }) => {
 
       {/* System Logs */}
       <Route path="/system-logs" element={loggedIn && (role === "super_admin" || role === "admin") ? <SystemLogs /> : <Navigate to="/" />} />
+
+      {/* User's Reviews for Products */}
+      <Route path="/admins-ratings" element={loggedIn && (role === "super_admin" || role === "admin") ? <AdminReview /> : <Navigate to="/" />} />
 
       {/* Settings */}
       <Route path="/settings" element={loggedIn ? <Settings /> : <Navigate to="/" />} />

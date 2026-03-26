@@ -4,7 +4,8 @@ import axios from 'axios';
 import { 
   LayoutDashboard, Shield, Users, Box, Gift, Settings, 
   ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart, 
-  Loader2
+  Loader2,
+  Star
 } from 'lucide-react';
 import { theme } from './Theme'; 
 
@@ -56,6 +57,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       { label: '3. Archived Rewards', path: '/rewards/deleted' }
     ]},
     { name: 'Orders', icon: ShoppingCart, isLink: true, path: '/checkout-orders' },
+    { name: 'Reviews', icon: Star, isLink: true, path: '/admins-ratings' },
     { name: 'System Logs', icon: FileText, isLink: true, path: '/system-logs' },
     { name: 'Settings', icon: Settings, isLink: true, path: '/settings' }
   ], []);
