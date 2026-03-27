@@ -93,7 +93,6 @@ const ProductDetails = () => {
     const updateQuantity = async (newQuantity) => {
         if (!cartItem) return;
         try {
-            setIsLoading(true);
             if (newQuantity <= 0) {
                 await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, { withCredentials: true });
                 setCartItem(null);
@@ -104,12 +103,10 @@ const ProductDetails = () => {
                     buyerId: currentUserId, productId: product._id, quantity: newQuantity
                 }, { withCredentials: true });
                 setCartItem(res.data.cart);
-                toast.success("Product Quantity Updated Successfully");
             }
         } catch (error) {
-            toast.error("Failed to Update Product Quantity");
-        } finally {
-            setIsLoading(false);
+            toast.error(error?.response?.data?.message || "Failed to Update Product Quantity");
+            console.log(error);
         }
     };
 
@@ -128,7 +125,7 @@ const ProductDetails = () => {
             setNewReview({ rating: 5, comment: "" });
             toast.success("Review Posted Successfully!");
         } catch (error) {
-            toast.error("Error Posting Review");
+            toast.error(error?.response?.data?.message || "Error Posting Review");
         } finally {
             setIsLoading(false);
         }
@@ -141,7 +138,7 @@ const ProductDetails = () => {
             setReviews(reviews.filter(r => r.id !== reviewId));
             toast.success("Review Deleted Successfully");
         } catch (error) {
-            toast.error("Failed to delete review");
+            toast.error(error?.response?.data?.message || "Failed to delete review");
         } finally {
             setIsLoading(false);
         }
@@ -158,7 +155,7 @@ const ProductDetails = () => {
             setEditingReviewId(null);
             toast.success("Review Updated Successfully!");
         } catch (error) {
-            toast.error("Failed to Update Review");
+            toast.error(error?.response?.data?.message || "Failed to Update Review");
             console.log(error)
         } finally {
             setIsLoading(false);
@@ -215,7 +212,7 @@ const ProductDetails = () => {
                                 </div>
                                 <h1 className="text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3 leading-tight">{product?.name}</h1>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-3xl font-bold text-zinc-900">Rs {product?.price * (cartItem ? cartItem?.quantity : 1)}</span>
+                                    <span className="text-3xl font-bold text-zinc-900">Rs {product?.price}</span>
                                     {product?.discount > 0 && <span className="text-sm font-semibold bg-rose-50 text-rose-600 px-2 py-1 rounded-md">{product?.discount}% OFF</span>}
                                 </div>
                             </div>

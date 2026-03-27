@@ -72,7 +72,6 @@ const EmployeeStore = () => {
 
   const updateQuantity = async (cartItemId, productId, newQuantity) => {
     try {
-      setLoading(true);
       if (newQuantity <= 0) {
         // Remove from cart database if quantity is 0 or less
         await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, { withCredentials: true });
@@ -90,10 +89,9 @@ const EmployeeStore = () => {
         setCartItems(cartItems.map(item => item._id === cartItemId ? res.data.cart : item));
       }
     } catch (error) {
-      toast.error(error.message || "Failed to update quantity");
-    } finally {
-      setLoading(false);
-    }
+      toast.error(error?.response?.data?.message || "Failed to update quantity");
+      console.log(error);
+    } 
   };
 
   const categories = ["All", ...new Set(products.map((p) => p.category))];

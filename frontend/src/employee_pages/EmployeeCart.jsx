@@ -55,7 +55,6 @@ const EmployeeCart = () => {
 
   const updateQuantity = async (cartItemId, productId, newQuantity) => {
     try {
-      setIsLoading(true);
       if (newQuantity <= 0) {
         removeItem(cartItemId);
         return;
@@ -73,8 +72,6 @@ const EmployeeCart = () => {
     } catch (error) {
       toast.error("Failed to update quantity");
       fetchData(); 
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -140,7 +137,7 @@ const EmployeeCart = () => {
       const res = await axios.post(`${import.meta.env.VITE_API_KEY}/checkout`, 
         {userId: currentUserId, items: cleanItems, pointsUsed: discountRs}, { withCredentials: true });
       
-      toast.success(res.data.message || "Checkout successful!");
+      toast.success("Checkout successful!");
       setPointsInput("");
       setApplyPoints(false);
       fetchData(); 
