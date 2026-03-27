@@ -190,7 +190,7 @@ const EmployeeCart = () => {
               <Sparkles size={16} className="text-slate-400 hidden sm:block" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Available Balance</span>
-                <span className="text-sm font-black text-slate-900 leading-none mt-0.5">{userPoints} pts</span>
+                <span className="text-sm font-black text-slate-900 leading-none mt-0.5">{userPoints.toLocaleString()} pts</span>
               </div>
             </div>
           </div>

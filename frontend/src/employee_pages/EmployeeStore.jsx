@@ -139,7 +139,7 @@ const EmployeeStore = () => {
               <div className="bg-white/10 border border-white/10 rounded-md p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
                 <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Your Balance</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl md:text-4xl font-black text-white">{userPoints}</span>
+                  <span className="text-3xl md:text-4xl font-black text-white">{userPoints.toLocaleString()}</span>
                   <span className="text-sm font-bold text-zinc-500 uppercase">pts</span>
                 </div>
               </div>
