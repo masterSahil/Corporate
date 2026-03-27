@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Users, Package, Gift, Trash2, Clock, Download, RefreshCw, ShoppingCart, Star, ClipboardList } from "lucide-react";
+import { Menu, Users, Package, Gift, Trash2, Clock, Download, RefreshCw, ShoppingCart, Star, ClipboardList, ChevronsRightIcon, ChevronsLeftIcon } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { theme } from "./Theme";
 import axios from "axios";
@@ -196,10 +196,7 @@ const SystemLogs = () => {
         }
         {/* Mobile Header */}
         <div className="lg:hidden p-4 pb-0 flex justify-between items-center shrink-0">
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`}
-          >
+          <button onClick={() => setIsSidebarOpen(true)} className={`flex items-center gap-2 ${theme.textMuted} hover:text-black hover:bg-zinc-100 ${theme.cardBg} border ${theme.border} px-3 py-2 rounded-lg shadow-sm transition-all`} >
             <Menu size={20} />
             <span className="text-sm font-medium">Menu</span>
           </button>
@@ -231,8 +228,8 @@ const SystemLogs = () => {
           </div>
 
           {/* Table Container */}
-          <div className={`${theme.cardBg} rounded-lg border ${theme.border} shadow-sm overflow-hidden flex flex-col flex-1`}>
-            <div className={`overflow-x-auto ${customScrollbarClasses} flex-1`}>
+          <div className={`${theme.cardBg} rounded-lg border ${theme.border} shadow-sm overflow-hidden flex flex-col`}>
+            <div className={`overflow-hidden overflow-x-auto ${customScrollbarClasses} flex-1`}>
               <table className="w-full text-left whitespace-nowrap">
                 <thead className="bg-zinc-50/80 border-b border-zinc-100 sticky top-0 backdrop-blur-sm z-10">
                   <tr>
@@ -289,8 +286,8 @@ const SystemLogs = () => {
               <div>
                 <div className="flex gap-2">
                   <button disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}
-                    className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
-                    Previous
+                    className="px-2 py-1.5 border border-zinc-400 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
+                    <ChevronsLeftIcon />
                   </button>
 
                   {/* Page buttons go here */}
@@ -305,8 +302,8 @@ const SystemLogs = () => {
                   </div>
 
                   <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-                    className="px-4 py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
-                    Next
+                    className="px-2 py-1.5 border border-zinc-400 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
+                    <ChevronsRightIcon />
                   </button>
                 </div>
               </div>

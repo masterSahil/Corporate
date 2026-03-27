@@ -69,7 +69,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     );
   }, [allMenuItems, userRole]);
 
-  // 4. Auto-expand correct accordion ONLY when URL changes (Fixes the locking bug)
+  // 4. Auto-expand correct accordion ONLY when URL changes
   useEffect(() => {
     const activeItem = menuItems.find(item => 
       !item.isLink && item.subs.some(sub => location.pathname.includes(sub.path.split('/')[1]))

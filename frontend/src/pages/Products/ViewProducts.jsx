@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Search, Edit2, Trash2, Plus, LayoutGrid, ImageIcon, RefreshCw } from "lucide-react";
+import { Menu, Search, Edit2, Trash2, Plus, LayoutGrid, ImageIcon, RefreshCw, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -327,26 +327,28 @@ const ViewProducts = () => {
                   Page {currentPage} of {totalPages}
                 </span>
                 <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
-                  <button 
-                    disabled={currentPage === 1} 
-                    onClick={() => setCurrentPage((p) => p - 1)}
-                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-700"
-                  >
-                    Previous
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
+                    className="flex-1 flex justify-center sm:flex-none p-2 sm:py-1.5 border border-zinc-500 hover:bg-zinc-50 rounded-md sm:rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <ChevronsLeftIcon />
                   </button>
-                  <button 
-                    disabled={currentPage === totalPages} 
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                    className="flex-1 sm:flex-none px-4 py-2 sm:py-1.5 border border-zinc-200 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-700"
-                  >
-                    Next
+                  {/* Page buttons go here */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button key={page} onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 border rounded-lg text-sm font-medium transition-colors
+                          ${currentPage === page ? "bg-black text-white" : "bg-white text-zinc-700 hover:bg-zinc-50"}`}>
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
+                    className="flex-1 flex justify-center sm:flex-none p-2 sm:py-1.5 border border-zinc-500 hover:bg-zinc-50 rounded-md sm:rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <ChevronsRightIcon />
                   </button>
                 </div>
               </div>
             )}
-            
           </div>
-          
         </div>
       </main>
     </div>
