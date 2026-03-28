@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown, RefreshCw, X, Phone, Briefcase, Calendar, Award, Building2 } from "lucide-react";
+import { Menu, Search, Mail, Shield, Filter, Users, Verified, ChevronDown, RefreshCw, X, Phone, Briefcase, Calendar, Award, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import { theme } from "../components/Theme";
 import axios from "axios";
@@ -8,13 +8,20 @@ import { toast } from "../ui/Toaster";
 const EmployeeDirectory = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // New Filter States
+  
+  // Filter States
   const [selectedRole, setSelectedRole] = useState("All"); 
   const [selectedDept, setSelectedDept] = useState("All");
   
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // --- NEW: INDEPENDENT PAGINATION STATES ---
+  const [superAdminPage, setSuperAdminPage] = useState(1);
+  const [adminPage, setAdminPage] = useState(1);
+  const [employeePage, setEmployeePage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5); // Defaulting to 5
 
   const getData = async () => {
     try {
@@ -33,10 +40,17 @@ const EmployeeDirectory = () => {
     getData();
   }, []);
 
-  // 1. Dynamic Department List for Employees
+  // Reset all pages to 1 when any filter or itemsPerPage changes
+  useEffect(() => {
+    setSuperAdminPage(1);
+    setAdminPage(1);
+    setEmployeePage(1);
+  }, [searchQuery, selectedRole, selectedDept, itemsPerPage]);
+
+  // Dynamic Department List for Employees
   const departments = ["All", ...new Set(allUsers.filter(u => u.role === "employee").map(u => u.department).filter(Boolean))];
 
-  // 2. Functional Filter Logic
+  // Functional Filter Logic
   const filteredUsers = allUsers.filter(user => {
     const matchesSearch = 
       user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,7 +59,6 @@ const EmployeeDirectory = () => {
     
     const matchesRole = selectedRole === "All" || user.role === selectedRole;
     
-    // Dept filter only applies if Role is Employee
     const matchesDept = (selectedRole === "employee" && selectedDept !== "All") 
       ? user.department === selectedDept 
       : true;
@@ -53,9 +66,92 @@ const EmployeeDirectory = () => {
     return matchesSearch && matchesRole && matchesDept;
   });
 
-  const superAdmins = filteredUsers.filter(u => u.role === "super_admin");
-  const admins = filteredUsers.filter(u => u.role === "admin");
-  const employees = filteredUsers.filter(u => u.role === "employee");
+  // --- INDIVIDUAL LISTS ---
+  const superAdminsList = filteredUsers.filter(u => u.role === "super_admin");
+  const adminsList = filteredUsers.filter(u => u.role === "admin");
+  const employeesList = filteredUsers.filter(u => u.role === "employee");
+
+  // --- SLICED DATA FOR EACH PAGE ---
+  const currentSuperAdmins = superAdminsList.slice((superAdminPage - 1) * itemsPerPage, superAdminPage * itemsPerPage);
+  const currentAdmins = adminsList.slice((adminPage - 1) * itemsPerPage, adminPage * itemsPerPage);
+  const currentEmployees = employeesList.slice((employeePage - 1) * itemsPerPage, employeePage * itemsPerPage);
+
+  // --- REUSABLE PAGINATION COMPONENT ---
+  const PaginationControls = ({ currentPage, setCurrentPage, totalItems }) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) return null;
+
+    const getPageNumbers = () => {
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        if (currentPage <= 4) {
+          pages.push(1, 2, 3, 4, 5, "...", totalPages);
+        } else if (currentPage >= totalPages - 3) {
+          pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        } else {
+          pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+        }
+      }
+      return pages;
+    };
+
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-slate-200">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show</span>
+          <div className="relative">
+            <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="appearance-none bg-white border border-slate-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-sm">
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={40}>40</option>
+            </select>
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button 
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          <div className="flex items-center gap-1">
+            {getPageNumbers().map((page, index) => (
+              page === "..." ? (
+                <span key={index} className="w-6 flex justify-center text-slate-400 font-bold text-sm">...</span>
+              ) : (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                    ${currentPage === page 
+                      ? "bg-slate-900 text-white border-2 border-slate-900" 
+                      : "bg-white border border-slate-200 text-slate-600 hover:border-slate-900 hover:text-slate-900"}`}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+          </div>
+
+          <button 
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
@@ -140,7 +236,7 @@ const EmployeeDirectory = () => {
           <div className="space-y-12">
             
             {/* 2. EXECUTIVE LEADERSHIP (Super Admins) */}
-            {superAdmins.length > 0 && (
+            {superAdminsList.length > 0 && (
               <section className="space-y-6">
                 <div className="flex items-center gap-4">
                   <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Executive Leadership Super admin</h2>
@@ -148,7 +244,7 @@ const EmployeeDirectory = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  {superAdmins.map((user) => (
+                  {currentSuperAdmins.map((user) => (
                     <div key={user._id} className="relative group overflow-hidden rounded-lg bg-black p-5 text-white flex flex-col lg:flex-row gap-8 items-center transition-all shadow-2xl">
                       <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                         <Shield size={120} strokeWidth={1} />
@@ -177,11 +273,15 @@ const EmployeeDirectory = () => {
                     </div>
                   ))}
                 </div>
+                
+                {/* Independent Pagination for Super Admins */}
+                <PaginationControls currentPage={superAdminPage} 
+                  setCurrentPage={setSuperAdminPage} totalItems={superAdminsList.length} />
               </section>
             )}
 
             {/* 3. ADMINS NETWORK*/}
-            {admins.length > 0 && (
+            {adminsList.length > 0 && (
               <section className="space-y-8 pt-4">
                 <div className="flex items-center gap-4 flex-1 mb-6">
                   <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Admins Network</h2>
@@ -189,7 +289,7 @@ const EmployeeDirectory = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {admins.map((user) => (
+                  {currentAdmins.map((user) => (
                     <div key={user._id} className="bg-white hover:shadow-2xl hover:shadow-black/5 transition-all p-6 rounded-xl group border-2 border-slate-100 hover:border-black flex flex-col items-center text-center">
                       <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 p-1 ring-2 ring-transparent group-hover:ring-black/5 transition-all overflow-hidden">
@@ -222,15 +322,22 @@ const EmployeeDirectory = () => {
                       <Users size={20} className="text-slate-400 group-hover:text-black" />
                     </div>
                     <h4 className="text-[10px] font-black uppercase tracking-widest group-hover:text-black text-slate-400">Active Admins</h4>
-                    <div className="text-2xl font-bold text-slate-900 mt-1">{admins.length}</div>
+                    <div className="text-2xl font-bold text-slate-900 mt-1">{adminsList.length}</div>
                     <p className="text-[9px] font-bold group-hover:text-black text-slate-400 mt-2 px-2 uppercase">Verified across Admins</p>
                   </div>
                 </div>
+
+                {/* Independent Pagination for Admins */}
+                <PaginationControls 
+                  currentPage={adminPage} 
+                  setCurrentPage={setAdminPage} 
+                  totalItems={adminsList.length} 
+                />
               </section>
             )}
 
             {/* 4. EMPLOYEES NETWORK */}
-            {employees.length > 0 && (
+            {employeesList.length > 0 && (
               <section className="space-y-8 pt-4">
                 <div className="flex items-center gap-4 flex-1 mb-6">
                   <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Employees Network</h2>
@@ -238,7 +345,7 @@ const EmployeeDirectory = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {employees.map((user) => (
+                  {currentEmployees.map((user) => (
                     <div key={user._id} className="bg-white hover:shadow-2xl hover:shadow-black/5 transition-all p-6 rounded-xl group border-2 border-slate-100 hover:border-black flex flex-col items-center text-center">
                       <div className="relative">
                         <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 p-1 ring-2 ring-transparent group-hover:ring-black/5 transition-all overflow-hidden">
@@ -268,10 +375,17 @@ const EmployeeDirectory = () => {
                       <Users size={20} className="text-slate-400 group-hover:text-black" />
                     </div>
                     <h4 className="text-[10px] font-black uppercase tracking-widest group-hover:text-black text-slate-400">Active Employees</h4>
-                    <div className="text-2xl font-bold text-slate-900 mt-1">{employees.length}</div>
+                    <div className="text-2xl font-bold text-slate-900 mt-1">{employeesList.length}</div>
                     <p className="text-[9px] font-bold group-hover:text-black text-slate-400 mt-2 px-2 uppercase">Verified across departments</p>
                   </div>
                 </div>
+
+                {/* Independent Pagination for Employees */}
+                <PaginationControls 
+                  currentPage={employeePage} 
+                  setCurrentPage={setEmployeePage} 
+                  totalItems={employeesList.length} 
+                />
               </section>
             )}
 
@@ -366,7 +480,6 @@ const EmployeeDirectory = () => {
                             <span className="text-slate-300">•</span>
                           </>
                         )}
-                        {/* {selectedUser?.points !== undefined && } */}
                         <div className="flex items-center gap-2">
                           <Calendar size={14} className="text-slate-400" />
                           <span className="text-xs font-semibold text-slate-500">
@@ -387,7 +500,13 @@ const EmployeeDirectory = () => {
                 <Search size={48} className="text-slate-200 mb-4" />
                 <h3 className="text-lg font-bold text-slate-900">No results found</h3>
                 <p className="text-sm text-slate-500">We couldn't find any team members matching your filters.</p>
-                <button onClick={() => {setSearchQuery(""); setSelectedRole("All"); setSelectedDept("All");}} 
+                <button onClick={() => {
+                  setSearchQuery(""); 
+                  setSelectedRole("All"); 
+                  setSelectedDept("All"); 
+                  setSuperAdminPage(1); setAdminPage(1); 
+                  setEmployeePage(1);
+                }} 
                   className="mt-4 text-xs font-bold underline text-black">
                   Clear all filters
                 </button>

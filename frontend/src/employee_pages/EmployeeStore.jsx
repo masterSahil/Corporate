@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, Search, Star, Plus, Minus, Package, ChevronDown, Filter, Check, Eye, RefreshCw } from "lucide-react";
+import { Menu, Search, Plus, Minus, Package, ChevronDown, Filter, Check, Eye, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import { theme } from "../components/Theme";
 import axios from "axios";
@@ -18,29 +18,33 @@ const EmployeeStore = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // --- NEW: Pagination State ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const getData = async () => {
-  try {
-    setLoading(true);
-    const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
-    const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
-    
-    setProducts(res.data.product);
-    const user = res2.data.user;
-    setCurrentUserId(user._id);
-    setUserPoints(user.points || 0); 
+    try {
+      setLoading(true);
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
+      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
+      
+      setProducts(res.data.product);
+      const user = res2.data.user;
+      setCurrentUserId(user._id);
+      setUserPoints(user.points || 0); 
 
-    const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true });
-    const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
-    setCartItems(userCart);
-  } catch (error) {
-    toast.error("Failed to Fetch Data");
-  } finally {
-    setLoading(false);
-  }
-};
+      const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true });
+      const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
+      setCartItems(userCart);
+    } catch (error) {
+      toast.error("Failed to Fetch Data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     getData();
@@ -55,6 +59,11 @@ const EmployeeStore = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // --- NEW: Reset page to 1 when filters change ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, itemsPerPage]);
 
   const addToCart = async (id) => {
     try {
@@ -101,6 +110,28 @@ const EmployeeStore = () => {
     const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // --- NEW: Pagination Logic ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
 
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
@@ -182,9 +213,9 @@ const EmployeeStore = () => {
             </div>
           </div>
 
-          {/* Product Grid */}
+          {/* Product Grid - CHANGED filteredProducts to currentProducts */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
-            {filteredProducts.map((product) => {
+            {currentProducts.map((product) => {
               const cartItem = cartItems.find((c) => c.productId === product._id);
               return (
                 <div 
@@ -261,12 +292,70 @@ const EmployeeStore = () => {
             })}
           </div>
 
+          {/* NEW: Pagination Controls */}
+          {filteredProducts.length > 0 && totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 pb-4 border-t-2 border-slate-100">
+              {/* Items per page selector */}
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Show</span>
+                <div className="relative">
+                  <select 
+                    value={itemsPerPage} 
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className="appearance-none bg-white border-2 border-slate-200 text-sm font-black rounded-lg pl-4 pr-8 py-2 outline-none focus:border-black transition-colors cursor-pointer shadow-sm"
+                  >
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                    <option value={40}>40</option>
+                  </select>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500" />
+                </div>
+              </div>
+
+              {/* Page Numbers & Navigation */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="w-10 h-10 flex items-center justify-center rounded-lg border-2 border-slate-200 bg-white text-slate-600 hover:border-black hover:text-black disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {getPageNumbers().map((page, index) => (
+                    page === "..." ? (
+                      <span key={index} className="w-8 flex justify-center text-slate-400 font-black">...</span>
+                    ) : (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-black transition-all shadow-sm
+                          ${currentPage === page 
+                            ? "bg-black text-white border-2 border-black" 
+                            : "bg-white border-2 border-slate-200 text-slate-600 hover:border-black hover:text-black"}`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  ))}
+                </div>
+
+                <button disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="w-10 h-10 flex items-center justify-center rounded-lg border-2 border-slate-200 bg-white text-slate-600 hover:border-black hover:text-black disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm">
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Empty State */}
           {filteredProducts.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 bg-white rounded-lg border-2 border-dashed border-slate-200 mx-4 md:mx-0">
               <Package size={60} className="text-slate-200 mb-5" />
               <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest text-center">No products found</h3>
-              <button onClick={() => {setSearchQuery(""); setSelectedCategory("All")}} className="mt-4 text-black text-sm font-bold tracking-wider hover:underline transition-all">
+              <button onClick={() => {setSearchQuery(""); setSelectedCategory("All"); setCurrentPage(1);}} className="mt-4 text-black text-sm font-bold tracking-wider hover:underline transition-all">
                 CLEAR FILTERS
               </button>
             </div>

@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { ShoppingBag, XCircle, Package, Calendar, CreditCard, Hash, ImageIcon, ArrowRight, RefreshCw } from "lucide-react";
+import { ShoppingBag, XCircle, Package, Calendar, CreditCard, Hash, ImageIcon, ArrowRight, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar"; 
 import axios from "axios";
 import { toast } from "../ui/Toaster";
+import { useNavigate } from "react-router-dom";
 
 const EmployeeOrder = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   // modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState(null);
+
+  // --- NEW: PAGINATION STATES ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default to 10 for orders
+
+  const navigate = useNavigate();
 
   const fetchMyOrders = async () => {
     try {
@@ -41,7 +49,9 @@ const EmployeeOrder = () => {
         })
       }));
 
-      setOrders(enrichedOrders);
+      // Sort by date descending (optional, ensures newest are first)
+      const sortedOrders = enrichedOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+      setOrders(sortedOrders);
     } catch (error) {
       console.error("Fetch Orders Error:", error);
       toast.error("Failed to load your order history.");
@@ -51,6 +61,11 @@ const EmployeeOrder = () => {
   };
 
   useEffect(() => { fetchMyOrders() }, []);
+
+  // --- NEW: Reset page to 1 if itemsPerPage changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
 
   const handleCancel = async () => {
     if (!cancelOrderId) return;
@@ -70,6 +85,28 @@ const EmployeeOrder = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // --- NEW: PAGINATION LOGIC ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
   };
 
   return (
@@ -98,8 +135,8 @@ const EmployeeOrder = () => {
             
             {/* Page Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                <Package className="text-black" size={32} />
+              <h1 className="text-[28px] sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                <Package className="text-[28] sm:text-[32px]" size={32} />
                 Purchase History
               </h1>
               <p className="text-sm font-medium text-slate-500 mt-1 ml-11">
@@ -109,7 +146,7 @@ const EmployeeOrder = () => {
 
             {/* Content Area */}
             {orders.length === 0 ? (
-              <div className="bg-white border hover:border-dashed hover:border-black border-slate-300 rounded-3xl p-16 flex flex-col items-center text-center shadow-sm">
+              <div className="bg-white border hover:border-dashed hover:border-black border-slate-300 rounded-3xl p-16 flex flex-col items-center text-center shadow-sm transition-all">
                 <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
                   <ShoppingBag size={40} className="text-black" />
                 </div>
@@ -118,7 +155,8 @@ const EmployeeOrder = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                {orders.map(order => (
+                {/* CHANGED: Mapping over currentOrders instead of orders */}
+                {currentOrders.map(order => (
                   <div key={order._id} className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     
                     {/* Card Header (Meta Info) */}
@@ -169,7 +207,7 @@ const EmployeeOrder = () => {
                               <h4 className="text-base font-bold text-slate-900 truncate">{item.name}</h4>
                               <p className="text-sm text-slate-500 font-medium mt-1">Qty: {item.quantity}</p>
                               {order.status === 'Delivered' && (
-                                <button className="mt-2 text-[11px] font-bold text-blue-600 uppercase tracking-widest hover:text-blue-800 flex items-center gap-1 transition-colors">
+                                <button onClick={()=>navigate('/employee/store')} className="mt-2 text-[11px] font-bold text-blue-600 uppercase tracking-widest hover:text-blue-800 flex items-center gap-1 transition-colors">
                                   Buy Again <ArrowRight size={12} />
                                 </button>
                               )}
@@ -203,6 +241,64 @@ const EmployeeOrder = () => {
                     </div>
                   </div>
                 ))}
+                
+                {/* NEW: Pagination Controls UI */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show</span>
+                      <div className="relative">
+                        <select 
+                          value={itemsPerPage} 
+                          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                          className="appearance-none bg-white border border-slate-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-sm"
+                        >
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                          <option value={30}>30</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        {getPageNumbers().map((page, index) => (
+                          page === "..." ? (
+                            <span key={index} className="w-6 flex justify-center text-slate-400 font-bold text-sm">...</span>
+                          ) : (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                                ${currentPage === page 
+                                  ? "bg-slate-900 text-white border-2 border-slate-900" 
+                                  : "bg-white border border-slate-200 text-slate-600 hover:border-slate-900 hover:text-slate-900"}`}
+                            >
+                              {page}
+                            </button>
+                          )
+                        ))}
+                      </div>
+
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

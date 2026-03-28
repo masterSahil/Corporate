@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Trophy, Search, Filter, Calendar, Award, CheckCircle2, Globe, RefreshCw } from "lucide-react";
+import { Menu, Trophy, Search, Filter, Calendar, Award, CheckCircle2, Globe, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import EmployeeSidebar from "./EmployeeSidebar";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
@@ -12,9 +12,13 @@ const EmployeeRewards = () => {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("Filter");
 
-  // --- NEW LOGIC STATES ---
+  // --- LOGIC STATES ---
   const [userPoints, setUserPoints] = useState(0);
   const [currentUserId, setCurrentUserId] = useState(null);
+
+  // --- NEW: PAGINATION STATES FOR GLOBAL GALLERY ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const getRewards = async () => {
     try {
@@ -43,7 +47,12 @@ const EmployeeRewards = () => {
     getRewards();
   }, []);
 
-  // --- UPDATED ACTIONS LOGIC ---
+  // --- NEW: Reset page to 1 when search or category changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, itemsPerPage]);
+
+  // --- ACTIONS LOGIC ---
   const handleAcceptReward = async (rewardId) => {
     const rewardToAccept = myRewards.find(r => r._id === rewardId);
     if (!rewardToAccept) return;
@@ -95,6 +104,28 @@ const EmployeeRewards = () => {
 
   // Keep count logic for badges
   const myTotalCount = myAcceptedRewards.length;
+
+  // --- NEW: PAGINATION LOGIC ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentGlobalRewards = filteredAllRewards.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAllRewards.length / itemsPerPage);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
 
   return (
     <div className={`flex h-dvh w-full bg-slate-50 font-sans selection:bg-slate-900 selection:text-white overflow-hidden`}>
@@ -280,47 +311,105 @@ const EmployeeRewards = () => {
               <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full">{filteredAllRewards.length}</span>
             </div>
 
-            {filteredAllRewards.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredAllRewards.map((reward) => (
-                  <div key={reward._id} className="group bg-white border hover:border-black border-dashed border-slate-200 rounded-xl p-5 transition-all hover:shadow-md flex flex-col h-full">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-slate-50 border-slate-100 text-slate-600">
-                        <Globe className="group-hover:text-black" size={13} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider group-hover:text-black">Available</span>
-                      </div>
-                      <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                        <Calendar className="group-hover:text-black" size={12} />
-                        <span className="group-hover:text-black"> 
-                          {new Date(reward.createdAt).toLocaleDateString()}
+            {/* CHANGED: map over currentGlobalRewards instead of filteredAllRewards */}
+            {currentGlobalRewards.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                  {currentGlobalRewards.map((reward) => (
+                    <div key={reward._id} className="group bg-white border hover:border-black border-dashed border-slate-200 rounded-xl p-5 transition-all hover:shadow-md flex flex-col h-full">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-slate-50 border-slate-100 text-slate-600">
+                          <Globe className="group-hover:text-black" size={13} />
+                          <span className="text-[10px] font-bold uppercase tracking-wider group-hover:text-black">Available</span>
+                        </div>
+                        <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
+                          <Calendar className="group-hover:text-black" size={12} />
+                          <span className="group-hover:text-black"> 
+                            {new Date(reward.createdAt).toLocaleDateString()}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                    <div className="mb-5">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{reward.category || 'General'}</p>
-                      <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2">{reward.title}</h3>
-                      <p className="text-sm text-slate-500 line-clamp-2">{reward.description}</p>
-                    </div>
-                    <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-                      <div>
-                        <span className="text-[12px] font-bold text-slate-400 block">Reward Value</span>
-                        <span className="text-xl font-bold text-slate-900">{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded-lg text-slate-400">
-                        <Trophy className="group-hover:text-black" size={18} />
+                      <div className="mb-5">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{reward.category || 'General'}</p>
+                        <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2">{reward.title}</h3>
+                        <p className="text-sm text-slate-500 line-clamp-2">{reward.description}</p>
                       </div>
+                      <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <div>
+                          <span className="text-[12px] font-bold text-slate-400 block">Reward Value</span>
+                          <span className="text-xl font-bold text-slate-900">{reward.points || 0} <span className="text-xs font-bold text-slate-400">pts</span></span>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 rounded-lg text-slate-400">
+                          <Trophy className="group-hover:text-black" size={18} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* NEW: Pagination Controls (Only show if multiple pages exist) */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rows per page</span>
+                      <div className="relative">
+                        <select 
+                          value={itemsPerPage} 
+                          onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                          className="appearance-none bg-white border border-slate-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-sm"
+                        >
+                          <option value={20}>20</option>
+                          <option value={30}>30</option>
+                          <option value={40}>40</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-black hover:text-black disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm">
+                        <ChevronLeft size={16} />
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        {getPageNumbers().map((page, index) => (
+                          page === "..." ? (
+                            <span key={index} className="w-6 flex justify-center text-slate-400 font-bold text-sm">...</span>
+                          ) : (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                                ${currentPage === page 
+                                  ? "bg-black text-white border border-black" 
+                                  : "bg-white border border-slate-200 text-slate-600 hover:border-black hover:text-black"}`}
+                            >
+                              {page}
+                            </button>
+                          )
+                        ))}
+                      </div>
+
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-black hover:text-black disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-20 bg-white border hover:border-black border-dashed border-slate-200 rounded-xl">
-                <Globe className="mx-auto mb-4" size={40} />
-                <p className="text-md">No results found for this criteria.</p>
+                <Globe className="mx-auto mb-4 text-slate-400" size={40} />
+                <p className="text-md text-slate-600">No results found for this criteria.</p>
               </div>
             )}
           </section>
-
         </div>
       </main>
     </div>
