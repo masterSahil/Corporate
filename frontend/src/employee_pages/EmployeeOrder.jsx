@@ -16,7 +16,7 @@ const EmployeeOrder = () => {
 
   // --- NEW: PAGINATION STATES ---
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default to 10 for orders
+  const [itemsPerPage, setItemsPerPage] = useState(5); // Default to 5 for orders
 
   const navigate = useNavigate();
 
