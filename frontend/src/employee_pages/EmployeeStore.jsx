@@ -294,7 +294,7 @@ const EmployeeStore = () => {
 
           {/* NEW: Pagination Controls */}
           {filteredProducts.length > 0 && totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 pb-4 border-t-2 border-slate-100">
+            <div className="flex flex-row items-center justify-between gap-4 pt-8 pb-4 border-t-2 border-slate-100">
               {/* Items per page selector */}
               <div className="flex items-center gap-3">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Show</span>

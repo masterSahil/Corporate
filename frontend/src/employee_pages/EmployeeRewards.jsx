@@ -349,7 +349,7 @@ const EmployeeRewards = () => {
 
                 {/* NEW: Pagination Controls (Only show if multiple pages exist) */}
                 {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
+                  <div className="flex flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200">
                     <div className="flex items-center gap-3">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rows per page</span>
                       <div className="relative">
