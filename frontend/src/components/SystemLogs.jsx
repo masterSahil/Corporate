@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Users, Package, Gift, Trash2, Clock, Download, RefreshCw, ShoppingCart, Star, ClipboardList, ChevronsRightIcon, ChevronsLeftIcon } from "lucide-react";
+import { Menu, Users, Package, Gift, Trash2, Clock, Download, RefreshCw, ShoppingCart, Star, ClipboardList, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { theme } from "./Theme";
 import axios from "axios";
@@ -10,9 +10,11 @@ const SystemLogs = () => {
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState("All");
+  
+  // --- NEW: Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
+  const [logsPerPage, setLogsPerPage] = useState(10); // Default to 10
 
-  const logsPerPage = 8;
   const filterOptions = ["All", "User Onboarded", "Record Deleted", "Inventory Added", "Reward Issued", "Order Log", "Added to Cart", "Rating Submitted"];
 
   // --- DATA FETCHING ---
@@ -140,10 +142,31 @@ const SystemLogs = () => {
     getLogData();
   }, []);
 
+  // --- NEW: Reset page to 1 when filter or itemsPerPage changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, logsPerPage]);
+
   // --- FILTERING & PAGINATION ---
   const filteredLogs = filterType === "All" ? logs : logs.filter(log => log.type === filterType);
   const totalPages = Math.max(1, Math.ceil(filteredLogs.length / logsPerPage));
   const paginatedLogs = filteredLogs.slice((currentPage - 1) * logsPerPage, currentPage * logsPerPage);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
 
   // --- CSV EXPORT FUNCTIONALITY ---
   const exportToCSV = () => {
@@ -277,37 +300,60 @@ const SystemLogs = () => {
               </table>
             </div>
 
-            {/* Pagination Controls */}
-            <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t border-zinc-100 bg-white">
-              <span className="text-xs text-zinc-500 font-medium py-3 sm:p-0">
-                Page {currentPage} of {totalPages}
-              </span>
+            {/* NEW: Pagination Footer */}
+            {filteredLogs.length > 0 && (
+              <div className="mt-auto shrink-0 flex flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                
+                {/* Items per page selector */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show</span>
+                  <div className="relative">
+                    <select 
+                      value={logsPerPage} 
+                      onChange={(e) => setLogsPerPage(Number(e.target.value))}
+                      className="appearance-none bg-white border border-slate-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-sm">
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={30}>30</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  </div>
+                </div>
 
-              <div>
-                <div className="flex gap-2">
-                  <button disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}
-                    className="px-2 py-1.5 border border-zinc-400 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
-                    <ChevronsLeftIcon />
+                {/* Page Navigation */}
+                <div className="flex items-center gap-1.5">
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm">
+                    <ChevronLeft size={16} />
                   </button>
 
-                  {/* Page buttons go here */}
-                  <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button key={page} onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-1 border rounded-lg text-sm font-medium transition-colors
-                          ${currentPage === page ? "bg-black text-white" : "bg-white text-zinc-700 hover:bg-zinc-50"}`}>
-                        {page}
-                      </button>
+                  <div className="items-center gap-1 hidden sm:flex">
+                    {getPageNumbers().map((page, index) => (
+                      page === "..." ? (
+                        <span key={index} className="w-6 flex justify-center text-slate-400 font-bold text-sm">...</span>
+                      ) : (
+                        <button key={index} onClick={() => setCurrentPage(page)}
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                            ${currentPage === page 
+                              ? "bg-black text-white border-2 border-black" 
+                              : "bg-white border border-slate-200 text-slate-600 hover:border-black hover:text-black"}`}>
+                          {page}
+                        </button>
+                      )
                     ))}
                   </div>
 
-                  <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-                    className="px-2 py-1.5 border border-zinc-400 hover:bg-zinc-50 rounded-lg text-sm font-medium disabled:opacity-40 disabled:hover:bg-transparent transition-colors" >
-                    <ChevronsRightIcon />
+                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+                    disabled={currentPage === totalPages}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm">
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>

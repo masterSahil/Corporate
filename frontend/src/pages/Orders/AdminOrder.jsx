@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, Menu, Calendar, Hash, ChevronDown, ImageIcon, Clock, User, Mail, CreditCard, RefreshCw, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
+import { Search, Menu, Calendar, Hash, ChevronDown, ImageIcon, Clock, User, Mail, CreditCard, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import axios from "axios";
 import { toast } from "../../ui/Toaster";
@@ -12,7 +12,7 @@ const AdminOrders = () => {
 
   // --- NEW: Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 3;
+  const [ordersPerPage, setOrdersPerPage] = useState(3); // Default to 3 for large cards
 
   const fetchData = async () => {
     try {
@@ -55,10 +55,10 @@ const AdminOrders = () => {
 
   useEffect(() => { fetchData() }, []);
 
-  // --- NEW: Reset page to 1 when search changes ---
+  // --- NEW: Reset page to 1 when search or items per page changes ---
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, ordersPerPage]);
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
@@ -83,6 +83,22 @@ const AdminOrders = () => {
   
   // This is the array you will actually render in the grid
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
 
   return (
     <div className="flex h-dvh w-full bg-[#f1f5f9] font-sans text-slate-900 overflow-hidden">
@@ -261,28 +277,61 @@ const AdminOrders = () => {
 
                 {/* NEW: Pagination Footer */}
                 {filteredOrders.length > 0 && (
-                  <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 bg-white border border-slate-200 rounded-xl shadow-sm shrink-0">
-                    <span className="text-xs text-slate-500 font-medium text-center sm:text-left">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
-                      <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
-                        className="flex-1 flex justify-center sm:flex-none p-2 sm:py-1.5 border border-zinc-500 hover:bg-zinc-50 rounded-md sm:rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        <ChevronsLeftIcon />
+                  <div className="mt-8 flex flex-row items-center justify-between gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm shrink-0">
+                    
+                    {/* Items per page selector */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show</span>
+                      <div className="relative">
+                        <select 
+                          value={ordersPerPage} 
+                          onChange={(e) => setOrdersPerPage(Number(e.target.value))}
+                          className="appearance-none bg-white border border-slate-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-sm"
+                        >
+                          <option value={3}>3</option>
+                          <option value={5}>5</option>
+                          <option value={10}>10</option>
+                          <option value={20}>20</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                      </div>
+                    </div>
+
+                    {/* Page Navigation */}
+                    <div className="flex items-center gap-1.5">
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                      >
+                        <ChevronLeft size={16} />
                       </button>
-                      {/* Page buttons go here */}
-                      <div className="flex gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <button key={page} onClick={() => setCurrentPage(page)}
-                            className={`px-3 py-1 border rounded-lg text-sm font-medium transition-colors
-                              ${currentPage === page ? "bg-black text-white" : "bg-white text-zinc-700 hover:bg-zinc-50"}`}>
-                            {page}
-                          </button>
+
+                      <div className="items-center gap-1 hidden sm:flex">
+                        {getPageNumbers().map((page, index) => (
+                          page === "..." ? (
+                            <span key={index} className="w-6 flex justify-center text-slate-400 font-bold text-sm">...</span>
+                          ) : (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                                ${currentPage === page 
+                                  ? "bg-black text-white border-2 border-black" 
+                                  : "bg-white border border-slate-200 text-slate-600 hover:border-black hover:text-black"}`}
+                            >
+                              {page}
+                            </button>
+                          )
                         ))}
                       </div>
-                      <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-                        className="flex-1 flex justify-center sm:flex-none p-2 sm:py-1.5 border border-zinc-500 hover:bg-zinc-50 rounded-md sm:rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        <ChevronsRightIcon />
+
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                      >
+                        <ChevronRight size={16} />
                       </button>
                     </div>
                   </div>

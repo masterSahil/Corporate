@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { Menu, RefreshCw, MessageSquare, Star, Search, Filter, Calendar, User, Package, X, Quote, ChevronDown, Check } from "lucide-react";
+import { Menu, RefreshCw, MessageSquare, Star, Search, Filter, Calendar, User, Package, X, Quote, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import { toast } from "../../ui/Toaster";
@@ -18,6 +18,10 @@ const AdminReview = () => {
   
   // Modal State
   const [selectedReview, setSelectedReview] = useState(null);
+
+  // --- NEW: Pagination States ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reviewsPerPage, setReviewsPerPage] = useState(10); // Default to 10
 
   // --- DATA FETCHING ---
   const fetchReviews = async () => {
@@ -37,6 +41,11 @@ const AdminReview = () => {
     fetchReviews();
   }, []);
 
+  // --- NEW: Reset page to 1 when search or filter changes ---
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedRating, reviewsPerPage]);
+
   // --- DERIVED DATA (SEARCH & FILTER) ---
   const filteredReviews = useMemo(() => {
     return reviews.filter((rev) => {
@@ -54,6 +63,28 @@ const AdminReview = () => {
       return matchesSearch && matchesRating;
     });
   }, [reviews, searchQuery, selectedRating]);
+
+  // --- NEW: Pagination Logic ---
+  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / reviewsPerPage));
+  const indexOfLastReview = currentPage * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
 
   // --- HELPERS ---
   const formatDateTimeParts = (dateString) => {
@@ -212,7 +243,8 @@ const AdminReview = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {filteredReviews.length > 0 ? filteredReviews.map((rev) => {
+                  {/* Changed to map over currentReviews */}
+                  {currentReviews.length > 0 ? currentReviews.map((rev) => {
                     const reviewId = rev._id?.$oid || rev._id || Math.random().toString();
                     const { formattedDate, formattedTime } = formatDateTimeParts(rev.createdAt);
                     
@@ -293,6 +325,60 @@ const AdminReview = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* NEW: Pagination Footer */}
+            {filteredReviews.length > 0 && totalPages > 1 && (
+              <div className="mt-auto shrink-0 flex flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+                
+                {/* Items per page selector */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Show</span>
+                  <div className="relative">
+                    <select 
+                      value={reviewsPerPage} 
+                      onChange={(e) => setReviewsPerPage(Number(e.target.value))}
+                      className="appearance-none bg-white border border-zinc-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-zinc-900 transition-colors cursor-pointer shadow-sm">
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={30}>30</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400" />
+                  </div>
+                </div>
+
+                {/* Page Navigation */}
+                <div className="flex items-center gap-1.5">
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-900 hover:text-zinc-900 disabled:opacity-50 disabled:hover:border-zinc-200 disabled:hover:text-zinc-600 transition-all shadow-sm">
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  <div className="items-center gap-1 hidden sm:flex">
+                    {getPageNumbers().map((page, index) => (
+                      page === "..." ? (
+                        <span key={index} className="w-6 flex justify-center text-zinc-400 font-bold text-sm">...</span>
+                      ) : (
+                        <button key={index} onClick={() => setCurrentPage(page)}
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                            ${currentPage === page ? "bg-zinc-900 text-white border-2 border-zinc-900" 
+                              : "bg-white border border-zinc-200 text-zinc-600 hover:border-zinc-900 hover:text-zinc-900"}`}>
+                          {page}
+                        </button>
+                      )
+                    ))}
+                  </div>
+
+                  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-900 hover:text-zinc-900 disabled:opacity-50 disabled:hover:border-zinc-200 disabled:hover:text-zinc-600 transition-all shadow-sm">
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -333,7 +419,7 @@ const AdminReview = () => {
                       <User size={14} /> Reviewed By
                     </span>
                     <span className="text-sm font-semibold truncate">
-                      {selectedReview.buyerId?.username || selectedReview.buyerId || "Unknown User"}
+                      {selectedReview.buyerId?.username || "Unknown User"}
                     </span>
                   </div>
                   
@@ -341,8 +427,8 @@ const AdminReview = () => {
                     <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
                       <Package size={14} /> Product
                     </span>
-                    <span className="text-xs font-semibold truncate" title={selectedReview.productId?.name || selectedReview.productId}>
-                      {selectedReview.productId?.name || selectedReview.productId || "Unknown Product"}
+                    <span className="text-xs font-semibold truncate" title={selectedReview.productId}>
+                      {selectedReview.productId}
                     </span>
                   </div>
                 </div>
@@ -350,7 +436,6 @@ const AdminReview = () => {
             </div>
           </div>
         )}
-
       </main>
     </div>
   );

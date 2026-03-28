@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, ShieldAlert, Shield, RefreshCw, EyeOff, Eye, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
+import { Menu, Search, Filter, Trash2, ArchiveRestore, Info, ShieldAlert, Shield, RefreshCw, EyeOff, Eye, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -21,7 +21,7 @@ const SoftDeletedAdmins = () => {
 
   // --- Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
-  const adminsPerPage = 8;
+  const [adminsPerPage, setAdminsPerPage] = useState(10);
 
   const isRefreshing = false;
   
@@ -46,7 +46,7 @@ const SoftDeletedAdmins = () => {
   // Reset page to 1 when user searches or changes the filter
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, roleFilter]);
+  }, [searchTerm, roleFilter, adminsPerPage]);
 
   // Date Formatter
   const formatDate = (dateInput) => {
@@ -115,6 +115,22 @@ const SoftDeletedAdmins = () => {
   // This is the sliced array you will use in the table
   const currentAdmins = filteredAdmins.slice(indexOfFirstAdmin, indexOfLastAdmin);
 
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
+
   return (
     <div className={`flex h-dvh w-full ${theme.appBg} ${theme.textMain} font-sans overflow-hidden selection:bg-zinc-200 selection:text-zinc-900`}>
       
@@ -154,16 +170,20 @@ const SoftDeletedAdmins = () => {
           </div>
 
           {/* Retention Policy Banner */}
-          <div className="mb-8 p-4 rounded-xl border border-blue-200 bg-blue-50/50 flex items-start sm:items-center gap-4 shadow-sm">
-            <div className="bg-blue-100 p-2.5 rounded-full text-blue-600 shrink-0">
-              <Info size={20} />
+          <div className="mb-8 p-4 sm:p-5 rounded-xl border border-blue-200 bg-blue-50/50 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-100 p-2.5 rounded-full text-blue-600 shrink-0">
+                <Info size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  Manual Retention Policy
+                </h3>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Manual Retention Policy</h3>
-              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                Admins in the trash bin lose access immediately but their data is kept securely until you permanently delete them. Restoring a record will return it to active status with all previous permissions intact.
-              </p>
-            </div>
+            <p className="text-xs sm:text-[14px] text-slate-600 mt-1 leading-relaxed">
+              Admins in the trash bin lose access immediately but their data is kept securely until you permanently delete them. Restoring a record will return it to active status with all previous permissions intact.
+            </p>
           </div>
 
           {/* Toolbar: Search & Filter */}
@@ -203,7 +223,7 @@ const SoftDeletedAdmins = () => {
           )}
 
           {/* Data Table Container */}
-          <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col`}>
+          <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex flex-col`}>
             <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
@@ -323,29 +343,62 @@ const SoftDeletedAdmins = () => {
             </div>
 
             {/* Pagination Controls Footer */}
-            {filteredAdmins.length > 0 && (
-              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
-                <span className="text-xs text-zinc-500 font-medium text-center sm:text-left">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
-                  <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}
-                    className="flex-1 flex justify-center sm:flex-none p-2 sm:py-1.5 border border-zinc-500 hover:bg-zinc-50 rounded-md sm:rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                    <ChevronsLeftIcon />
+            {filteredAdmins.length > 0 && totalPages > 1 && (
+              <div className="mt-auto shrink-0 flex flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
+                
+                {/* Items per page selector */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show</span>
+                  <div className="relative">
+                    <select 
+                      value={adminsPerPage} 
+                      onChange={(e) => setAdminsPerPage(Number(e.target.value))}
+                      className="appearance-none bg-white border border-slate-200 text-sm font-bold rounded-lg pl-3 pr-8 py-2 outline-none focus:border-slate-900 transition-colors cursor-pointer shadow-sm"
+                    >
+                      <option value={10}>10</option>
+                      <option value={15}>15</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  </div>
+                </div>
+
+                {/* Page Navigation */}
+                <div className="flex items-center gap-1.5">
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                  >
+                    <ChevronLeft size={16} />
                   </button>
-                  {/* Page buttons go here */}
-                  <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button key={page} onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-1 border rounded-lg text-sm font-medium transition-colors
-                          ${currentPage === page ? "bg-black text-white" : "bg-white text-zinc-700 hover:bg-zinc-50"}`}>
-                        {page}
-                      </button>
+
+                  <div className="items-center gap-1 hidden sm:flex">
+                    {getPageNumbers().map((page, index) => (
+                      page === "..." ? (
+                        <span key={index} className="w-6 flex justify-center text-slate-400 font-bold text-sm">...</span>
+                      ) : (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-all shadow-sm
+                            ${currentPage === page 
+                              ? "bg-black text-white border-2 border-black" 
+                              : "bg-white border border-slate-200 text-slate-600 hover:border-black hover:text-black"}`}
+                        >
+                          {page}
+                        </button>
+                      )
                     ))}
                   </div>
-                  <button disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}
-                    className="flex-1 flex justify-center sm:flex-none p-2 sm:py-1.5 border border-zinc-500 hover:bg-zinc-50 rounded-md sm:rounded-lg text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                    <ChevronsRightIcon />
+
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900 disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-600 transition-all shadow-sm"
+                  >
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
