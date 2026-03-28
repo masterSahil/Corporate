@@ -244,7 +244,7 @@ const EmployeeOrder = () => {
                 
                 {/* NEW: Pagination Controls UI */}
                 {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-200">
+                  <div className="flex flex-row items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-200">
                     <div className="flex items-center gap-3">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Show</span>
                       <div className="relative">
