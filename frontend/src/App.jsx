@@ -6,6 +6,7 @@ import axios from "axios";
 import { toast, Toaster } from "./ui/Toaster";
 import { RefreshCw } from "lucide-react";
 import MainRoutes from "./MainRoutes";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -64,7 +65,9 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ loggedIn, setLoggedIn, role, setRole }}>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENT_ID}>
         <MainRoutes loggedIn={loggedIn} role={role} />
+      </GoogleOAuthProvider>
       <Toaster />
     </AuthContext.Provider>
   );

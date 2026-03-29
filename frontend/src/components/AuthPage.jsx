@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/ContextApi';
 import { toast } from '../ui/Toaster'; 
+import { useGoogleLogin } from "@react-oauth/google"
 
 const CorporateLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,6 +37,7 @@ const CorporateLogin = () => {
     return true;
   };
 
+  // login user
   const loginSubmit = async (e) => {
     try {
       setLoading(true);
@@ -57,6 +59,7 @@ const CorporateLogin = () => {
     }
   };
 
+  // create new user
   const signupSubmit = async (e) => {
     try {
       setLoading(true);
@@ -75,6 +78,31 @@ const CorporateLogin = () => {
       setLoading(false);
     }
   };
+
+  // login with google
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setLoading(true);
+        const res = await axios.post(`${import.meta.env.VITE_API_KEY}/google-login`, {
+          access_token: tokenResponse.access_token
+        }, { withCredentials: true });
+
+        toast.success("Google Login Successful");
+        auth_context.setLoggedIn(true);
+        auth_context.setRole(res.data.users.role);
+        navigate('/dashboard');
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Google authentication failed");
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => {
+      toast.error("Google login cancelled or failed");
+    }
+  });
 
   return (
     <div className="min-h-dvh flex w-full bg-white text-slate-900 font-sans selection:bg-zinc-200 selection:text-zinc-900">
@@ -136,15 +164,9 @@ const CorporateLogin = () => {
               </label>
               <div className="relative flex items-center">
                 <Mail size={18} className="absolute left-4 text-black pointer-events-none" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                <input type="email" name="email" value={formData.email} onChange={handleChange}
                   className="w-full bg-zinc-50 border border-slate-200 text-slate-900 text-sm rounded-md pl-11 pr-4 py-3.5 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
-                  placeholder="name@company.com"
-                  required
-                />
+                  placeholder="name@company.com" required />
               </div>
             </div>
 
@@ -171,11 +193,8 @@ const CorporateLogin = () => {
                   placeholder="••••••••"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-slate-400 hover:text-slate-900 transition-colors"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-slate-400 hover:text-slate-900 transition-colors">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
@@ -199,10 +218,8 @@ const CorporateLogin = () => {
 
           {/* Google Single Sign-On */}
           <div className="mt-8">
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-slate-200 bg-white hover:bg-zinc-50 rounded-md text-slate-700 font-bold text-sm transition-all"
-            >
+            <button onClick={handleGoogleLogin} type="button"
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 border border-slate-200 bg-white hover:bg-zinc-50 rounded-md text-slate-700 font-bold text-sm transition-all">
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
