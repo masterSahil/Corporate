@@ -351,8 +351,8 @@ module.exports.LoginUser = async (req, res) => {
             })
         }
 
-        if (user && !password) {
-            return res.status(404).json({
+        if (user && !user.password) {
+            return res.status(401).json({
                 success: false,
                 message: "This account was created using Google. Please log in with Google."
             })
