@@ -46,6 +46,12 @@ const AddProduct = () => {
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
+    for(let file of selectedFiles) {
+      if (file.size > 1 * 1024 * 1024) {
+        toast.error("Uploaded File must be less than 1MB");
+        return;
+      }
+    }
     setFiles(selectedFiles);
 
     const previews = selectedFiles.map(file => ({
@@ -107,7 +113,7 @@ const AddProduct = () => {
       toast.success("Product Added Successfully");
       navigate("/products/manage");
     } catch (error) {
-      toast.error(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Something went Wrong");
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -363,7 +369,7 @@ const AddProduct = () => {
                     <p className={`${images.length > 0 ? 'text-sm' : 'text-base'} font-bold text-slate-900 mb-1`}>
                       {images.length > 0 ? 'Add more images' : 'Click to upload images'}
                     </p>
-                    {!images.length && <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB each</p>}
+                    {!images.length && <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 1MB each</p>}
                     <input 
                       type="file" 
                       // accept="image/*" 

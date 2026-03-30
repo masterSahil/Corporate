@@ -243,8 +243,7 @@ const SoftDeletedAdmins = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {admin.profile?.imageUrl ? (
-                            <img src={admin.profile.imageUrl} alt={admin.username} 
-                              className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"/>
+                            <img src={admin.profile.imageUrl} alt={admin.username} className="w-10 h-10 rounded-full object-cover border border-zinc-200 opacity-60 grayscale group-hover:grayscale-0 transition-all"/>
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600 opacity-60 grayscale group-hover:grayscale-0 transition-all">
                               {admin.username.charAt(0).toUpperCase()}

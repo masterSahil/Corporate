@@ -61,7 +61,16 @@ const UpdateProduct = () => {
 
   // --- Image Handling ---
   const handleImageSelect = (e) => {
-    if (e.target.files) {
+    if (!e.target.files) return toast.error("Upload at Least One Product Image");
+    const selectedFiles = Array.from(e.target.files);
+    for(let file of selectedFiles) {
+      if(file.size > 1 * 1024 * 1024)
+      {
+        toast.error("Uploaded File must be less than 1MB"); 
+        return;
+      }
+    }
+    if (selectedFiles) {
       const filesArray = Array.from(e.target.files);
       setNewImages((prev) => [...prev, ...filesArray]);
     }
@@ -79,6 +88,10 @@ const UpdateProduct = () => {
   // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (existingImages.length === 0 && newImages.length === 0) {
+      toast.error("At least one product image is required");
+      return;
+    }
     setIsSaving(true);
 
     try {

@@ -44,6 +44,10 @@ const AddAdmin = () => {
   // Handle Image Upload Logic Inline
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("Uploaded File must be less than 1MB");
+      return;
+    }
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setPreview(imageUrl);
@@ -255,10 +259,8 @@ const AddAdmin = () => {
                   </div>
 
                   {/* Role Card: super_admin */}
-                  <div 
-                    onClick={() => handleRoleSelect("super_admin")}
-                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "super_admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}
-                  >
+                  <div onClick={() => handleRoleSelect("super_admin")}
+                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${formData.role === "super_admin" ? 'border-black bg-zinc-50 shadow-md' : `${theme.border} hover:border-zinc-400`}`}>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-base font-bold text-slate-900">Super Admin</span>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.role === "super_admin" ? 'border-black' : theme.border}`}>
@@ -289,7 +291,7 @@ const AddAdmin = () => {
                         <UploadCloud size={28} className="text-slate-600" />
                       </div>
                       <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
-                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
+                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 1MB</p>
                     </>
                   )}
                   <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />

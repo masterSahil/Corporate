@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
     } 
 })
 
-const upload = multer({storage});
+const upload = multer({storage, limits: {fileSize: 1 * 1024 * 1024 }}); // 1 mb max
 
 router.get("/product", productController.getProduct);
 router.get("/product-single/:id", productController.getSingleProduct);

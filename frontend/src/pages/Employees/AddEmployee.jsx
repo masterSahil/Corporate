@@ -37,7 +37,7 @@ const ImageDropzone = ({ preview, onFileSelect }) => {
               <UploadCloud size={28} className="text-slate-600" />
             </div>
             <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
-            <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
+            <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 1MB</p>
           </>
         )}
         <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
@@ -65,6 +65,10 @@ const AddEmployee = () => {
 
   /* Image handler */
   const handleFileSelect = (file, url) => {
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("Uploaded File must be less than 1MB");
+      return;
+    }
     setFormData(prev => ({ ...prev, profileImage: file }));
     setPreview(url);
   };

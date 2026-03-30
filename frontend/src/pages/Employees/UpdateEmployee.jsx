@@ -63,6 +63,10 @@ const UpdateEmployee = () => {
   /* Image handler */
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("Uploaded File must be less than 1MB");
+      return;
+    }
     if (file) {
       setNewProfileImage(file);
       setPreview(URL.createObjectURL(file));
@@ -289,7 +293,7 @@ const UpdateEmployee = () => {
                         <UploadCloud size={28} className="text-slate-600" />
                       </div>
                       <p className="text-base font-bold text-slate-900 mb-1">Click to upload photo</p>
-                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 5MB</p>
+                      <p className={`text-sm ${theme.textMuted}`}>JPG, PNG up to 1MB</p>
                     </>
                   )}
                   <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
