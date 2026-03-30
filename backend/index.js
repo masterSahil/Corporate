@@ -21,8 +21,8 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: `${process.env.FRONTEND}`,
     credentials: true,
+    origin: `${process.env.FRONTEND}`,
 }));
 app.use('/', userRoutes); 
 app.use('/', rewardRoutes); 
