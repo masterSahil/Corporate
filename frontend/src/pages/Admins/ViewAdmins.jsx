@@ -41,10 +41,10 @@ const ViewAdmins = () => {
 
   // 1. FILTER LOGIC FIRST: Apply both search term and role dropdown
   const filteredAdmins = initialAdmins.filter((admin) => {
-    const matchesSearch = 
-      admin.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      admin.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const username = admin.username?.toLowerCase() || "";
+    const email = admin.email?.toLowerCase() || "";
+    const search = searchTerm.toLowerCase();
+    const matchesSearch = username.includes(search) || email.includes(search);
     const matchesRole = roleFilter === "All" || admin.role === roleFilter;
     return matchesSearch && matchesRole;
   });
