@@ -269,35 +269,38 @@ const EmployeeStore = () => {
                     
                     {/* Pricing & Cart Controls */}
                     <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-slate-100">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                          Price
-                        </span>
+                      
+                      {/* Pricing Section */}
+                      <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col gap-2">
 
-                        {product.discount && product.discount > 0 ? (
-                          <div className="flex flex-col gap-1">
-                            {/* Discount Badge */}
-                            <div className="flex items-center gap-2">
-                              <span className="bg-black text-white text-[8px] px-2 py-1 rounded-md font-black tracking-widest">
-                                {product.discountType === "percentage"
-                                  ? `${product.discount}% OFF`
-                                  : `₹${product.discount} OFF`}
-                              </span>
-                            </div>
-                            {/* Prices */}
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl font-black text-black tracking-tighter italic leading-none"> ₹{getFinalPrice(product)} </span>
-                              <span className="text-sm text-slate-400 line-through font-bold">
-                                ₹{product.price}
-                              </span>
-                            </div>
+                        {/* Discount Badge */}
+                        {product.discount && product.discount > 0 && (
+                          <div className="inline-block bg-red-600 text-white text-xs font-bold uppercase px-2 py-1 rounded-md tracking-widest w-max select-none">
+                            {product.discountType === "percentage"
+                              ? `${product.discount}% OFF`
+                              : `₹${product.discount} OFF`}
                           </div>
-                        ) : (
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-black text-black tracking-tighter italic leading-none">
-                              ₹{product.price}
+                        )}
+
+                        {/* Price Row */}
+                        <div className="flex items-baseline gap-3">
+                          {/* Final Price */}
+                          <span className="text-2xl font-extrabold text-black tracking-tight">
+                            ₹{getFinalPrice(product).toLocaleString()}
+                          </span>
+                          {/* Original Price Strikethrough */}
+                          {product.discount && product.discount > 0 && (
+                            <span className="text-sm text-gray-400 line-through select-none">
+                              ₹{product.price.toLocaleString()}
                             </span>
-                          </div>
+                          )}
+                        </div>
+
+                        {/* You Save Text */}
+                        {product.discount && product.discount > 0 && (
+                          <span className="text-sm text-green-600 font-semibold select-none">
+                            You Save ₹{(product.price - getFinalPrice(product)).toLocaleString()}
+                          </span>
                         )}
                       </div>
 
