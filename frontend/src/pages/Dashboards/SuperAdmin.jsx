@@ -48,7 +48,7 @@ const Dashboard = () => {
       if (resRewards.data?.success) setRewards(resRewards.data.reward.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5) || []);
       setJoiningDate(loggedInAdmin.data.user.createdAt);
     } catch (error) {
-      toast.error(error.message || "Failed to fetch data");
+      toast.error(error?.response?.data?.message || "Failed to fetch data");
       console.error(error);
     } finally {
       setLoading(false);
