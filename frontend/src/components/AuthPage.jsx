@@ -65,11 +65,12 @@ const CorporateLogin = () => {
       setLoading(true);
       e.preventDefault();
       if (!validate()) return;
-      await axios.post(`${import.meta.env.VITE_API_KEY}`, formData, { withCredentials: true });
+      const res = await axios.post(`${import.meta.env.VITE_API_KEY}`, formData, { withCredentials: true });
       
       toast.success("Registration Successful");
       setFormData({ email: '', password: '' });
       auth_context.setLoggedIn(true);
+      auth_context.setRole(res.data.users.role);
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
