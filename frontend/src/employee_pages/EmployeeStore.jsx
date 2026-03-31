@@ -274,12 +274,14 @@ const EmployeeStore = () => {
                           Price
                         </span>
 
-                        {product.discount > 0 ? (
+                        {product.discount && product.discount > 0 ? (
                           <div className="flex flex-col gap-1">
                             {/* Discount Badge */}
                             <div className="flex items-center gap-2">
                               <span className="bg-black text-white text-[8px] px-2 py-1 rounded-md font-black tracking-widest">
-                                {product.discount}% OFF
+                                {product.discountType === "percentage"
+                                  ? `${product.discount}% OFF`
+                                  : `₹${product.discount} OFF`}
                               </span>
                             </div>
                             {/* Prices */}
