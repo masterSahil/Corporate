@@ -236,6 +236,7 @@ const SoftDeletedRewards = () => {
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
                     <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Reward Info</th>
+                    <th className={`px-4 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Points</th>
                     <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Category & Assignee</th>
                     <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Description</th>
                     <th className={`px-6 py-4 text-[11px] text-center font-bold uppercase tracking-wider ${theme.textMuted}`}>Deleted On</th>
@@ -261,6 +262,11 @@ const SoftDeletedRewards = () => {
                               <p className={`text-xs ${theme.textMuted}`}>ID: #{id.slice(-6).toUpperCase()}</p>
                             </div>
                           </div>
+                        </td>
+
+                        {/* Points */}
+                        <td className="p-4">
+                          <p className="font-bold text-slate-900 text-center text-sm mb-0.5">{reward.points}</p>
                         </td>
 
                         {/* Category & Email */}

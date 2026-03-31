@@ -175,6 +175,7 @@ const ViewRewards = () => {
                 <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
                   <tr>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Reward Details</th>
+                    <th className={`px-4 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Points</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Recipient (Email ID)</th>
                     <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Status</th>
@@ -197,6 +198,13 @@ const ViewRewards = () => {
                             <p className={`text-xs ${theme.textMuted} truncate max-w-50`}>{reward.description}</p>
                           </div>
                         </div>
+                      </td>
+
+                      {/* Rewards Points */}
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
+                          {reward.points}
+                        </span>
                       </td>
 
                       {/* Category Badge */}
