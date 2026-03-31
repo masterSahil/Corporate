@@ -266,7 +266,7 @@ const SoftDeletedRewards = () => {
 
                         {/* Points */}
                         <td className="p-4">
-                          <p className="font-bold text-slate-900 text-center text-sm mb-0.5">{reward.points}</p>
+                          <p className="font-bold text-slate-900 text-center text-sm mb-0.5">{reward.points || "N/A"}</p>
                         </td>
 
                         {/* Category & Email */}

@@ -203,7 +203,7 @@ const ViewRewards = () => {
                       {/* Rewards Points */}
                       <td className="px-4 py-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
-                          {reward.points}
+                          {reward.points || "N/A"}
                         </span>
                       </td>
 
