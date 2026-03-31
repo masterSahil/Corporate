@@ -217,6 +217,17 @@ const EmployeeStore = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
             {currentProducts.map((product) => {
               const cartItem = cartItems.find((c) => c.productId === product._id);
+
+              const getFinalPrice = (product) => {
+                if (!product.discount || product.discount <= 0) return product.price;
+                if (product.discountType === "percentage") {
+                  return Math.round(product.price - (product.price * product.discount) / 100);
+                }
+                if (product.discountType === "fixed") {
+                  return Math.max(0, product.price - product.discount);
+                }
+                return product.price;
+              };
               return (
                 <div 
                   key={product._id} 
@@ -259,11 +270,33 @@ const EmployeeStore = () => {
                     {/* Pricing & Cart Controls */}
                     <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-slate-100">
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Price At</span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-black text-black tracking-tighter italic leading-none">{product.price}</span>
-                          <span className="text-[16px] font-bold text-zinc-400 uppercase">₹</span>
-                        </div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                          Price
+                        </span>
+
+                        {product.discount > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {/* Discount Badge */}
+                            <div className="flex items-center gap-2">
+                              <span className="bg-black text-white text-[8px] px-2 py-1 rounded-md font-black tracking-widest">
+                                {product.discount}% OFF
+                              </span>
+                            </div>
+                            {/* Prices */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl font-black text-black tracking-tighter italic leading-none"> ₹{getFinalPrice(product)} </span>
+                              <span className="text-sm text-slate-400 line-through font-bold">
+                                ₹{product.price}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-black tracking-tighter italic leading-none">
+                              ₹{product.price}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Quantity Controls OR Add to Cart Button */}
