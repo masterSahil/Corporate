@@ -78,7 +78,7 @@ const Settings = () => {
   const submit = async () => {
     try {
       if (loading) return;
-      if (formData.phoneNumber.length !== 10) {
+      if (formData.phoneNumber && formData.phoneNumber.length !== 10) {
         toast.info("Phone number must be exactly 10 digits");
         return;
       }
