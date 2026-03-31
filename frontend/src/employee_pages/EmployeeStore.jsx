@@ -223,7 +223,7 @@ const EmployeeStore = () => {
                 if (product.discountType === "percentage") {
                   return Math.round(product.price - (product.price * product.discount) / 100);
                 }
-                if (product.discountType === "fixed") {
+                if (product.discountType === "fixed" || product.discountType === "flat") {
                   return Math.max(0, product.price - product.discount);
                 }
                 return product.price;
@@ -274,7 +274,7 @@ const EmployeeStore = () => {
                       <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col gap-2">
 
                         {/* Discount Badge */}
-                        {product.discount && product.discount > 0 && (
+                        {product.discount > 0 && (
                           <div className="inline-block bg-red-600 text-white text-xs font-bold uppercase px-2 py-1 rounded-md tracking-widest w-max select-none">
                             {product.discountType === "percentage"
                               ? `${product.discount}% OFF`
@@ -288,16 +288,16 @@ const EmployeeStore = () => {
                           <span className="text-2xl font-extrabold text-black tracking-tight">
                             ₹{getFinalPrice(product).toLocaleString()}
                           </span>
-                          {/* Original Price Strikethrough */}
-                          {product.discount && product.discount > 0 && (
+                          {/* Original Price Strikethrough (Only shows if there is a discount) */}
+                          {product.discount > 0 && (
                             <span className="text-sm text-gray-400 line-through select-none">
                               ₹{product.price.toLocaleString()}
                             </span>
                           )}
                         </div>
 
-                        {/* You Save Text */}
-                        {product.discount && product.discount > 0 && (
+                        {/* You Save Text (Only shows if there is a discount) */}
+                        {product.discount > 0 && (
                           <span className="text-sm text-green-600 font-semibold select-none">
                             You Save ₹{(product.price - getFinalPrice(product)).toLocaleString()}
                           </span>
