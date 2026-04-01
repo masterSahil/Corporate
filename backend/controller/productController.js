@@ -138,38 +138,61 @@ module.exports.getAllProduct = async(req, res) => {
     }
 }
 
-module.exports.createProduct = async(req, res) => {
+module.exports.createProduct = async (req, res) => {
     try {
-        const {name, category, brand, price, discount, discountType, quantity, description, gallery} = req.body;
-        const productData = {name, category, brand, price, discount, discountType, quantity, description, gallery};
+        let {name, category, brand, price, discount, discountType, quantity, description } = req.body;
 
-        if (price < 0) {
+        const priceNum = Number(price);
+        const discountNum = Number(discount);
+        const quantityNum = Number(quantity);
+
+        if (isNaN(priceNum) || isNaN(discountNum) || isNaN(quantityNum)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid numeric values"
+            });
+        }
+
+        if (priceNum < 0) {
             return res.status(400).json({
                 success: false,
                 message: "Price cannot be negative"
             });
         }
 
-        if (discount < 0) {
+        if (discountNum < 0) {
             return res.status(400).json({
                 success: false,
                 message: "Discount cannot be negative"
             });
         }
 
-        if (discountType === "percentage" && discount > 100) {
+        if (discountType === "percentage" && discountNum > 100) {
             return res.status(400).json({
                 success: false,
                 message: "Percentage discount cannot exceed 100%"
             });
         }
 
-        if (discountType === "flat" && discount > price) {
+        if (discountType === "flat" && discountNum > priceNum) {
             return res.status(400).json({
                 success: false,
                 message: "Flat discount cannot exceed product price"
             });
         }
+
+        let finalPrice = priceNum;
+
+        if (discountType === "percentage") {
+            finalPrice = priceNum - (priceNum * discountNum) / 100;
+        } else {
+            finalPrice = priceNum - discountNum;
+        }
+
+        const productData = { 
+            name, category, brand, price: priceNum, discount: discountNum, discountType, 
+            quantity: quantityNum, description, finalPrice
+        };
 
         if (req.files && req.files.length > 0) {
             productData.gallery = req.files.map(file => ({
