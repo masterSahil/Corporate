@@ -150,10 +150,24 @@ module.exports.createProduct = async(req, res) => {
             });
         }
 
-        if (discount && (discount < 0 || discount > 100)) {
+        if (discount < 0) {
             return res.status(400).json({
                 success: false,
-                message: "Discount must be between 0 and 100"
+                message: "Discount cannot be negative"
+            });
+        }
+
+        if (discountType === "percentage" && discount > 100) {
+            return res.status(400).json({
+                success: false,
+                message: "Percentage discount cannot exceed 100%"
+            });
+        }
+
+        if (discountType === "flat" && discount > price) {
+            return res.status(400).json({
+                success: false,
+                message: "Flat discount cannot exceed product price"
             });
         }
 
