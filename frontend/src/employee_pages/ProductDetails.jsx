@@ -165,6 +165,21 @@ const ProductDetails = () => {
     const averageRating = reviews.length > 0 ?
         (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
+    // --- NEW: Price Calculation Function ---
+    const getFinalPrice = (prod) => {
+        if (!prod?.discount || prod?.discount <= 0) return prod?.price;
+        
+        if (prod?.discountType === "percentage") {
+            return Math.round(prod.price - (prod.price * prod.discount) / 100);
+        }
+        
+        if (prod?.discountType === "fixed" || prod?.discountType === "flat") {
+            return Math.max(0, prod.price - prod.discount);
+        }
+        
+        return prod.price;
+    };
+
     return (
         <div className="flex h-dvh w-full bg-white text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white overflow-hidden">
             <EmployeeSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
@@ -211,10 +226,40 @@ const ProductDetails = () => {
                                     <span className="text-sm font-medium text-zinc-500">{product?.category}</span>
                                 </div>
                                 <h1 className="text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3 leading-tight">{product?.name}</h1>
-                                <div className="flex items-center gap-4">
-                                    <span className="text-3xl font-bold text-zinc-900">Rs {product?.price}</span>
-                                    {product?.discount > 0 && <span className="text-sm font-semibold bg-rose-50 text-rose-600 px-2 py-1 rounded-md">{product?.discount}% OFF</span>}
+                                
+                                {/* --- NEW PRICING SECTION --- */}
+                                <div className="flex flex-col gap-1.5 mb-6">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        {/* Final Price */}
+                                        <span className="text-3xl font-bold text-zinc-900">
+                                            ₹{getFinalPrice(product)?.toLocaleString()}
+                                        </span>
+                                        
+                                        {/* Original Price (Crossed out) - Only shows if there is a discount */}
+                                        {product?.discount > 0 && (
+                                            <span className="text-lg text-zinc-400 line-through font-medium">
+                                                ₹{product?.price?.toLocaleString()}
+                                            </span>
+                                        )}
+
+                                        {/* Discount Badge - Adapts to Percentage vs Flat */}
+                                        {product?.discount > 0 && (
+                                            <span className="text-sm font-bold bg-rose-50 text-rose-600 px-2.5 py-1 rounded-md border border-rose-100 tracking-wide uppercase">
+                                                {product?.discountType === "percentage" 
+                                                    ? `${product?.discount}% OFF` 
+                                                    : `₹${product?.discount} OFF`}
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    {/* "You Save" Text */}
+                                    {product?.discount > 0 && (
+                                        <span className="text-sm font-semibold text-emerald-600">
+                                            You save ₹{(product?.price - getFinalPrice(product)).toLocaleString()}
+                                        </span>
+                                    )}
                                 </div>
+                                {/* --- END NEW PRICING SECTION --- */}
                             </div>
 
                             <p className="text-zinc-600 text-sm sm:text-base leading-relaxed mb-8">{product?.description}</p>
@@ -361,9 +406,9 @@ const ProductDetails = () => {
                                                                 {review.buyerId === currentUserId && (
                                                                     <div className="flex items-center gap-1 bg-zinc-50 p-1 rounded-lg border border-zinc-100">
                                                                         <button onClick={() => {
-                                                                                setEditingReviewId(review.id);
-                                                                                setEditData({ rating: review.rating, comment: review.comment });
-                                                                            }}
+                                                                            setEditingReviewId(review.id);
+                                                                            setEditData({ rating: review.rating, comment: review.comment });
+                                                                        }}
                                                                             className="p-2 hover:text-yellow-500 rounded-lg transition-all">
                                                                             <Edit3 size={15} />
                                                                         </button>
