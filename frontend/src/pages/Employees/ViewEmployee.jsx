@@ -218,7 +218,7 @@ const ViewEmployees = () => {
 
                         {/* Email */}
                         <td className={`px-6 py-4 text-sm hidden lg:table-cell font-medium ${theme.textMuted}`}>
-                          {employee.email}
+                          {employee.email || "N/A"}
                         </td>
 
                         {/* Department Badge */}
