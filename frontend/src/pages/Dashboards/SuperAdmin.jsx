@@ -260,7 +260,7 @@ const Dashboard = () => {
                         <Cell key={`cell-${index}`} fill={donutColors[index % donutColors.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#18181b', color: '#fff', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold' }} itemStyle={{ color: '#fff' }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#18181b', color: '#fff', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold', zIndex: 9999, position: 'relative' }} itemStyle={{ color: '#fff' }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
