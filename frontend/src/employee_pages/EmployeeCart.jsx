@@ -89,9 +89,22 @@ const EmployeeCart = () => {
     }
   };
 
+  // --- NEW: Price Calculation Function ---
+  const getFinalPrice = (prod) => {
+    if (!prod) return 0;
+    if (!prod.discount || prod.discount <= 0) return prod.price || 0;
+    if (prod.discountType === "percentage") {
+      return Math.round(prod.price - (prod.price * prod.discount) / 100);
+    }
+    if (prod.discountType === "fixed" || prod.discountType === "flat") {
+      return Math.max(0, prod.price - prod.discount);
+    }
+    return prod.price || 0;
+  };
+
   // --- CART MATH LOGIC ---
   const cartTotalRs = cartItems.reduce((total, item) => {
-    return total + (item.quantity * (item.product?.price || 0));
+    return total + (item.quantity * getFinalPrice(item.product));
   }, 0);
 
   const handlePointsChange = (e) => {
@@ -232,9 +245,18 @@ const EmployeeCart = () => {
                       <div className="flex-1 min-w-0 py-1">
                         <span className="text-[9px] sm:text-[10px] font-black uppercase text-slate-400 tracking-widest">{item.product?.category || 'Category'}</span>
                         <h3 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 mt-1 mb-1 sm:mb-2 line-clamp-2">{item.product?.name || 'Unknown Product'}</h3>
-                        <p className="text-sm sm:text-base font-bold leading-none">
-                          ₹{item.product?.price?.toLocaleString()} each
-                        </p>
+                        
+                        {/* UPDATED: Showing discounted price and original crossed out */}
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm sm:text-base font-bold leading-none">
+                            ₹{getFinalPrice(item.product).toLocaleString()} each
+                          </p>
+                          {item.product?.discount > 0 && (
+                            <p className="text-xs text-slate-400 line-through leading-none">
+                              ₹{item.product?.price?.toLocaleString()}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -257,7 +279,10 @@ const EmployeeCart = () => {
                       {/* Total Item Price & Delete */}
                       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                         <div className="text-right">
-                          <p className="text-base sm:text-lg md:text-xl font-black text-slate-900">₹{(item.product?.price * item.quantity).toLocaleString()}</p>
+                          {/* UPDATED: Total line item math now uses Final Price */}
+                          <p className="text-base sm:text-lg md:text-xl font-black text-slate-900">
+                            ₹{(getFinalPrice(item.product) * item.quantity).toLocaleString()}
+                          </p>
                         </div>
                         <button onClick={() => removeItem(item._id)} title="Remove item"
                           className="w-10 h-10 flex items-center justify-center rounded-lg text-rose-400 bg-white border border-rose-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shrink-0">
