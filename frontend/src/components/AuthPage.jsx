@@ -89,7 +89,13 @@ const CorporateLogin = () => {
         setLoading(true);
         const res = await axios.post(`${import.meta.env.VITE_API_KEY}/google-login`, 
           { access_token: tokenResponse.access_token });
-        sessionStorage.setItem("token", res.data.token);
+        const token = res.data.token;
+
+        if (!token) {
+          alert("Token not received");
+          return;
+        }
+        sessionStorage.setItem("token", token);
 
         toast.success("Google Login Successful");
         auth_context.setLoggedIn(true);

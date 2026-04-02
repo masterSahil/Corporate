@@ -38,16 +38,17 @@ router.post('/google-login', async (req, res) => {
         // 5. Generate YOUR app's session/JWT token here 
         const token = jwt.sign({userId: user._id, role: user.role, email: user.email}, process.env.SECRET, { expiresIn: '7d' });
         
-        res.cookie("corporate_token", token, {
-            httpOnly: true,      
-            secure: true,       
-            sameSite: "none",    
-            maxAge: 168 * 60 * 60 * 1000 
-        });
+        // res.cookie("corporate_token", token, {
+        //     httpOnly: true,      
+        //     secure: true,       
+        //     sameSite: "none",    
+        //     maxAge: 168 * 60 * 60 * 1000 
+        // });
 
         res.status(200).json({ 
             success: true,
-            users: user 
+            users: user, 
+            token, 
         });
     } catch (error) {
         res.status(500).json({ 
