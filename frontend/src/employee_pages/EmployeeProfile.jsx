@@ -49,7 +49,19 @@ const Settings = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/check-role`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       setFormData({
         profile: res.data.user.profile ?? null,
         username: res.data.user.username ?? "",
@@ -64,12 +76,16 @@ const Settings = () => {
       setRole(res.data.user.role);
       setCurrentUserId(res.data.user._id);
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
       toast.error(error?.response?.data?.message || "Failed to Fetch Data");
-      console.log(error)
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     getData();
@@ -95,7 +111,17 @@ const Settings = () => {
       if (formData.profile?.file) {
         data.append("file", formData.profile.file);
       }
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, { withCredentials: true, });
+      const token = sessionStorage.getItem("token");
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/${currentUserId}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
 
       getData();
       toast.success("Profile Info Updated Successfully");
@@ -114,8 +140,18 @@ const Settings = () => {
         return;
       }
       setLoading(true);
-      await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`,
-        { email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword }, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      await axios.patch(
+        `${import.meta.env.VITE_API_KEY}/password-change`,
+        {
+          email: formData.email,
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       toast.success("Password Updated Successfully ...");
       setFormData({ newPassword: "", currentPassword: "" });
@@ -127,18 +163,11 @@ const Settings = () => {
     }
   }
 
-  const handleLogout = async () => {
-    try {
-      setLoading(true);
-      await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
-      navigate('/');
-      loggedIn.setLoggedIn(false);
-      toast.success("Logged out successfully");
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to Logout");
-    } finally {
-      setLoading(false);
-    }
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    loggedIn.setLoggedIn(false);
+    navigate('/');
+    toast.success("Logged out successfully");
   };
 
   const customScrollbarClasses = "overflow-y-auto [&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";

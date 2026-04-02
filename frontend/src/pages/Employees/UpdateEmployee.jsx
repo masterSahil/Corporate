@@ -21,10 +21,18 @@ const UpdateEmployee = () => {
   });
 
   const fetchEmployee = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/fetch-all-user`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       const employee = res.data.users?.find(emp => emp._id === id);
+
       if (employee) {
         setFormData({
           username: employee.username || "",
@@ -44,8 +52,15 @@ const UpdateEmployee = () => {
         toast.error("Employee not found");
         navigate(-1);
       }
+
     } catch (error) {
-      toast.error(error?.response?.data?.message);
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
+      toast.error(error?.response?.data?.message || "Failed to fetch employee");
       console.error("Failed to fetch employee:", error);
     } finally {
       setIsLoading(false);
@@ -88,13 +103,19 @@ const UpdateEmployee = () => {
 
   /* Submit Update */
   const handleSubmit = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       const error = validateForm();
-      if (error) { toast.warning(error); return;}
+      if (error) {
+        toast.warning(error);
+        return;
+      }
+
       setIsSubmitting(true);
 
       const submitData = new FormData();
-      
+
       submitData.append("username", formData.username);
       submitData.append("email", formData.email);
       submitData.append("gender", formData.gender);
@@ -103,20 +124,35 @@ const UpdateEmployee = () => {
       submitData.append("employment", formData.employment);
       submitData.append("role", formData.role);
 
-      // Only append password if the user typed a new one
       if (formData.password) {
         submitData.append("password", formData.password);
       }
 
-      // Append new image if one was selected
       if (newProfileImage) {
         submitData.append("file", newProfileImage);
       }
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, submitData, { withCredentials: true });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/${id}`,
+        submitData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
 
       toast.success("Employee updated successfully!");
       navigate(-1);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error.response?.data?.message || "Failed to update employee");
       console.error(error);
     } finally {

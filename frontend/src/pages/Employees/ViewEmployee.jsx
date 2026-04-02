@@ -22,7 +22,13 @@ const ViewEmployees = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const fetchedUsers = res.data.users;
       const filtered = fetchedUsers.filter(u => u.role === "employee");
       setInitialEmployees(filtered);

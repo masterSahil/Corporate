@@ -23,36 +23,62 @@ const EmployeeOrder = () => {
   const fetchMyOrders = async () => {
     try {
       setIsLoading(true);
-      // 1. Get current user ID
-      const roleRes = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
+
+      const token = sessionStorage.getItem("token");
+
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      // 1. Get user ID
+      const roleRes = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/check-role`,
+        config
+      );
+
       const userId = roleRes.data.user._id;
 
-      // 2. Fetch Orders & Products simultaneously to get images
+      // 2. Fetch orders + products
       const [ordersRes, productsRes] = await Promise.all([
-        axios.post(`${import.meta.env.VITE_API_KEY}/orders-user/${userId}`, {}, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }) 
+        axios.post(
+          `${import.meta.env.VITE_API_KEY}/orders-user/${userId}`,
+          {},
+          config
+        ),
+        axios.get(`${import.meta.env.VITE_API_KEY}/product`, config)
       ]);
 
       const myOrders = ordersRes.data.orders || [];
       const allProducts = productsRes.data.product || [];
 
-      // 3. Merge Product Images into Order Items
       const enrichedOrders = myOrders.map(order => ({
         ...order,
         items: order.items.map(item => {
           const productMatch = allProducts.find(p => p._id === item.productId);
           return {
             ...item,
-            // Assuming your product schema uses gallery[0].fileUrl for images
-            image: productMatch?.gallery?.[0]?.fileUrl || null 
+            image: productMatch?.gallery?.[0]?.fileUrl || null
           };
         })
       }));
 
-      // Sort by date descending (optional, ensures newest are first)
-      const sortedOrders = enrichedOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+      const sortedOrders = enrichedOrders.sort(
+        (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+      );
+
       setOrders(sortedOrders);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
       console.error("Fetch Orders Error:", error);
       toast.error("Failed to load your order history.");
     } finally {
@@ -72,9 +98,13 @@ const EmployeeOrder = () => {
     
     try {
       setIsLoading(true);
-      await axios.patch(`${import.meta.env.VITE_API_KEY}/order-status/${cancelOrderId}`, 
-        { status: "Cancelled" }, 
-        { withCredentials: true }
+      const token = sessionStorage.getItem("token");
+      await axios.patch(
+        `${import.meta.env.VITE_API_KEY}/order-status/${cancelOrderId}`,
+        { status: "Cancelled" },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
       );
       toast.success("Order cancelled successfully");
       fetchMyOrders(); 

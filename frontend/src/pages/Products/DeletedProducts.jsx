@@ -28,11 +28,27 @@ const SoftDeletedProducts = () => {
   const [productsPerPage, setProductsPerPage] = useState(10); // Default to 10
 
   const getDeletedData = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setUiLoader(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-soft-delete-view`, { withCredentials: true });
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/product-soft-delete-view`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       setDeletedProducts(res.data.product);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to fetch deleted products");
       console.log(error);
     } finally {
@@ -61,40 +77,75 @@ const SoftDeletedProducts = () => {
 
   // Restoring a Product
   const handleRestore = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setUiLoader(true);
       setLoadingText("Restoring product...");
-      await axios.put(`${import.meta.env.VITE_API_KEY}/product-restore/${id}`, {}, { withCredentials: true });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/product-restore/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       await getDeletedData();
       toast.success("Product Restored Successfully");
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to restore product");
       console.log(error);
     } finally {
-      setLoadingText(""); setUiLoader(false);
+      setLoadingText("");
+      setUiLoader(false);
     }
   };
 
   // Permanent Deletion
   const handlePermanentDelete = async (e) => {
-    e.preventDefault(); 
-    if (!deletePassword) return;
+    e.preventDefault();
 
+    if (!deletePassword) return;
+    
     try {
+      const token = sessionStorage.getItem("token");
       setLoadingText("Permanently deleting...");
-      await axios.post(`${import.meta.env.VITE_API_KEY}/hard-delete-product/${deleteId}`, { password: deletePassword }, { withCredentials: true });
+      await axios.post(
+        `${import.meta.env.VITE_API_KEY}/hard-delete-product/${deleteId}`,
+        { password: deletePassword },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       await getDeletedData();
+
       toast.success("Permanently Deleted Successfully");
-      
+
       setShowDeleteModal(false);
       setDeleteId(null);
       setDeletePassword("");
       setShowPassword(false);
+
     } catch (error) {
+      // if (error?.response?.status === 401) {
+      //   sessionStorage.removeItem("token");
+      //   window.location.href = "/login";
+      //   return;
+      // }
+
       toast.error(error?.response?.data?.message || "Delete failed");
       console.log(error);
     } finally {
-      setLoadingText(""); 
+      setLoadingText("");
     }
   };
 

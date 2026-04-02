@@ -99,7 +99,7 @@ module.exports.PermanentDelete = async (req, res) => {
             })
         }
 
-        const token = req.cookies.corporate_token;
+        const token = req.headers.authorization?.split(" ")[1];
         if (!token) {
             return res.status(401).json({ authenticated: false, message: "Token not found" });
         }
@@ -318,12 +318,6 @@ module.exports.RegisterUser = async (req, res) => {
         
         // local dev         = secure: false; sameSite: "lax"
         // Deploy with https = secure: true; sameSite: "none"
-        res.cookie("corporate_token", token, {
-            httpOnly: true,      // so JS cannot access it (good security)
-            secure: true,       // set true if using HTTPS
-            sameSite: "none",     // "none" for cross-origin on HTTPS
-            maxAge: 168 * 60 * 60 * 1000 // 7 days
-        });
 
         res.status(201).json({
             success: true,
@@ -376,12 +370,6 @@ module.exports.LoginUser = async (req, res) => {
         const token = jwt.sign({userId: user._id, role: user.role, email: user.email}, process.env.SECRET, { expiresIn: '7d' });
         
         // Deploy with https = secure: true; sameSite: "none"
-        res.cookie("corporate_token", token, {
-            httpOnly: true,      // so JS cannot access it (good security)
-            secure: true,       // set true if using HTTPS
-            sameSite: "none",     // "none" for cross-origin on HTTPS
-            maxAge: 168 * 60 * 60 * 1000 // 7 days
-        });
 
         res.status(201).json({
             success: true,
@@ -397,7 +385,7 @@ module.exports.LoginUser = async (req, res) => {
 }
 
 module.exports.verifyRole = async (req, res) => {
-    const token = req.cookies.corporate_token;
+    const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
         return res.status(401).json({ authenticated: false });
@@ -418,27 +406,6 @@ module.exports.verifyRole = async (req, res) => {
     }
 };
 
-module.exports.LogOut = async (req, res) => {
-    try {
-        res.clearCookie("corporate_token", {
-            httpOnly: true,      // so JS cannot access it (good security)
-            secure: true,       // set true if using HTTPS
-            sameSite: "none",     // "none" for cross-origin on HTTPS
-            // maxAge: 168 * 60 * 60 * 1000 
-        });
-
-        res.status(200).json({
-            success: true,
-            message: "Logged out successfully"
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-}
-
 module.exports.changePassword = async (req, res) => {
     try {
         const { email, currentPassword, newPassword } = req.body;
@@ -455,18 +422,25 @@ module.exports.changePassword = async (req, res) => {
         if (!isPasswordCorrect) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid password",
+                message: "Current Password is Invalid",
+            });
+        }
+
+        const isSamePassword = await bcrypt.compare(newPassword, user.password);
+        if (isSamePassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New Password can't be same as current password",
             });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await UserSchema.findByIdAndUpdate(user._id, { password: hashedPassword });
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Password changed successfully",
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message
         });

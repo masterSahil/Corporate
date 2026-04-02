@@ -22,37 +22,43 @@ module.exports.softDeletedView = async(req, res) => {
 }
 
 // Hard Delete Products who are Soft Deleted
-module.exports.permanentDelete = async(req, res) => {
+module.exports.permanentDelete = async (req, res) => {
     try {
-        const {password} = req.body;
-
+        const { password } = req.body;
         const product = await productSchema.findById(req.params.id);
         if (!product) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: "Product Not Found",
-            })
+            });
         }
 
-        const token = req.cookies.corporate_token;
+        const token = req.headers.authorization?.split(" ")[1];
         if (!token) {
-            res.status(401).json({
+            return res.status(401).json({
                 success: false,
                 message: "Token Not Found",
-            })
+            });
         }
 
         const decoded = jwt.verify(token, process.env.SECRET);
-        const loggedInUser = await UserSchema.findOne({email: decoded.email});
+        const loggedInUser = await UserSchema.findOne({ email: decoded.email });
+        if (!loggedInUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
         const isTruePassword = await bcrypt.compare(password, loggedInUser.password);
         if (!isTruePassword) {
             return res.status(409).json({
                 success: false,
                 message: "Password is Invalid",
-            })
+            });
         }
 
-         if (product.gallery && product.gallery.length > 0) {
+        if (product.gallery?.length > 0) {
             for (const image of product.gallery) {
                 if (image.filePublicId) {
                     await cloudinary.uploader.destroy(image.filePublicId);
@@ -60,18 +66,17 @@ module.exports.permanentDelete = async(req, res) => {
             }
         }
         const removed = await productSchema.findByIdAndDelete(req.params.id);
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             product: removed,
-        })
+        });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message
-        })
+        });
     }
-}
+};
 
 // Restore Product
 module.exports.restoreProduct = async(req, res) => {

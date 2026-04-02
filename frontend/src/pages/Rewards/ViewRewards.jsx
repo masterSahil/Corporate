@@ -27,33 +27,68 @@ const ViewRewards = () => {
 
   const navigate = useNavigate();
   
-  const getData = async() => {
+  const getData = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, {withCredentials: true});
-      setInitialRewards(res.data.reward)
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/reward`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setInitialRewards(res.data.reward);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || error.message || "Failed to fetch rewards");
-      console.log(error)
+      console.log(error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  const softDelete = async(id) => {
+  const softDelete = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setLoading(true);
-      await axios.put(`${import.meta.env.VITE_API_KEY}/reward-soft-delete/${id}`, {isDeleted: true, deletedAt: new Date()}, {withCredentials: true})
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/reward-soft-delete/${id}`,
+        {
+          isDeleted: true,
+          deletedAt: new Date()
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       getData();
       toast.success("Reward Deleted Successfully");
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to Delete Reward");
       console.log(error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     getData();

@@ -1,10 +1,12 @@
 import axios from "axios";
 
 export const checkLoginApi = async () => {
+  const token = sessionStorage.getItem("token");
+  if (!token) return false;
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-auth`, { withCredentials: true });
-    return res.data.authenticated || false;
-  } catch (err) {
+    const res = await axios.get("/check-auth", {headers: { Authorization: `Bearer ${token}` }});
+    return res.data.authenticated;
+  } catch {
     return false;
   }
 };

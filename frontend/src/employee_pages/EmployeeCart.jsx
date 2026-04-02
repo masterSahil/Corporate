@@ -20,13 +20,15 @@ const EmployeeCart = () => {
 
   const navigate = useNavigate();
 
+  const API = import.meta.env.VITE_API_KEY;
   const fetchData = async () => {
     try {
       setIsLoading(true);
+      const token = sessionStorage.getItem("token");
       const [resProducts, resRole, resCart] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true })
+        axios.get(`${API}/product`, {headers: { Authorization: `Bearer ${token}` }}),
+        axios.get(`${API}/check-role`, {headers: { Authorization: `Bearer ${token}` }}),
+        axios.get(`${API}/cart-all`, {headers: { Authorization: `Bearer ${token}` }})
       ]);
 
       const user = resRole.data.user;
@@ -64,11 +66,8 @@ const EmployeeCart = () => {
         item._id === cartItemId ? { ...item, quantity: newQuantity } : item
       ));
 
-      await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, {
-        buyerId: currentUserId,
-        productId: productId,
-        quantity: newQuantity
-      }, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      await axios.put(`${API}/cart/${cartItemId}`, { buyerId: currentUserId, productId, quantity: newQuantity}, { headers: {Authorization: `Bearer ${token}`} });
     } catch (error) {
       toast.error("Failed to update quantity");
       fetchData(); 
@@ -79,7 +78,12 @@ const EmployeeCart = () => {
     try {
       setIsLoading(true);
       setCartItems(prev => prev.filter(item => item._id !== cartItemId));
-      await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      await axios.delete(`${API}/cart/${cartItemId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       toast.success("Item removed from cart");
     } catch (error) {
       toast.error("Failed to remove item");
@@ -147,8 +151,17 @@ const EmployeeCart = () => {
     try {
       setIsLoading(true);
       const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
-      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/checkout`, 
-        {userId: currentUserId, items: cleanItems, pointsUsed: discountRs}, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+
+      await axios.post(`${API}/checkout`, {
+        userId: currentUserId,
+        items: cleanItems,
+        pointsUsed: discountRs
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       
       toast.success("Checkout successful!");
       setPointsInput("");

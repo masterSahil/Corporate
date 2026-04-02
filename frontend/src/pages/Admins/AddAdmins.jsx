@@ -75,7 +75,7 @@ const AddAdmin = () => {
       data.append("role", formData.role);
       data.append("file", formData.profileImage);
 
-      await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
+      await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data);
       toast.success("Admin Created Successfully");
       navigate("/admins/manage")
       resetForm();

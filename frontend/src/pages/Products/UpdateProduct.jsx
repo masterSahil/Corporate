@@ -22,9 +22,19 @@ const UpdateProduct = () => {
   });
 
   const fetchProduct = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true });
-      const product = res.data.product.find(p => (p._id?.$oid || p._id) === id);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/product-all`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      const product = res.data.product.find(
+        p => (p._id?.$oid || p._id) === id
+      );
 
       if (product) {
         setFormData({
@@ -37,12 +47,20 @@ const UpdateProduct = () => {
           quantity: product.quantity || "",
           description: product.description || "",
         });
+
         setExistingImages(product.gallery || []);
       } else {
         toast.error("Product not found");
-        navigate(-1); 
+        navigate(-1);
       }
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error("Failed to fetch product");
       console.error("Failed to fetch product:", error);
     } finally {
@@ -88,20 +106,23 @@ const UpdateProduct = () => {
   // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const token = sessionStorage.getItem("token");
+
     if (existingImages.length === 0 && newImages.length === 0) {
       toast.error("At least one product image is required");
       return;
     }
+
     setIsSaving(true);
 
     try {
       const submitData = new FormData();
-      
+
       Object.keys(formData).forEach((key) => {
         submitData.append(key, formData[key]);
       });
 
-      // Send the images we decided to KEEP to the backend
       submitData.append("existingGallery", JSON.stringify(existingImages));
 
       if (newImages.length > 0) {
@@ -109,11 +130,28 @@ const UpdateProduct = () => {
           submitData.append("gallery", file);
         });
       }
-      await axios.put(`${import.meta.env.VITE_API_KEY}/product/${id}`, submitData, {withCredentials: true});
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/product/${id}`,
+        submitData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
 
       toast.success("Product updated successfully!");
-      navigate(-1); 
+      navigate(-1);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error.response?.data?.message || "Failed to update product");
       console.error(error);
     } finally {

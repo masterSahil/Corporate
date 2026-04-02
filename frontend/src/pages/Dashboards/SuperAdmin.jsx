@@ -32,22 +32,54 @@ const Dashboard = () => {
 
   // --- DATA FETCHING ---
   const getData = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setLoading(true);
-      const [resUsers, resDeleted, resProducts, resRewards, loggedInAdmin] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
+
+      const [
+        resUsers,
+        resDeleted,
+        resProducts,
+        resRewards,
+        loggedInAdmin
+      ] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
       ]);
 
       if (resUsers.data?.success) setUsers(resUsers.data.users || []);
       if (resDeleted.data?.success) setDeletedUsers(resDeleted.data.users || []);
       if (resProducts.data?.success) setProducts(resProducts.data.product || []);
-      if (resRewards.data?.success) setRewards(resRewards.data.reward.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5) || []);
+      if (resRewards.data?.success)
+        setRewards(
+          resRewards.data.reward
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5) || []
+        );
+
       setJoiningDate(loggedInAdmin.data.user.createdAt);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to fetch data");
       console.error(error);
     } finally {

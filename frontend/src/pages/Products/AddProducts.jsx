@@ -108,7 +108,13 @@ const AddProduct = () => {
         });
       }
 
-      await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {withCredentials: true});
+      const token = sessionStorage.getItem("token");
+
+      await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       resetForm();
       toast.success("Product Added Successfully");
       navigate("/products/manage");

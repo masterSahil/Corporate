@@ -27,7 +27,13 @@ const AdminReview = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setReviews(res.data.rating || []);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Fetch Reviews");

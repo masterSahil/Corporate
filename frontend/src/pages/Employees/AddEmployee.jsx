@@ -110,7 +110,7 @@ const AddEmployee = () => {
       data.append("employment", formData.employment);
       data.append("file", formData.profileImage);
 
-      await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data, {withCredentials: true});
+      await axios.post(`${import.meta.env.VITE_API_KEY}/create-user`, data);
       toast.success("success");
       navigate("/employees/manage")
       resetForm();

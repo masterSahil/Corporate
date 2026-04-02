@@ -23,21 +23,41 @@ const EmployeeRewards = () => {
   const getRewards = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
-      const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
-      
+
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/reward`,
+        config
+      );
+
+      const role_check = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/check-role`,
+        config
+      );
+
       const allRewards = res.data.reward || [];
-      const user = role_check.data.user; // Get live user data
-      
+      const user = role_check.data.user;
+
       setRewards(allRewards);
       setMyRewards(allRewards.filter(r => r.email === user.email));
-      
-      // Sync points and ID
       setUserPoints(user.points || 0);
       setCurrentUserId(user._id);
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
       toast.error(error?.response?.data?.message || "Failed to Fetch Rewards Data");
-      console.error("Error fetching rewards:", error);
     } finally {
       setLoading(false);
     }
@@ -59,26 +79,48 @@ const EmployeeRewards = () => {
 
     setLoading(true);
     try {
-      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${rewardId}`, {status: "redeemed"}, { withCredentials: true });
-      
-      // Calculate new balance
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_KEY}/reward/${rewardId}`,
+        { status: "redeemed" },
+        config
+      );
+
       const rewardPoints = res.data.reward.points || 0;
       const newBalance = userPoints + rewardPoints;
 
-      // Update Database
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, {points: newBalance}, { withCredentials: true });
-      
-      // Update UI States
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/${currentUserId}`,
+        { points: newBalance },
+        config
+      );
+
       setUserPoints(newBalance);
-      setMyRewards(prevRewards => 
-        prevRewards.map(reward => 
-          reward._id === rewardId ? { ...reward, isAccepted: true, status: 'redeemed' } : reward
+
+      setMyRewards(prev =>
+        prev.map(r =>
+          r._id === rewardId
+            ? { ...r, isAccepted: true, status: 'redeemed' }
+            : r
         )
       );
       toast.success("Rewards Accepted Successfully");
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
       toast.error(error?.response?.data?.message || "Failed to Accept Reward");
-      console.error("Error accepting reward:", error);
     } finally {
       setLoading(false);
     }

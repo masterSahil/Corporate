@@ -23,14 +23,21 @@ const SystemLogs = () => {
       setIsLoading(true);
       
       // Fetch all data concurrently
-      const [usersRes, deletedRes, productsRes, rewardsRes, ordersRes, cartRes, ratingsRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/orders`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, { withCredentials: true })
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const config = {headers: { Authorization: `Bearer ${token}` }};
+      const [usersRes, deletedRes, productsRes, rewardsRes, ordersRes, cartRes, ratingsRes ] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/product-all`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/reward-all`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/orders`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, config)
       ]);
 
       const compiledLogs = [];

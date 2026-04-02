@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { 
-  LayoutDashboard, Shield, Users, Box, Gift, Settings, 
-  ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart, 
-  Loader2,
-  Star
-} from 'lucide-react';
+import { LayoutDashboard, Shield, Users, Box, Gift, Settings, ChevronDown, ChevronRight, X, Menu, FileText, ShoppingCart, Loader2, Star } from 'lucide-react';
 import { theme } from './Theme'; 
+import { toast } from '../ui/Toaster';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [activeMenu, setActiveMenu] = useState('');
@@ -18,12 +14,24 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const fetchUserRole = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
-      if (res.data?.success && res.data?.user) {
-        setUserRole(res.data.user.role); 
+      const token = sessionStorage.getItem("token");
+
+      if (!token) {
+        setUserRole(null);
+        setIsLoading(false);
+        return;
       }
+
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`,
+        { headers: { Authorization: `Bearer ${token}` } });
+
+      setUserRole(res.data.user.role);
     } catch (error) {
-      console.error("Error fetching user role:", error);
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        setUserRole(null);
+      }
+      toast.error("Error fetching user role:", error);
     } finally {
       setIsLoading(false);
     }

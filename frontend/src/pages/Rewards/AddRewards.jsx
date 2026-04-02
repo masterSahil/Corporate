@@ -50,7 +50,13 @@ const AddReward = () => {
       const err = validateForm();
       if (err) { toast.warning(err); return }
       setLoading(true);
-      await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {withCredentials: true});
+      const token = sessionStorage.getItem("token");
+
+      await axios.post(`${import.meta.env.VITE_API_KEY}/reward`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
       resetForm();
       toast.success("Reward Added Successfully")

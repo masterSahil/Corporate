@@ -26,15 +26,32 @@ const SoftDeletedRewards = () => {
   const isRefreshing = false;
 
   const getDeletedData = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setUiLoader(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward-deleted`, { withCredentials: true });
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/reward-deleted`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       setDeletedRewards(res.data.reward);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to fetch deleted rewards");
       console.log(error);
     } finally {
-      setLoading(false); setUiLoader(false);
+      setLoading(false);
+      setUiLoader(false);
     }
   };
 
@@ -59,12 +76,32 @@ const SoftDeletedRewards = () => {
 
   // Restoring a Reward
   const handleRestore = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setUiLoader(true);
-      await axios.put(`${import.meta.env.VITE_API_KEY}/reward-restore/${id}`, {isDeleted: false, deletedAt: Date.now()}, { withCredentials: true });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/reward-restore/${id}`,
+        {
+          isDeleted: false,
+          deletedAt: Date.now()
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       getDeletedData();
       toast.success("Rewards Restored Successfully");
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to Restore Reward");
     } finally {
       setUiLoader(false);
@@ -73,20 +110,39 @@ const SoftDeletedRewards = () => {
 
   // Permanent Deletion
   const handlePermanentDelete = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
+
+    const token = sessionStorage.getItem("token");
+
     if (!deletePassword) return;
 
     try {
       setLoading(true);
-      await axios.post(`${import.meta.env.VITE_API_KEY}/hard-delete-reward/${deleteId}`, { password: deletePassword }, { withCredentials: true });
+
+      await axios.post(
+        `${import.meta.env.VITE_API_KEY}/hard-delete-reward/${deleteId}`,
+        { password: deletePassword },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       getDeletedData();
+
       toast.success("Permanently Deleted Successfully");
-      
+
       setShowDeleteModal(false);
       setDeleteId(null);
       setDeletePassword("");
       setShowPassword(false);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Delete failed");
       console.log(error);
     } finally {

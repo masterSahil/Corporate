@@ -24,26 +24,43 @@ const UpdateReward = () => {
   });
 
   const fetchReward = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/reward`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       const reward = res.data.reward?.find(r => r._id === id);
 
       if (reward) {
         setFormData({
           title: reward.title || "",
           category: reward.category || "",
-          points: reward.points || "", 
+          points: reward.points || "",
           description: reward.description || "",
           email: reward.email || "",
         });
+
         if (reward.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reward.email)) {
           setValidEmail(true);
         }
+
       } else {
         toast.error("Reward not found");
         navigate(-1);
       }
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       console.error("Failed to fetch reward:", error);
       toast.error("Failed to load reward details");
     } finally {
@@ -80,15 +97,35 @@ const UpdateReward = () => {
   };
 
   const handleSubmit = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       const err = validateForm();
-      if (err) { toast.warning(err); return; }
+      if (err) {
+        toast.warning(err);
+        return;
+      }
+
       setIsSubmitting(true);
-      await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${id}`, formData, { withCredentials: true });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/reward/${id}`,
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
       toast.success("Reward updated successfully!");
       navigate(-1);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error.response?.data?.message || "Failed to update reward");
       console.log(error);
     } finally {

@@ -30,44 +30,61 @@ const ProductDetails = () => {
     const [editData, setEditData] = useState({ rating: 5, comment: "" });
 
     const fetchMasterData = async () => {
-        try {
-            setIsLoading(true);
-            const [prodRes, roleRes, cartRes, reviewRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_KEY}/product-single/${id}`, { withCredentials: true }),
-                axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }),
-                axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true }),
-                axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, { withCredentials: true })
-            ]);
+    try {
+        setIsLoading(true);
 
-            const foundProduct = prodRes.data.product;
-            setProduct(foundProduct);
+        const token = sessionStorage.getItem("token");
 
-            const user = roleRes.data.user;
-            setCurrentUserId(user._id);
-            setCurrentUserName(user.username);
-
-            // Correctly mapping usernames from individual review records
-            const productReviews = reviewRes.data.rating.filter(r => r.productId === id)
-                .map(r => ({
-                    id: r._id,
-                    buyerId: r.buyerId?._id || r.buyerId,
-                    user: r.buyerId?.username || "User",
-                    rating: r.rate,
-                    comment: r.review,
-                    date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"
-                }));
-
-            setReviews(productReviews);
-
-            const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
-            setCartItem(userCart.find(c => c.productId === id) || null);
-
-        } catch (err) {
-            console.error("Error fetching data:", err);
-            toast.error("Failed to Fetching Details.");
-        } finally {
-            setIsLoading(false);
+        if (!token) {
+        navigate("/");
+        return;
         }
+
+        const config = {
+        headers: { Authorization: `Bearer ${token}` }
+        };
+
+        const [prodRes, roleRes, cartRes, reviewRes] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_KEY}/product-single/${id}`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, config)
+        ]);
+
+        const foundProduct = prodRes.data.product;
+        setProduct(foundProduct);
+
+        const user = roleRes.data.user;
+        setCurrentUserId(user._id);
+        setCurrentUserName(user.username);
+
+        const productReviews = reviewRes.data.rating
+        .filter(r => r.productId === id)
+        .map(r => ({
+            id: r._id,
+            buyerId: r.buyerId?._id || r.buyerId,
+            user: r.buyerId?.username || "User",
+            rating: r.rate,
+            comment: r.review,
+            date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"
+        }));
+
+        setReviews(productReviews);
+
+        const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
+        setCartItem(userCart.find(c => c.productId === id) || null);
+
+    } catch (err) {
+        if (err?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+        }
+
+        toast.error("Failed to Fetching Details.");
+    } finally {
+        setIsLoading(false);
+    }
     };
 
     useEffect(() => { fetchMasterData() }, []);
@@ -78,9 +95,19 @@ const ProductDetails = () => {
         if (product.quantity <= 0) return toast.error("Product is out of stock.");
         try {
             setIsLoading(true);
-            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, {
-                buyerId: currentUserId, productId: product._id, quantity: 1
-            }, { withCredentials: true });
+            const token = sessionStorage.getItem("token");
+
+            const res = await axios.post(
+            `${import.meta.env.VITE_API_KEY}/cart`,
+            {
+                buyerId: currentUserId,
+                productId: product._id,
+                quantity: 1
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+            );
             setCartItem(res.data.cart);
             toast.success("Products Added to Cart Successfully");
         } catch (error) {
@@ -92,16 +119,30 @@ const ProductDetails = () => {
 
     const updateQuantity = async (newQuantity) => {
         if (!cartItem) return;
+        const token = sessionStorage.getItem("token");
         try {
             if (newQuantity <= 0) {
-                await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, { withCredentials: true });
+                await axios.delete(
+                `${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+                );
                 setCartItem(null);
                 toast.success("Product Removed from Cart Successfully");
             } else {
                 if (newQuantity > product.quantity) return toast.error("Maximum stock reached.");
-                const res = await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, {
-                    buyerId: currentUserId, productId: product._id, quantity: newQuantity
-                }, { withCredentials: true });
+                await axios.put(
+                `${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
+                {
+                    buyerId: currentUserId,
+                    productId: product._id,
+                    quantity: newQuantity
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+                );
                 setCartItem(res.data.cart);
             }
         } catch (error) {
@@ -116,8 +157,17 @@ const ProductDetails = () => {
         if (!newReview.comment.trim()) return toast.error("Please write a comment.");
         try {
             setIsLoading(true);
-            const res = await axios.post(`${import.meta.env.VITE_API_KEY}/rating`,
-                { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating, username: currentUserName }, { withCredentials: true });
+            const token = sessionStorage.getItem("token");
+            const res = await axios.post(
+            `${import.meta.env.VITE_API_KEY}/rating`,
+            {
+                review: newReview.comment,
+                buyerId: currentUserId,
+                productId: id,
+                rate: newReview.rating,
+                username: currentUserName
+            },
+            { headers: { Authorization: `Bearer ${token}` } });
 
             const saved = res.data.rating;
             setReviews([{ id: saved._id, buyerId: currentUserId, user: currentUserName, rating: saved.rate, comment: saved.review, date: "Just now" }, ...reviews]);
@@ -126,6 +176,7 @@ const ProductDetails = () => {
             toast.success("Review Posted Successfully!");
         } catch (error) {
             toast.error(error?.response?.data?.message || "Error Posting Review");
+            console.log(error);
         } finally {
             setIsLoading(false);
         }
@@ -133,8 +184,14 @@ const ProductDetails = () => {
 
     const handleDeleteReview = async (reviewId) => {
         try {
+            const token = sessionStorage.getItem("token");
             setIsLoading(true);
-            await axios.delete(`${import.meta.env.VITE_API_KEY}/rating/${reviewId}`, { withCredentials: true });
+            await axios.delete(
+            `${import.meta.env.VITE_API_KEY}/rating/${reviewId}`,
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+            );
             setReviews(reviews.filter(r => r.id !== reviewId));
             toast.success("Review Deleted Successfully");
         } catch (error) {
@@ -146,10 +203,19 @@ const ProductDetails = () => {
 
     const handleUpdateReview = async (e) => {
         e.preventDefault();
+        const token = sessionStorage.getItem("token");
         try {
             setIsLoading(true);
-            await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`,
-                { review: editData.comment, rate: editData.rating }, { withCredentials: true });
+            await axios.put(
+            `${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`,
+            {
+                review: editData.comment,
+                rate: editData.rating
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+            );
 
             setReviews(reviews.map(r => r.id === editingReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
             setEditingReviewId(null);

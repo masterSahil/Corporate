@@ -17,32 +17,34 @@ export default function App() {
 
   const verifyLogin_Role = async () => {
     try {
-      const login_result = await checkLoginApi();
+      const token = sessionStorage.getItem("token");
 
-      if (!login_result) {
-        setLoggedIn(false); 
+      if (!token) {
+        setLoggedIn(false);
         setLoading(false);
         navigate("/");
         return;
       }
-      setLoggedIn(true);
 
-      const role_check = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, {withCredentials: true});
-      setRole(role_check.data.role);
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`,
+        { headers: { Authorization: `Bearer ${token}` }});
 
-      // Let DeActivated users to logged out
-      if(role_check.data.user.isDeleted) 
-      {
-        return setLoggedIn(false)
-      }
-    } catch (error) {
-      if (error.response?.status === 401) {
+      const user = res.data.user;
+      if (user.isDeleted) {
+        sessionStorage.removeItem("token");
         setLoggedIn(false);
         setRole(null);
-      } else {
-        console.log(error);
-        toast.error(error?.response?.data?.message || "Something Went Wrong");
+        navigate("/");
+        return;
       }
+
+      setLoggedIn(true);
+      setRole(user.role);
+    } catch (error) {
+      sessionStorage.removeItem("token");
+      setLoggedIn(false);
+      setRole(null);
+      navigate("/");
     } finally {
       setLoading(false);
     }

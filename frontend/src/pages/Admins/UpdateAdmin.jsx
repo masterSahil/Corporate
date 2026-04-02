@@ -29,8 +29,16 @@ const UpdateAdmin = () => {
   });
 
   const fetchAdmin = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-all-user`, { withCredentials: true });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/fetch-all-user`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       const admin = res.data.users?.find(u => u._id === id);
 
       if (admin) {
@@ -43,12 +51,20 @@ const UpdateAdmin = () => {
           password: "",
           profileImage: null,
         });
+
         setExistingImage(admin.profile?.imageUrl || null);
       } else {
         toast.error("Admin not found");
         navigate(-1);
       }
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error("Failed to fetch admin");
     } finally {
       setIsLoading(false);
@@ -91,9 +107,15 @@ const UpdateAdmin = () => {
   const displayImage = preview || existingImage;
 
   const handleSubmit = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       const error = validateForm();
-      if (error) { toast.warning(error);  return; }
+      if (error) {
+        toast.warning(error);
+        return;
+      }
+
       setIsSubmitting(true);
 
       const data = new FormData();
@@ -102,18 +124,36 @@ const UpdateAdmin = () => {
       data.append("gender", formData.gender);
       data.append("phoneNumber", formData.phoneNumber);
       data.append("role", formData.role);
-      
+
       if (formData.password) {
         data.append("password", formData.password);
       }
+
       if (formData.profileImage) {
         data.append("file", formData.profileImage);
       }
-      await axios.put(`${import.meta.env.VITE_API_KEY}/${id}`, data, { withCredentials: true});
-      
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/${id}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
+
       toast.success("Admin updated successfully!");
       navigate(-1);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error.response?.data?.message || "Failed to update admin");
       console.error(error);
     } finally {

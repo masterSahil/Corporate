@@ -28,18 +28,47 @@ const EmployeeStore = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
-      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
-      
+
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/product`,
+        config
+      );
+
+      const res2 = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/check-role`,
+        config
+      );
+
       setProducts(res.data.product);
       const user = res2.data.user;
       setCurrentUserId(user._id);
-      setUserPoints(user.points || 0); 
+      setUserPoints(user.points || 0);
 
-      const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, { withCredentials: true });
-      const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
+      const cartRes = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/cart-all`,
+        config
+      );
+
+      const userCart = cartRes.data.cart.filter(
+        item => item.buyerId === user._id
+      );
       setCartItems(userCart);
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
       toast.error("Failed to Fetch Data");
     } finally {
       setLoading(false);
@@ -68,11 +97,28 @@ const EmployeeStore = () => {
   const addToCart = async (id) => {
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`, { buyerId: currentUserId, productId: id, quantity: 1 }, { withCredentials: true });
-      
+
+      const token = sessionStorage.getItem("token");
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_KEY}/cart`,
+        {
+          buyerId: currentUserId,
+          productId: id,
+          quantity: 1
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       setCartItems([...cartItems, res.data.cart]);
       toast.success("Product Added to Cart");
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
       toast.error(error.message || "Failed to add product");
     } finally {
       setLoading(false);
@@ -81,18 +127,29 @@ const EmployeeStore = () => {
 
   const updateQuantity = async (cartItemId, productId, newQuantity) => {
     try {
+      const token = sessionStorage.getItem("token");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
       if (newQuantity <= 0) {
         // Remove from cart database if quantity is 0 or less
-        await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, { withCredentials: true });
+        await axios.delete(
+          `${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`,
+          config
+        );
         setCartItems(cartItems.filter(item => item._id !== cartItemId));
         toast.success("Removed from cart");
       } else {
         // Update quantity in database
-        const res = await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, {
-          buyerId: currentUserId,
-          productId: productId,
-          quantity: newQuantity
-        }, { withCredentials: true });
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`,
+          {
+            buyerId: currentUserId,
+            productId: productId,
+            quantity: newQuantity
+          },
+          config
+        );
 
         // Update local state
         setCartItems(cartItems.map(item => item._id === cartItemId ? res.data.cart : item));

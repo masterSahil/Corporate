@@ -32,11 +32,21 @@ const EmployeeDashboard = () => {
     try {
       setLoading(true);
       // 1. Fetch all data in parallel, INCLUDING the current session role
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
       const [resUsers, resRewards, resProducts, resRole] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }), 
-        axios.get(`${import.meta.env.VITE_API_KEY}/reward`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true }) 
+        axios.get(`${import.meta.env.VITE_API_KEY}`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/reward`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/product`, config),
+        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, config)
       ]);
 
       const fetchedUsers = resUsers.data?.users || [];

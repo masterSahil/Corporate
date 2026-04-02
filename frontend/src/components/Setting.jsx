@@ -50,7 +50,10 @@ const Settings = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`,
+        { headers: { Authorization: `Bearer ${token}` }});
+
       setFormData({
         profile: res.data.user.profile ?? null,
         username: res.data.user.username ?? "",
@@ -69,7 +72,7 @@ const Settings = () => {
       if (error?.response?.status === 401) {
         // user not authenticated → redirect silently
         loggedIn.setLoggedIn(false);
-        navigate("/login");
+        navigate("/");
         return;
       }
       toast.error(error?.response?.data?.message || "Something went wrong");
@@ -110,18 +113,25 @@ const Settings = () => {
       data.append("employment", formData.employment);
 
       if (formData.profile?.file) {
-        data.append("file", formData.profile.file);
+        const file = formData.profile.file;
+        if (file.size > 1 * 1024 * 1024) {
+          toast.error("File must be less than 1MB");
+          return;
+        }
+        data.append("file", file);
       }
 
-      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      const res = await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data, 
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }});
+      
       const updatedEmail = res.data?.user?.email;
-
       if (updatedEmail && updatedEmail !== oldEmail) {
         toast.info("Email updated. Please login again.");
 
-        await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
+        sessionStorage.removeItem("token");
         loggedIn.setLoggedIn(false);
-        navigate("/login");
+        navigate("/");
         return;
       }
       toast.success("Profile Info Updated");
@@ -142,9 +152,9 @@ const Settings = () => {
         return;
       }
 
-      await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`,
-        { email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword },
-        { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      await axios.patch(`${import.meta.env.VITE_API_KEY}/password-change`, 
+        {email: formData.email, currentPassword: formData.currentPassword, newPassword: formData.newPassword }, { headers: { Authorization: `Bearer ${token}` }});
 
       toast.success("Updated Successfully ...");
       setFormData({ newPassword: "", currentPassword: "" });
@@ -156,17 +166,14 @@ const Settings = () => {
     }
   }
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      setLoading(true);
-      await axios.get(`${import.meta.env.VITE_API_KEY}/remove-auth`, { withCredentials: true });
-      navigate('/');
+      sessionStorage.removeItem("token");
       loggedIn.setLoggedIn(false);
+      navigate('/');
       toast.success("Logged out successfully");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Something Went Wrong");;
-    } finally {
-      setLoading(false);
+      toast.error(error.message || "Failed to Logout");
     }
   };
 

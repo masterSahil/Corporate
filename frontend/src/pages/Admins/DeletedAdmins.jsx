@@ -26,12 +26,27 @@ const SoftDeletedAdmins = () => {
   const isRefreshing = false;
   
   const getDeletedData = async () => {
+    const token = sessionStorage.getItem("token");
     try {
       setUiLoader(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-deleted`, { withCredentials: true });
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/fetch-deleted`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       const filtered = res.data.users.filter(u => u.role !== "employee");
       setDeletedAdmins(filtered);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Something went wrong");
       console.log(error);
     } finally {
@@ -59,12 +74,29 @@ const SoftDeletedAdmins = () => {
   };
 
   const handleRestore = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setUiLoader(true);
-      await axios.put(`${import.meta.env.VITE_API_KEY}/restore/${id}`, {}, { withCredentials: true });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/restore/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       getDeletedData();
       toast.success("Admin Restored Successfully");
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to restore");
       console.log(error);
     } finally {
@@ -74,22 +106,41 @@ const SoftDeletedAdmins = () => {
 
   // Permanent Deletion
   const handlePermanentDelete = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
+
+    const token = sessionStorage.getItem("token");
+
     if (!deletePassword) return;
 
     setLoading(true);
+
     try {
-      await axios.post(`${import.meta.env.VITE_API_KEY}/permanent-delete/${deleteId}`, { password: deletePassword }, { withCredentials: true });
+      await axios.post(
+        `${import.meta.env.VITE_API_KEY}/permanent-delete/${deleteId}`,
+        { password: deletePassword },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       await getDeletedData();
+
       toast.success("Permanently Deleted Successfully");
-      
+
       setShowDeleteModal(false);
       setDeleteId(null);
       setDeletePassword("");
       setShowPassword(false);
+
     } catch (error) {
-      toast.error(error.response?.data?.message || "Delete failed");
-      console.log(error.response?.data?.message || error);
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
+      toast.error(error?.response?.data?.message || "Delete failed");
+      console.log(error);
     } finally {
       setLoading(false);
     }

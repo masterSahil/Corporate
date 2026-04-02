@@ -20,11 +20,27 @@ const ViewProducts = () => {
   const navigate = useNavigate();
 
   const getProducts = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true });
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}/product`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       setProducts(res.data.product);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Failed to fetch products");
       console.log(error);
     } finally {
@@ -42,13 +58,32 @@ const ViewProducts = () => {
   }, [searchTerm, categoryFilter, productsPerPage]);
 
   const deleteProduct = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setLoading(true);
-      await axios.put(`${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`, { isDeleted: true, deletedAt: new Date() }, { withCredentials: true });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_KEY}/product-soft-delete/${id}`,
+        {
+          isDeleted: true,
+          deletedAt: new Date()
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       getProducts();
       toast.success("Product Deleted Successfully");
+
     } catch (error) {
-      // Updated error chaining
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || error.message || "Failed to delete product");
       console.log("Error deleting product:", error);
     } finally {

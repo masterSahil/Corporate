@@ -204,7 +204,7 @@ module.exports.softDeleteReward = async (req, res) => {
 module.exports.permanentDelete = async (req, res) => {
     try {
         const {password} = req.body;
-        const token = req.cookies.corporate_token;
+        const token = req.headers.authorization?.split(" ")[1];
         if (!token) {
             return res.status(404).json({
                 success: false,

@@ -26,7 +26,12 @@ const EmployeeDirectory = () => {
   const getData = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true });
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, {headers: { Authorization: `Bearer ${token}` }});
       setAllUsers(res.data.users || []);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Fetch Directory Data");

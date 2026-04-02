@@ -44,7 +44,8 @@ const CorporateLogin = () => {
       e.preventDefault();
       if (!validate()) return;
 
-      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/login-auth`, formData, { withCredentials: true });
+      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/login-auth`, formData);
+      sessionStorage.setItem("token", res.data.token);
       
       toast.success("Login Successful"); 
       setFormData({ email: '', password: '' });
@@ -65,7 +66,8 @@ const CorporateLogin = () => {
       setLoading(true);
       e.preventDefault();
       if (!validate()) return;
-      const res = await axios.post(`${import.meta.env.VITE_API_KEY}`, formData, { withCredentials: true });
+      const res = await axios.post(`${import.meta.env.VITE_API_KEY}`, formData);
+      sessionStorage.setItem("token", res.data.token);
       
       toast.success("Registration Successful");
       setFormData({ email: '', password: '' });
@@ -85,9 +87,9 @@ const CorporateLogin = () => {
     onSuccess: async (tokenResponse) => {
       try {
         setLoading(true);
-        const res = await axios.post(`${import.meta.env.VITE_API_KEY}/google-login`, {
-          access_token: tokenResponse.access_token
-        }, { withCredentials: true });
+        const res = await axios.post(`${import.meta.env.VITE_API_KEY}/google-login`, 
+          { access_token: tokenResponse.access_token });
+        sessionStorage.setItem("token", res.data.token);
 
         toast.success("Google Login Successful");
         auth_context.setLoggedIn(true);

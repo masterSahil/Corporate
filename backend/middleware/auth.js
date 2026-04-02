@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 module.exports.verifyUser = (req, res) => {
-    const token = req.cookies.corporate_token;
+    const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
         return res.status(401).json({ authenticated: false, message: "Token not found" });

@@ -20,7 +20,14 @@ const ViewAdmins = () => {
   const getData = async() => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}`, {withCredentials: true});
+      const token = sessionStorage.getItem("token");
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_KEY}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
       const filteredAdmins = res.data.users.filter(u => u.role !== "employee")
       setInitialAdmins(filteredAdmins);
     } catch (error) {

@@ -25,7 +25,7 @@ router.get('/check-role', userController.verifyRole);
 // Authentication Check (logged in or not)
 router.get('/check-auth', verifyUser);
 // Logout
-router.get('/remove-auth', userController.LogOut);
+// router.get('/remove-auth', userController.LogOut);
 
 // Change Password
 router.patch('/password-change', userController.changePassword);

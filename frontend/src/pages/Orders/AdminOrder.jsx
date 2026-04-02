@@ -15,37 +15,59 @@ const AdminOrders = () => {
   const [ordersPerPage, setOrdersPerPage] = useState(3); // Default to 3 for large cards
 
   const fetchData = async () => {
+    const token = sessionStorage.getItem("token");
+
     try {
       setIsLoading(true);
+
       const [resOrders, resProducts, resUsers] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/orders`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}/product`, { withCredentials: true }),
-        axios.get(`${import.meta.env.VITE_API_KEY}`, { withCredentials: true }) 
+        axios.get(`${import.meta.env.VITE_API_KEY}/orders`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_API_KEY}/product`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${import.meta.env.VITE_API_KEY}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
       ]);
 
       const allOrders = (resOrders.data.orders || []).sort(
         (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
       );
+
       const allProducts = resProducts.data.product || [];
       const allUsers = resUsers.data.users || [];
 
-      // Deep Merge Logic
       const enrichedOrders = allOrders.map(order => {
-        // 1. Find the Buyer
-        const buyer = allUsers.find(u => u._id === (order.userId?.$oid || order.userId));
-        
-        // 2. Find Product Images
+        const buyer = allUsers.find(
+          u => u._id === (order.userId?.$oid || order.userId)
+        );
+
         const itemsWithData = order.items.map(item => {
-          const product = allProducts.find(p => p._id === (item.productId?.$oid || item.productId));
-          return { ...item, image: product?.gallery?.[0]?.fileUrl || null, 
+          const product = allProducts.find(
+            p => p._id === (item.productId?.$oid || item.productId)
+          );
+
+          return {
+            ...item,
+            image: product?.gallery?.[0]?.fileUrl || null,
             category: product?.category || "General"
           };
         });
+
         return { ...order, buyer, items: itemsWithData };
       });
 
       setOrders(enrichedOrders);
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       console.error("Data Sync Error:", error);
       toast.error(error?.response?.data?.message || "Failed to load master data.");
     } finally {
@@ -61,12 +83,27 @@ const AdminOrders = () => {
   }, [searchTerm, ordersPerPage]);
 
   const handleStatusUpdate = async (orderId, newStatus) => {
+    const token = sessionStorage.getItem("token");
+
     try {
-      await axios.patch(`${import.meta.env.VITE_API_KEY}/order-status/${orderId}`, 
-        { status: newStatus }, { withCredentials: true });
+      await axios.patch(
+        `${import.meta.env.VITE_API_KEY}/order-status/${orderId}`,
+        { status: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       toast.success(`Order #${orderId.slice(-6)} set to ${newStatus}`);
-      fetchData(); 
+      fetchData();
+
     } catch (error) {
+      if (error?.response?.status === 401) {
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
       toast.error(error?.response?.data?.message || "Status update failed.");
     }
   };
