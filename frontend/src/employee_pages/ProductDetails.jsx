@@ -36,13 +36,11 @@ const ProductDetails = () => {
         const token = sessionStorage.getItem("token");
 
         if (!token) {
-        navigate("/");
-        return;
+            navigate("/");
+            return;
         }
 
-        const config = {
-        headers: { Authorization: `Bearer ${token}` }
-        };
+        const config = { headers: { Authorization: `Bearer ${token}` } };
 
         const [prodRes, roleRes, cartRes, reviewRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_KEY}/product-single/${id}`, config),
@@ -132,7 +130,7 @@ const ProductDetails = () => {
                 toast.success("Product Removed from Cart Successfully");
             } else {
                 if (newQuantity > product.quantity) return toast.error("Maximum stock reached.");
-                await axios.put(
+                const res = await axios.put(
                 `${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
                 {
                     buyerId: currentUserId,
