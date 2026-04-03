@@ -130,17 +130,10 @@ const ProductDetails = () => {
                 toast.success("Product Removed from Cart Successfully");
             } else {
                 if (newQuantity > product.quantity) return toast.error("Maximum stock reached.");
-                const res = await axios.put(
-                `${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
-                {
-                    buyerId: currentUserId,
-                    productId: product._id,
-                    quantity: newQuantity
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-                );
+
+                const res = await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
+                { buyerId: currentUserId, productId: product._id, quantity: newQuantity },
+                { headers: { Authorization: `Bearer ${token}` } });
                 setCartItem(res.data.cart);
             }
         } catch (error) {
