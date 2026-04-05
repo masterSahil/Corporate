@@ -17,8 +17,11 @@ const EmployeeStore = () => {
   const [cartItems, setCartItems] = useState([]);
   const [userPoints, setUserPoints] = useState(0);
   const [loading, setLoading] = useState(false);
+  
+  // Localized loading state for the "Add to Cart" button to prevent screen freezes
+  const [addingCartId, setAddingCartId] = useState(null);
 
-  // --- NEW: Pagination State ---
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
@@ -89,29 +92,21 @@ const EmployeeStore = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- NEW: Reset page to 1 when filters change ---
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, itemsPerPage]);
 
   const addToCart = async (id) => {
     try {
-      setLoading(true);
+      setAddingCartId(id);
 
       const token = sessionStorage.getItem("token");
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_KEY}/cart`,
-        {
-          buyerId: currentUserId,
-          productId: id,
-          quantity: 1
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+      const res = await axios.post(`${import.meta.env.VITE_API_KEY}/cart`,
+        { buyerId: currentUserId, productId: id, quantity: 1 },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setCartItems([...cartItems, res.data.cart]);
+      setCartItems(prev => [...prev, res.data.cart]);
       toast.success("Product Added to Cart");
     } catch (error) {
       if (error?.response?.status === 401) {
@@ -121,41 +116,29 @@ const EmployeeStore = () => {
       }
       toast.error(error.message || "Failed to add product");
     } finally {
-      setLoading(false);
+      setAddingCartId(null);
     }
   };
 
   const updateQuantity = async (cartItemId, productId, newQuantity) => {
     try {
       const token = sessionStorage.getItem("token");
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
+      const config = { headers: { Authorization: `Bearer ${token}` }};
+      
       if (newQuantity <= 0) {
-        // Remove from cart database if quantity is 0 or less
-        await axios.delete(
-          `${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`,
-          config
-        );
-        setCartItems(cartItems.filter(item => item._id !== cartItemId));
+        setCartItems(prev => prev.filter(item => item._id !== cartItemId));
+        await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`, config);
         toast.success("Removed from cart");
       } else {
-        // Update quantity in database
-        const res = await axios.put(
-          `${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`,
-          {
-            buyerId: currentUserId,
-            productId: productId,
-            quantity: newQuantity
-          },
-          config
-        );
-
-        // Update local state
-        setCartItems(cartItems.map(item => item._id === cartItemId ? res.data.cart : item));
+        setCartItems(prev => prev.map(item => 
+          item._id === cartItemId ? { ...item, quantity: newQuantity } : item
+        ));
+        await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItemId}`,
+          { buyerId: currentUserId, productId: productId, quantity: newQuantity }, config);
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to update quantity");
+      getData(); 
       console.log(error);
     } 
   };
@@ -168,7 +151,7 @@ const EmployeeStore = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // --- NEW: Pagination Logic ---
+  // Pagination Logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
@@ -221,7 +204,7 @@ const EmployeeStore = () => {
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
                 <h1 className="text-3xl md:text-4xl lg:text-[42px] font-black tracking-tighter mb-2">THE PRODUCT STORE</h1>
-                <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium benefites.</p>
+                <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium benefits.</p>
               </div>
 
               <div className="bg-white/10 border border-white/10 rounded-md p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
@@ -270,11 +253,10 @@ const EmployeeStore = () => {
             </div>
           </div>
 
-          {/* Product Grid - CHANGED filteredProducts to currentProducts */}
+          {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
             {currentProducts.map((product) => {
               const cartItem = cartItems.find((c) => c.productId === product._id);
-
               const getFinalPrice = (product) => {
                 if (!product.discount || product.discount <= 0) return product.price;
                 if (product.discountType === "percentage") {
@@ -328,8 +310,7 @@ const EmployeeStore = () => {
                     <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-slate-100">
                       
                       {/* Pricing Section */}
-                      <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col gap-2">
-
+                      <div className="flex flex-col gap-2">
                         {/* Discount Badge */}
                         {product.discount > 0 && (
                           <div className="inline-block bg-red-600 text-white text-xs font-bold uppercase px-2 py-1 rounded-md tracking-widest w-max select-none">
@@ -376,8 +357,9 @@ const EmployeeStore = () => {
                         </div>
                       ) : (
                         <button onClick={(e) => { e.stopPropagation(); addToCart(product._id); }} 
-                          className="flex items-center justify-center w-10 h-10 md:w-11 rounded-xl bg-slate-50 border-2 border-slate-200 group-hover:bg-black group-hover:border-black group-hover:text-white transition-all duration-300 shadow-sm text-slate-600 shrink-0">
-                          <Plus size={18} />
+                          disabled={addingCartId === product._id}
+                          className="flex items-center justify-center w-10 h-10 md:w-11 rounded-xl bg-slate-50 border-2 border-slate-200 group-hover:bg-black group-hover:border-black group-hover:text-white transition-all duration-300 shadow-sm text-slate-600 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                          {addingCartId === product._id ? <RefreshCw size={18} className="animate-spin text-slate-400 group-hover:text-white" /> : <Plus size={18} />}
                         </button>
                       )}
                     </div>
@@ -387,7 +369,7 @@ const EmployeeStore = () => {
             })}
           </div>
 
-          {/* NEW: Pagination Controls */}
+          {/* Pagination Controls */}
           {filteredProducts.length > 0 && totalPages > 1 && (
             <div className="flex flex-row items-center justify-between gap-4 pt-8 pb-4 border-t-2 border-slate-100">
               {/* Items per page selector */}
