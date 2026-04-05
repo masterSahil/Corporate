@@ -13,7 +13,11 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [activeMedia, setActiveMedia] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    
+    // Loading States
+    const [isLoading, setIsLoading] = useState(true); // Only for initial page load
+    const [isCartActionLoading, setIsCartActionLoading] = useState(false);
+    const [isReviewActionLoading, setIsReviewActionLoading] = useState(false);
 
     // Cart Logic States
     const [currentUserId, setCurrentUserId] = useState(null);
@@ -30,135 +34,121 @@ const ProductDetails = () => {
     const [editData, setEditData] = useState({ rating: 5, comment: "" });
 
     const fetchMasterData = async () => {
-    try {
-        setIsLoading(true);
-
-        const token = sessionStorage.getItem("token");
-
-        if (!token) {
-            navigate("/");
-            return;
-        }
-
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-
-        const [prodRes, roleRes, cartRes, reviewRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/product-single/${id}`, config),
-        axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, config),
-        axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, config),
-        axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, config)
-        ]);
-
-        const foundProduct = prodRes.data.product;
-        setProduct(foundProduct);
-
-        const user = roleRes.data.user;
-        setCurrentUserId(user._id);
-        setCurrentUserName(user.username);
-
-        const productReviews = reviewRes.data.rating
-        .filter(r => r.productId === id)
-        .map(r => ({
-            id: r._id,
-            buyerId: r.buyerId?._id || r.buyerId,
-            user: r.buyerId?.username || "User",
-            rating: r.rate,
-            comment: r.review,
-            date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"
-        }));
-
-        setReviews(productReviews);
-
-        const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
-        setCartItem(userCart.find(c => c.productId === id) || null);
-
-    } catch (err) {
-        if (err?.response?.status === 401) {
-        sessionStorage.removeItem("token");
-        navigate("/");
-        return;
-        }
-
-        toast.error("Failed to Fetching Details.");
-    } finally {
-        setIsLoading(false);
-    }
-    };
-
-    useEffect(() => { fetchMasterData() }, []);
-
-    // --- CART ACTIONS ---
-    const addToCart = async () => {
-        if (!currentUserId || !product) return;
-        if (product.quantity <= 0) return toast.error("Product is out of stock.");
         try {
             setIsLoading(true);
             const token = sessionStorage.getItem("token");
 
-            const res = await axios.post(
-            `${import.meta.env.VITE_API_KEY}/cart`,
-            {
-                buyerId: currentUserId,
-                productId: product._id,
-                quantity: 1
-            },
-            {
-                headers: { Authorization: `Bearer ${token}` }
+            if (!token) {
+                navigate("/");
+                return;
             }
+
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            const [prodRes, roleRes, cartRes, reviewRes] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_KEY}/product-single/${id}`, config),
+                axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, config),
+                axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, config),
+                axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, config)
+            ]);
+
+            const foundProduct = prodRes.data.product;
+            setProduct(foundProduct);
+
+            const user = roleRes.data.user;
+            setCurrentUserId(user._id);
+            setCurrentUserName(user.username);
+
+            const productReviews = reviewRes.data.rating
+                .filter(r => r.productId === id)
+                .map(r => ({
+                    id: r._id,
+                    buyerId: r.buyerId?._id || r.buyerId,
+                    user: r.buyerId?.username || "User",
+                    rating: r.rate,
+                    comment: r.review,
+                    date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"
+                }));
+
+            setReviews(productReviews);
+            const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
+            setCartItem(userCart.find(c => c.productId === id) || null);
+        } catch (err) {
+            if (err?.response?.status === 401) {
+                sessionStorage.removeItem("token");
+                navigate("/");
+                return;
+            }
+            toast.error("Failed to Fetch Details.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchMasterData() }, []);
+
+    // --- CART ACTIONS  ---
+    const addToCart = async () => {
+        if (!currentUserId || !product) return;
+        if (product.quantity <= 0) return toast.error("Product is out of stock.");
+        try {
+            setIsCartActionLoading(true); 
+            const token = sessionStorage.getItem("token");
+
+            const res = await axios.post(
+                `${import.meta.env.VITE_API_KEY}/cart`,
+                { buyerId: currentUserId, productId: product._id, quantity: 1 },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             setCartItem(res.data.cart);
-            toast.success("Products Added to Cart Successfully");
+            toast.success("Product Added to Cart Successfully");
         } catch (error) {
             toast.error("Failed to add product in cart");
         } finally {
-            setIsLoading(false);
+            setIsCartActionLoading(false);
         }
     };
 
     const updateQuantity = async (newQuantity) => {
         if (!cartItem) return;
         const token = sessionStorage.getItem("token");
+        const previousCartItem = { ...cartItem }; 
+
         try {
             if (newQuantity <= 0) {
-                await axios.delete(
-                `${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-                );
                 setCartItem(null);
-                toast.success("Product Removed from Cart Successfully");
+                await axios.delete(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                toast.success("Product Removed from Cart");
             } else {
                 if (newQuantity > product.quantity) return toast.error("Maximum stock reached.");
-
-                const res = await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
-                { buyerId: currentUserId, productId: product._id, quantity: newQuantity },
-                { headers: { Authorization: `Bearer ${token}` } });
-                setCartItem(res.data.cart);
+                setCartItem(prev => ({ ...prev, quantity: newQuantity }));
+                
+                await axios.put(`${import.meta.env.VITE_API_KEY}/cart/${cartItem._id}`,
+                    { buyerId: currentUserId, productId: product._id, quantity: newQuantity },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
             }
         } catch (error) {
+            setCartItem(previousCartItem);
             toast.error(error?.response?.data?.message || "Failed to Update Product Quantity");
             console.log(error);
         }
     };
 
-    // --- REVIEW ACTIONS ---
+    // --- REVIEW ACTIONS (Optimized) ---
     const handleSubmitReview = async (e) => {
         e.preventDefault();
         if (!newReview.comment.trim()) return toast.error("Please write a comment.");
         try {
-            setIsLoading(true);
+            setIsReviewActionLoading(true); // Localized loading
             const token = sessionStorage.getItem("token");
             const res = await axios.post(
-            `${import.meta.env.VITE_API_KEY}/rating`,
-            {
-                review: newReview.comment,
-                buyerId: currentUserId,
-                productId: id,
-                rate: newReview.rating,
-                username: currentUserName
-            },
-            { headers: { Authorization: `Bearer ${token}` } });
+                `${import.meta.env.VITE_API_KEY}/rating`,
+                { review: newReview.comment, buyerId: currentUserId, productId: id, rate: newReview.rating, username: currentUserName },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
             const saved = res.data.rating;
             setReviews([{ id: saved._id, buyerId: currentUserId, user: currentUserName, rating: saved.rate, comment: saved.review, date: "Just now" }, ...reviews]);
@@ -169,71 +159,61 @@ const ProductDetails = () => {
             toast.error(error?.response?.data?.message || "Error Posting Review");
             console.log(error);
         } finally {
-            setIsLoading(false);
+            setIsReviewActionLoading(false);
         }
     };
 
     const handleDeleteReview = async (reviewId) => {
+        const previousReviews = [...reviews];
+        setReviews(reviews.filter(r => r.id !== reviewId));
         try {
             const token = sessionStorage.getItem("token");
-            setIsLoading(true);
-            await axios.delete(
-            `${import.meta.env.VITE_API_KEY}/rating/${reviewId}`,
-            {
+            await axios.delete(`${import.meta.env.VITE_API_KEY}/rating/${reviewId}`, {
                 headers: { Authorization: `Bearer ${token}` }
-            }
-            );
-            setReviews(reviews.filter(r => r.id !== reviewId));
+            });
             toast.success("Review Deleted Successfully");
         } catch (error) {
+            setReviews(previousReviews);
             toast.error(error?.response?.data?.message || "Failed to delete review");
-        } finally {
-            setIsLoading(false);
         }
     };
 
     const handleUpdateReview = async (e) => {
         e.preventDefault();
-        const token = sessionStorage.getItem("token");
-        try {
-            setIsLoading(true);
-            await axios.put(
-            `${import.meta.env.VITE_API_KEY}/rating/${editingReviewId}`,
-            {
-                review: editData.comment,
-                rate: editData.rating
-            },
-            {
-                headers: { Authorization: `Bearer ${token}` }
-            }
-            );
+        const previousReviews = [...reviews];
+        const updatedReviewId = editingReviewId;
 
-            setReviews(reviews.map(r => r.id === editingReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
-            setEditingReviewId(null);
+        // Optimistic Update
+        setReviews(reviews.map(r => r.id === updatedReviewId ? { ...r, comment: editData.comment, rating: editData.rating } : r));
+        setEditingReviewId(null); // Close edit form instantly
+
+        try {
+            const token = sessionStorage.getItem("token");
+            await axios.put(`${import.meta.env.VITE_API_KEY}/rating/${updatedReviewId}`,
+                { review: editData.comment, rate: editData.rating },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             toast.success("Review Updated Successfully!");
         } catch (error) {
+            setReviews(previousReviews);
+            setEditingReviewId(updatedReviewId);
             toast.error(error?.response?.data?.message || "Failed to Update Review");
             console.log(error)
-        } finally {
-            setIsLoading(false);
         }
     };
 
     const averageRating = reviews.length > 0 ?
         (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
 
-    // --- NEW: Price Calculation Function ---
+    // Price Calculation Function
     const getFinalPrice = (prod) => {
         if (!prod?.discount || prod?.discount <= 0) return prod?.price;
-        
         if (prod?.discountType === "percentage") {
             return Math.round(prod.price - (prod.price * prod.discount) / 100);
         }
-        
         if (prod?.discountType === "fixed" || prod?.discountType === "flat") {
             return Math.max(0, prod.price - prod.discount);
         }
-        
         return prod.price;
     };
 
@@ -244,11 +224,12 @@ const ProductDetails = () => {
             {(isLoading || !product) && (
                 <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-999">
                     <div className="rounded-xl bg-white/70 shadow-xl px-6 py-5 flex items-center gap-3">
-                    <RefreshCw className="animate-spin text-slate-700" size={22} />
+                        <RefreshCw className="animate-spin text-slate-700" size={22} />
                         <span className="text-sm font-semibold text-slate-800"> Loading... </span>
                     </div>
                 </div>
             )}
+
             <main className="flex-1 overflow-y-auto bg-white scroll-smooth custom-scrollbar relative flex flex-col">
                 <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-100 px-6 py-4 flex justify-between items-center">
                     <button onClick={() => navigate(-1)} className="group flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">
@@ -284,22 +265,16 @@ const ProductDetails = () => {
                                 </div>
                                 <h1 className="text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3 leading-tight">{product?.name}</h1>
                                 
-                                {/* --- NEW PRICING SECTION --- */}
                                 <div className="flex flex-col gap-1.5 mb-6">
                                     <div className="flex flex-wrap items-center gap-3">
-                                        {/* Final Price */}
                                         <span className="text-3xl font-bold text-zinc-900">
                                             ₹{getFinalPrice(product)?.toLocaleString()}
                                         </span>
-                                        
-                                        {/* Original Price (Crossed out) - Only shows if there is a discount */}
                                         {product?.discount > 0 && (
                                             <span className="text-lg text-zinc-400 line-through font-medium">
                                                 ₹{product?.price?.toLocaleString()}
                                             </span>
                                         )}
-
-                                        {/* Discount Badge - Adapts to Percentage vs Flat */}
                                         {product?.discount > 0 && (
                                             <span className="text-sm font-bold bg-rose-50 text-rose-600 px-2.5 py-1 rounded-md border border-rose-100 tracking-wide uppercase">
                                                 {product?.discountType === "percentage" 
@@ -308,15 +283,12 @@ const ProductDetails = () => {
                                             </span>
                                         )}
                                     </div>
-                                    
-                                    {/* "You Save" Text */}
                                     {product?.discount > 0 && (
                                         <span className="text-sm font-semibold text-emerald-600">
                                             You save ₹{(product?.price - getFinalPrice(product)).toLocaleString()}
                                         </span>
                                     )}
                                 </div>
-                                {/* --- END NEW PRICING SECTION --- */}
                             </div>
 
                             <p className="text-zinc-600 text-sm sm:text-base leading-relaxed mb-8">{product?.description}</p>
@@ -338,8 +310,8 @@ const ProductDetails = () => {
                                         <button className="w-full sm:w-1/2 bg-zinc-900 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 opacity-80"><ShoppingBag size={18} /> Added to Cart</button>
                                     </div>
                                 ) : (
-                                    <button onClick={addToCart} disabled={product?.quantity <= 0} className="w-full bg-zinc-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 disabled:opacity-50 transition-colors">
-                                        <span className="font-semibold">Add to Cart</span><ArrowRight size={18} />
+                                    <button onClick={addToCart} disabled={product?.quantity <= 0 || isCartActionLoading} className="w-full bg-zinc-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-800 disabled:opacity-50 transition-colors">
+                                        {isCartActionLoading ? <RefreshCw size={18} className="animate-spin" /> : <><span className="font-semibold">Add to Cart</span><ArrowRight size={18} /></>}
                                     </button>
                                 )}
                             </div>
@@ -390,7 +362,10 @@ const ProductDetails = () => {
                                         </div>
                                         <textarea rows="5" value={newReview.comment} placeholder="Your feedback..." onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                                             className="w-full rounded-lg border border-zinc-200 p-5 text-sm resize-none outline-none bg-white shadow-sm focus:border-zinc-900" />
-                                        <button type="submit" className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-4 rounded-lg text-sm font-bold shadow-lg">Submit Review</button>
+                                        <button type="submit" disabled={isReviewActionLoading} className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-4 rounded-lg text-sm font-bold shadow-lg disabled:opacity-70 flex items-center justify-center gap-2">
+                                            {isReviewActionLoading && <RefreshCw size={16} className="animate-spin" />}
+                                            {isReviewActionLoading ? "Submitting..." : "Submit Review"}
+                                        </button>
                                     </form>
                                 </div>
                             ) : (
@@ -414,7 +389,7 @@ const ProductDetails = () => {
                                                     <div key={star} className="flex items-center gap-3">
                                                         <span className="text-xs font-bold text-zinc-500 w-3">{star}</span>
                                                         <div className="flex-1 h-1.5 bg-zinc-200 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-zinc-900 rounded-full" style={{ width: `${perc}%` }} />
+                                                            <div className="h-full bg-zinc-900 rounded-full transition-all duration-1000" style={{ width: `${perc}%` }} />
                                                         </div>
                                                         <span className="text-[10px] font-bold text-zinc-600 w-8">{Math.round(perc)}%</span>
                                                     </div>
