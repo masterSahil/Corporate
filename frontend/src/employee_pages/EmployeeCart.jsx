@@ -5,6 +5,16 @@ import EmployeeSidebar from "./EmployeeSidebar";
 import axios from "axios";
 import { toast } from "../ui/Toaster";
 
+const loadScript = (src) => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const EmployeeCart = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,8 +29,8 @@ const EmployeeCart = () => {
   const [pointsInput, setPointsInput] = useState("");
 
   const navigate = useNavigate();
-
   const API = import.meta.env.VITE_API_KEY;
+
   const fetchData = async () => {
     try {
       setIsLoading(true);
@@ -61,11 +71,9 @@ const EmployeeCart = () => {
         removeItem(cartItemId);
         return;
       }
-
       setCartItems(prev => prev.map(item => 
         item._id === cartItemId ? { ...item, quantity: newQuantity } : item
       ));
-
       const token = sessionStorage.getItem("token");
       await axios.put(`${API}/cart/${cartItemId}`, { buyerId: currentUserId, productId, quantity: newQuantity}, { headers: {Authorization: `Bearer ${token}`} });
     } catch (error) {
@@ -79,11 +87,7 @@ const EmployeeCart = () => {
       setIsLoading(true);
       setCartItems(prev => prev.filter(item => item._id !== cartItemId));
       const token = sessionStorage.getItem("token");
-      await axios.delete(`${API}/cart/${cartItemId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await axios.delete(`${API}/cart/${cartItemId}`, {headers: { Authorization: `Bearer ${token}` }});
       toast.success("Item removed from cart");
     } catch (error) {
       toast.error("Failed to remove item");
@@ -93,7 +97,6 @@ const EmployeeCart = () => {
     }
   };
 
-  // --- NEW: Price Calculation Function ---
   const getFinalPrice = (prod) => {
     if (!prod) return 0;
     if (!prod.discount || prod.discount <= 0) return prod.price || 0;
@@ -106,7 +109,6 @@ const EmployeeCart = () => {
     return prod.price || 0;
   };
 
-  // --- CART MATH LOGIC ---
   const cartTotalRs = cartItems.reduce((total, item) => {
     return total + (item.quantity * getFinalPrice(item.product));
   }, 0);
@@ -124,10 +126,8 @@ const EmployeeCart = () => {
     }
   };
 
-  // Convert the input string to a float safely for math
   const parsedPoints = parseFloat(pointsInput) || 0;
   
-  // Validation Logic 
   let pointsError = null;
   if (applyPoints && pointsInput !== "") {
     if (parsedPoints < 0) {
@@ -139,11 +139,10 @@ const EmployeeCart = () => {
     }
   }
 
-  // Only apply the discount if there is NO error
   const discountRs = pointsError ? 0 : parsedPoints;
   const finalTotalRs = cartTotalRs - discountRs;
 
-  // --- CHECKOUT FUNCTION ---
+  // --- UPDATED CHECKOUT FUNCTION WITH RAZORPAY ---
   const checkout = async () => {
     if (pointsError) {
       toast.error("Please fix the points error before checking out."); return;
@@ -153,23 +152,81 @@ const EmployeeCart = () => {
       const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
       const token = sessionStorage.getItem("token");
 
-      await axios.post(`${API}/checkout`, {
-        userId: currentUserId,
-        items: cleanItems,
-        pointsUsed: discountRs
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      // SCENARIO 1: The user applied points that cover the 100% full amount (Free order)
+      if (finalTotalRs === 0) {
+        await axios.post(`${API}/checkout`, {
+          userId: currentUserId,
+          items: cleanItems,
+          pointsUsed: discountRs
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        
+        toast.success("Checkout successful using points!");
+        setPointsInput("");
+        setApplyPoints(false);
+        fetchData(); 
+        return;
+      }
+
+      // SCENARIO 2: Paid checkout using Razorpay
+      const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+      if (!isScriptLoaded) {
+        toast.error("Razorpay SDK failed to load. Are you online?");
+        return;
+      }
+
+      // Step A: Create order on backend
+      const orderData = await axios.post(`${API}/create-razorpay-order`, {
+        amount: finalTotalRs
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      const { id: order_id, currency, amount } = orderData.data.order;
+
+      // Step B: Setup Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+        amount: amount.toString(),
+        currency: currency,
+        name: "Corporate Store",
+        description: "Cart Checkout",
+        order_id: order_id, 
+        handler: async function (response) {
+          
+          // Step C: Send success data back to backend for verification and DB insertion
+          try {
+            setIsLoading(true);
+            await axios.post(`${API}/verify-payment-and-checkout`, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              userId: currentUserId,
+              items: cleanItems,
+              pointsUsed: discountRs,
+            }, { headers: { Authorization: `Bearer ${token}` } });
+
+            toast.success("Payment successful! Order placed.");
+            setPointsInput("");
+            setApplyPoints(false);
+            fetchData(); 
+          } catch (error) {
+            toast.error(error.response?.data?.message || "Payment verification failed.");
+            console.error(error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        theme: { color: "#000000" } // Matches your UI
+      };
+
+      // Step D: Open the payment window
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response){
+        toast.error(`Payment Failed: ${response.error.description}`);
       });
-      
-      toast.success("Checkout successful!");
-      setPointsInput("");
-      setApplyPoints(false);
-      fetchData(); 
+      paymentObject.open();
+
     } catch (error) {
-      toast.error(error.response?.data?.message || "Checkout failed");
-      console.log(error, error.response?.data?.message);
+      toast.error(error.response?.data?.message || "Failed to initialize payment.");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -292,7 +349,6 @@ const EmployeeCart = () => {
                       {/* Total Item Price & Delete */}
                       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                         <div className="text-right">
-                          {/* UPDATED: Total line item math now uses Final Price */}
                           <p className="text-base sm:text-lg md:text-xl font-black text-slate-900">
                             ₹{(getFinalPrice(item.product) * item.quantity).toLocaleString()}
                           </p>

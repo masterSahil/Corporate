@@ -9,8 +9,12 @@ router.post('/cart', cartController.createCart);
 router.put('/cart/:id', cartController.updateCart);
 router.delete('/cart/:id', cartController.deleteCart);
 
-// checkout cart
+// --- ORIGINAL CHECKOUT (Used if cart is 100% paid with points, total = ₹0) ---
 router.post('/checkout', checkout.checkout);
+
+// --- NEW RAZORPAY ROUTES ---
+router.post('/create-razorpay-order', checkout.createRazorpayOrder);
+router.post('/verify-payment-and-checkout', checkout.verifyPaymentAndCheckout);
 
 // orders all
 router.get('/orders', checkout.getAllOrders);
