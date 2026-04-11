@@ -221,7 +221,7 @@ const AddEmployee = () => {
                       className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
                     >
                       <option value="" disabled hidden>Select an option</option>
-                      {["Engineering","HR","Marketing","Sales","Operations","Finance"].map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                      {["Engineering / Development","Information Technology (IT)","Human Resources (HR)","Finance / Accounting","Product Management","Business Development","Others"].map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
                   </div>
                 </div>

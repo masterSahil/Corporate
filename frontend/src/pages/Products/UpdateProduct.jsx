@@ -25,42 +25,32 @@ const UpdateProduct = () => {
     const token = sessionStorage.getItem("token");
 
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/product-all`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product-single/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } });
 
-      const product = res.data.product.find(
-        p => (p._id?.$oid || p._id) === id
-      );
-
-      if (product) {
+      if (res.data.product) {
         setFormData({
-          name: product.name || "",
-          category: product.category || "",
-          brand: product.brand || "",
-          price: product.price || "",
-          discount: product.discount || "",
-          discountType: product.discountType || "percentage",
-          quantity: product.quantity || "",
-          description: product.description || "",
+          name: res.data.product.name || "",
+          category: res.data.product.category || "",
+          brand: res.data.product.brand || "",
+          price: res.data.product.price || "",
+          discount: res.data.product.discount || "",
+          discountType: res.data.product.discountType || "percentage",
+          quantity: res.data.product.quantity || "",
+          description: res.data.product.description || "",
         });
 
-        setExistingImages(product.gallery || []);
+        setExistingImages(res.data.product.gallery || []);
       } else {
         toast.error("Product not found");
         navigate(-1);
       }
-
     } catch (error) {
       if (error?.response?.status === 401) {
         sessionStorage.removeItem("token");
         window.location.href = "/login";
         return;
       }
-
       toast.error("Failed to fetch product");
       console.error("Failed to fetch product:", error);
     } finally {
@@ -103,9 +93,24 @@ const UpdateProduct = () => {
     setExistingImages((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
+  const validateForm = () => {
+    if (!formData.name.trim()) return "Name required";
+    if (!formData.price || formData.price <= 0) return "Invalid price";
+    if (formData.discount < 0) return "Invalid discount";
+    if (formData.quantity < 0) return "Invalid quantity";
+    if (formData.discountType === "percentage" && formData.discount > 100)
+      return "Discount Can't Be More than 100";
+    if (formData.discountType === "flat" && formData.discount > formData.price)
+      return "Discount Can't Be Greater than Price";
+
+    return null;
+  };
+
   // --- Submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const err = validateForm();
+    if (err) return toast.error(err);
 
     const token = sessionStorage.getItem("token");
 
@@ -234,7 +239,7 @@ const UpdateProduct = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5">Discount</label>
-                    <input type="number" name="discount" min="0" value={formData.discount} onChange={handleInputChange} className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-sm focus:border-black focus:ring-1 focus:ring-black outline-none transition-all" />
+                    <input type="number" name="discount" value={formData.discount} onChange={handleInputChange} className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-sm focus:border-black focus:ring-1 focus:ring-black outline-none transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5">Discount Type</label>

@@ -27,15 +27,10 @@ const UpdateReward = () => {
     const token = sessionStorage.getItem("token");
 
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/reward`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/reward`,
+        { headers: { Authorization: `Bearer ${token}` } });
 
       const reward = res.data.reward?.find(r => r._id === id);
-
       if (reward) {
         setFormData({
           title: reward.title || "",
@@ -108,17 +103,11 @@ const UpdateReward = () => {
 
       setIsSubmitting(true);
 
-      await axios.put(
-        `${import.meta.env.VITE_API_KEY}/reward/${id}`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      await axios.put(`${import.meta.env.VITE_API_KEY}/reward/${id}`,
+        formData, { headers: { Authorization: `Bearer ${token}` } });
 
       toast.success("Reward updated successfully!");
       navigate(-1);
-
     } catch (error) {
       if (error?.response?.status === 401) {
         sessionStorage.removeItem("token");
@@ -219,9 +208,16 @@ const UpdateReward = () => {
                     </label>
                     <div className="relative flex items-center">
                       <Tag size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                      <input type="text" value={formData.category} onChange={handleChange("category")}
-                        placeholder="e.g. Bonus, Voucher"
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}/>
+
+                      <select value={formData.category} onChange={handleChange("category")}
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}>
+                        <option value="" disabled>Select category</option>
+                        <option value="everyday">Everyday</option>
+                        <option value="Shopping & Lifestyle">Shopping & Lifestyle</option>
+                        <option value="Travel & Hotels">Travel & Hotels</option>
+                        <option value="Entertainment & Subscriptions">Entertainment & Subscriptions</option>
+                        <option value="Bonus / Special">Bonus / Special</option>
+                      </select>
                     </div>
                   </div>
 

@@ -9,7 +9,6 @@ router.post("/reward", rewardController.createReward); // new reward
 router.put("/reward/:id", rewardController.updateReward); // update
 router.put("/reward-restore/:id", rewardController.restoringReward); // restore reward
 router.put("/reward-soft-delete/:id", rewardController.softDeleteReward); // soft delete
-router.delete("/reward-delete/:id", rewardController.deleteReward); // remove
 router.post("/hard-delete-reward/:id", rewardController.permanentDelete); // remove
 
 module.exports = router;

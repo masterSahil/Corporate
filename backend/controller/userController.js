@@ -5,8 +5,7 @@ const cloudinary = require("../config/Cloudinary")
 
 module.exports.FetchSingleUser = async (req, res) => {
     try {
-        const {email} = req.body;
-        const user = await UserSchema.findOne({ email });
+        const user = await UserSchema.findById(req.params.id);
 
         if (!user) {
             return res.status(404).json({

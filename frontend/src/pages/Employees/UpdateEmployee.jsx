@@ -24,29 +24,23 @@ const UpdateEmployee = () => {
     const token = sessionStorage.getItem("token");
 
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/fetch-all-user`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-user/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } });
 
-      const employee = res.data.users?.find(emp => emp._id === id);
-
-      if (employee) {
+      if (res.data.users) {
         setFormData({
-          username: employee.username || "",
-          email: employee.email || "",
-          gender: employee.gender || "",
-          phoneNumber: employee.phoneNumber || "",
-          department: employee.department || "",
-          employment: employee.employment || "Full-time",
-          role: employee.role || "employee",
+          username: res.data.users.username || "",
+          email: res.data.users.email || "",
+          gender: res.data.users.gender || "",
+          phoneNumber: res.data.users.phoneNumber || "",
+          department: res.data.users.department || "",
+          employment: res.data.users.employment || "Full-time",
+          role: res.data.users.role || "employee",
           password: "",
         });
 
-        if (employee.profile) {
-          setPreview(employee.profile.imageUrl);
+        if (res.data.users.profile) {
+          setPreview(res.data.users.profile.imageUrl);
         }
       } else {
         toast.error("Employee not found");
@@ -104,18 +98,15 @@ const UpdateEmployee = () => {
   /* Submit Update */
   const handleSubmit = async () => {
     const token = sessionStorage.getItem("token");
-
     try {
       const error = validateForm();
       if (error) {
         toast.warning(error);
         return;
       }
-
       setIsSubmitting(true);
 
       const submitData = new FormData();
-
       submitData.append("username", formData.username);
       submitData.append("email", formData.email);
       submitData.append("gender", formData.gender);
@@ -285,7 +276,7 @@ const UpdateEmployee = () => {
                       className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
                     >
                       <option value="" disabled hidden>Select an option</option>
-                      {["Engineering","HR","Marketing","Sales","Operations","Finance"].map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                      {["Engineering / Development","Information Technology (IT)","Human Resources (HR)","Finance / Accounting","Product Management","Business Development","Others"].map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
                   </div>
                 </div>

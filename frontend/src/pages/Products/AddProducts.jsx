@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Menu, Box, UploadCloud, Tag, Package, LayoutGrid, AlignLeft, X, ImageIcon, Globe, IndianRupee } from "lucide-react";
+import { Menu, Box, UploadCloud, Tag, Package, LayoutGrid, AlignLeft, X, ImageIcon, Globe, IndianRupee, ChevronDown } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios"
@@ -79,6 +79,15 @@ const AddProduct = () => {
     if (formData.price === "" || formData.price <= 0) return "A valid Price (greater than 0) is required";
     if (formData.discount === "" || formData.discount < 0) return "A valid Discount (0 or more) is required";
     if (formData.quantity === "" || formData.quantity < 0) return "A valid Stock Quantity (0 or more) is required";
+    if (!Number.isInteger(formData.quantity) || formData.quantity < 0) {
+      return `${formData.quantity} quantity is not valid`;
+    }
+    if (formData.discountType === "percentage" && formData.discount > 100) {
+      return "Discount percentage cannot exceed 100";
+    }
+    if (formData.discountType === "flat" && formData.discount > formData.price) {
+      return "Flat discount cannot be greater than price";
+    }
     if (!formData.description.trim()) return "Product Description is required";
     if (files.length === 0) return "At least one product image or video is required";
     return null; 
@@ -111,9 +120,7 @@ const AddProduct = () => {
       const token = sessionStorage.getItem("token");
 
       await axios.post(`${import.meta.env.VITE_API_KEY}/product`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
       resetForm();
       toast.success("Product Added Successfully");
@@ -151,7 +158,7 @@ const AddProduct = () => {
               <p className={`text-base ${theme.textMuted} mt-2`}>Configure product details, gallery, and inventory.</p>
             </div>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button onClick={()=>{resetForm, navigate('/products/manage')}} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
+              <button onClick={()=>{resetForm(); navigate('/products/manage')}} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold border ${theme.border} bg-white hover:bg-zinc-50 transition-colors`}>
                 Discard
               </button>
               <button
@@ -199,10 +206,21 @@ const AddProduct = () => {
                     <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Product Category</label>
                     <div className="relative flex items-center">
                       <LayoutGrid size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                      <input name="category" value={formData.category}
-                        onChange={handleChange} placeholder="Category"
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-                       />
+                      <select name="category" value={formData.category} onChange={handleChange} 
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}>
+                        <option value="" disabled>Select a category</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="Fashion & Apparel">Fashion & Apparel</option>
+                        <option value="Home & Living">Home & Living</option>
+                        <option value="Health & Wellness">Health & Wellness</option>
+                        <option value="Books & Media">Books & Media</option>
+                        <option value="Food & Beverages">Food & Beverages</option>
+                        <option value="Sports & Outdoors">Sports & Outdoors</option>
+                        <option value="Others">Others</option>
+                      </select>
+
+                      {/* Custom dropdown arrow */}
+                      <ChevronDown size={16} className={`absolute right-4 ${theme.textMuted} pointer-events-none`} />
                     </div>
                   </div>
 

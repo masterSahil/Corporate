@@ -33,7 +33,7 @@ router.patch('/password-change', userController.changePassword);
 router.get('/fetch-all-user', userController.FetchUser); // fetch all users
 router.get('/fetch-deleted', userController.FetchDeletedOnly); // fetch deleted
 router.get('/', userController.FetchUser); // fetch all not soft deleted users
-router.post('/fetch-user', userController.FetchSingleUser); // fetch single user
+router.get('/fetch-user/:id', userController.FetchSingleUser); // fetch single user
 
 router.post('/create-user', upload.single('file'), userController.CreateUser); // Create User
 router.put('/:id', upload.single('file'), userController.UpdatedUser);// update user

@@ -138,14 +138,19 @@ const AddReward = () => {
                     <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>
                       Reward Category
                     </label>
+
                     <div className="relative flex items-center">
                       <Tag size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
-                      <input
-                        value={formData.category}
-                        placeholder="Category"
-                        onChange={handleChange("category")}
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
-                       />
+
+                      <select value={formData.category} onChange={handleChange("category")}
+                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`} >
+                        <option value="" disabled>Select category</option>
+                        <option value="everyday">Everyday</option>
+                        <option value="Shopping & Lifestyle">Shopping & Lifestyle</option>
+                        <option value="Travel & Hotels">Travel & Hotels</option>
+                        <option value="Entertainment & Subscriptions">Entertainment & Subscriptions</option>
+                        <option value="Bonus / Special">Bonus / Special</option>
+                      </select>
                     </div>
                   </div>
 

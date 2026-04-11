@@ -30,41 +30,32 @@ const UpdateAdmin = () => {
 
   const fetchAdmin = async () => {
     const token = sessionStorage.getItem("token");
-
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/fetch-all-user`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/fetch-user/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } });
 
-      const admin = res.data.users?.find(u => u._id === id);
-
-      if (admin) {
+      if (res.data.users) {
         setFormData({
-          username: admin.username || "",
-          email: admin.email || "",
-          phoneNumber: admin.phoneNumber || "",
-          gender: admin.gender || "",
-          role: admin.role || "admin",
+          username: res.data.users.username || "",
+          email: res.data.users.email || "",
+          phoneNumber: res.data.users.phoneNumber || "",
+          gender: res.data.users.gender || "",
+          role: res.data.users.role || "admin",
           password: "",
           profileImage: null,
         });
 
-        setExistingImage(admin.profile?.imageUrl || null);
+        setExistingImage(res.data.users.profile?.imageUrl || null);
       } else {
         toast.error("Admin not found");
         navigate(-1);
       }
-
     } catch (error) {
       if (error?.response?.status === 401) {
         sessionStorage.removeItem("token");
         window.location.href = "/login";
         return;
       }
-
       toast.error("Failed to fetch admin");
     } finally {
       setIsLoading(false);
@@ -115,7 +106,6 @@ const UpdateAdmin = () => {
         toast.warning(error);
         return;
       }
-
       setIsSubmitting(true);
 
       const data = new FormData();
