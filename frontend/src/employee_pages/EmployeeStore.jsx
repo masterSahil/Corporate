@@ -15,7 +15,7 @@ const EmployeeStore = () => {
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [cartItems, setCartItems] = useState([]);
-  const [userPoints, setUserPoints] = useState(0);
+  // const [userPoints, setUserPoints] = useState(0);
   const [loading, setLoading] = useState(false);
   
   // Localized loading state for the "Add to Cart" button to prevent screen freezes
@@ -42,29 +42,15 @@ const EmployeeStore = () => {
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/product`,
-        config
-      );
-
-      const res2 = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/check-role`,
-        config
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, config);
+      const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, config);
 
       setProducts(res.data.product);
       const user = res2.data.user;
       setCurrentUserId(user._id);
-      setUserPoints(user.points || 0);
 
-      const cartRes = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/cart-all`,
-        config
-      );
-
-      const userCart = cartRes.data.cart.filter(
-        item => item.buyerId === user._id
-      );
+      const cartRes = await axios.get(`${import.meta.env.VITE_API_KEY}/cart-all`, config);
+      const userCart = cartRes.data.cart.filter(item => item.buyerId === user._id);
       setCartItems(userCart);
     } catch (error) {
       if (error?.response?.status === 401) {
@@ -206,21 +192,13 @@ const EmployeeStore = () => {
                 <h1 className="text-3xl md:text-4xl lg:text-[42px] font-black tracking-tighter mb-2">THE PRODUCT STORE</h1>
                 <p className="text-zinc-400 font-medium text-sm md:text-lg">Turn your hard-earned points into premium benefits.</p>
               </div>
-
-              <div className="bg-white/10 border border-white/10 rounded-md p-4 md:p-5 flex flex-col items-center w-full md:w-auto md:min-w-45">
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Your Balance</span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl md:text-4xl font-black text-white">{userPoints.toLocaleString()}</span>
-                  <span className="text-sm font-bold text-zinc-500 uppercase">pts</span>
-                </div>
-              </div>
             </div>
           </section>
 
           {/* Search & Dynamic Dropdown Filter */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between relative z-30">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between relative">
             <div className="relative w-full sm:w-1/2 md:w-1/3 group">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-black transition-colors" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-black font-extrabold transition-colors" />
               <input type="text" placeholder="Search products..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-white border-2 border-slate-200 text-slate-900 text-sm rounded-lg pl-12 pr-4 py-3.5 outline-none focus:border-black transition-all shadow-sm font-medium" />
             </div>
 
@@ -238,11 +216,11 @@ const EmployeeStore = () => {
 
               {/* Dropdown Menu */}
               {isFilterOpen && (
-                <div className="absolute top-full mt-2 w-full bg-white border-2 border-black rounded-lg shadow-2xl overflow-hidden z-50">
+                <div className="absolute top-full mt-2 w-full bg-white border-2 border-black rounded-lg shadow-2xl overflow-hidden z-20">
                   <div className="max-h-64 overflow-y-auto custom-scrollbar">
                     {categories.map((cat) => (
                       <button key={cat} onClick={() => {setSelectedCategory(cat); setIsFilterOpen(false) }}
-                        className={`w-full flex items-center justify-between px-5 py-4 text-[10px] font-black uppercase tracking-widest transition-colors border-b border-slate-50 last:border-0 text-left ${selectedCategory === cat ? "bg-black text-white" : "text-slate-600 hover:bg-slate-200"}`}>
+                        className={`w-full flex items-center justify-between px-5 py-4 text-[10px] font-extrabold uppercase tracking-widest transition-colors border-b border-slate-50 last:border-0 text-left ${selectedCategory === cat ? "bg-black text-white" : "text-slate-600 hover:bg-slate-200"}`}>
                         <span className="truncate pr-2">{cat}</span>
                         {selectedCategory === cat && <Check size={14} className="shrink-0" />}
                       </button>
@@ -283,7 +261,7 @@ const EmployeeStore = () => {
                     
                     {/* Dark Glass Overlay on Hover */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                      <div className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 rounded-md flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-2xl">
+                      <div className="bg-white text-black text-[10px] font-extrabold uppercase tracking-[0.2em] px-5 py-3 rounded-md flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-2xl">
                         <Eye size={14} /> View
                       </div>
                     </div>

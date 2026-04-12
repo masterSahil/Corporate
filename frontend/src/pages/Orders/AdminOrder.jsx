@@ -86,24 +86,17 @@ const AdminOrders = () => {
     const token = sessionStorage.getItem("token");
 
     try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_KEY}/order-status/${orderId}`,
-        { status: newStatus },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      await axios.patch(`${import.meta.env.VITE_API_KEY}/order-status/${orderId}`,
+        { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
 
       toast.success(`Order #${orderId.slice(-6)} set to ${newStatus}`);
       fetchData();
-
     } catch (error) {
       if (error?.response?.status === 401) {
         sessionStorage.removeItem("token");
         window.location.href = "/login";
         return;
       }
-
       toast.error(error?.response?.data?.message || "Status update failed.");
     }
   };

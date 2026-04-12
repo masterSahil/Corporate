@@ -100,12 +100,9 @@ const EmployeeOrder = () => {
       setIsLoading(true);
       const token = sessionStorage.getItem("token");
       await axios.patch(
-        `${import.meta.env.VITE_API_KEY}/order-status/${cancelOrderId}`,
-        { status: "Cancelled" },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+        `${import.meta.env.VITE_API_KEY}/order-status/${cancelOrderId}`, { status: "Cancelled" },
+        { headers: { Authorization: `Bearer ${token}` } });
+
       toast.success("Order cancelled successfully");
       fetchMyOrders(); 
       setShowCancelModal(false);
@@ -194,7 +191,12 @@ const EmployeeOrder = () => {
                       <div className="flex flex-wrap items-center gap-4 sm:gap-8">
                         <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Calendar size={12}/> Order Placed</p>
-                          <p className="text-sm font-bold text-slate-700">{new Date(order.orderDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                          <p className="text-sm font-bold text-slate-700">
+                            {new Date(order.orderDate).toLocaleString('en-US', {
+                              day: 'numeric', month: 'short', year: 'numeric',
+                              hour: 'numeric', minute: '2-digit', hour12: true
+                            })}
+                          </p>
                         </div>
                         <div>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Hash size={12}/> Order Number</p>
