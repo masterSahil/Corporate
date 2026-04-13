@@ -84,14 +84,14 @@ const UpdateEmployee = () => {
 
   /* Form Validation */
   const validateForm = () => {
-    if (!formData.username.trim()) return "Full name is required";
+    // if (!formData.username.trim()) return "Full name is required";
     if (!formData.email.trim()) return "Email is required";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Invalid email format";
-    if (!formData.phoneNumber.trim()) return "Phone number is required";
-    if (!/^[0-9]{10}$/.test(formData.phoneNumber)) return "Phone number must be 10 digits";
+    // if (!formData.phoneNumber.trim()) return "Phone number is required";
+    // if (!/^[0-9]{10}$/.test(formData.phoneNumber)) return "Phone number must be 10 digits";
     // Password check is skipped for updates unless they are trying to type one
     if (formData.password && formData.password.length < 6) return "Password must be at least 6 characters";
-    if (!formData.gender) return "Please select gender";
+    // if (!formData.gender) return "Please select gender";
     return null;
   };
 

@@ -298,7 +298,6 @@ const AddAdmin = () => {
                 </label>
               </div>
             </div>
-
           </div>
         </div>
       </main>

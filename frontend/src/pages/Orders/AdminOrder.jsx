@@ -83,6 +83,13 @@ const AdminOrders = () => {
   }, [searchTerm, ordersPerPage]);
 
   const handleStatusUpdate = async (orderId, newStatus) => {
+    // --- NEW: Prevent cancellation if already Delivered ---
+    const targetOrder = orders.find(o => o._id === orderId);
+    if (targetOrder?.status === 'Delivered' && newStatus === 'Cancelled') {
+      toast.error("Delivered orders cannot be cancelled.");
+      return;
+    }
+
     const token = sessionStorage.getItem("token");
 
     try {
@@ -284,12 +291,14 @@ const AdminOrders = () => {
                           <div className="space-y-3">
                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Update Workflow</label>
                             <div className="relative group">
-                              <select 
-                                value={order.status}
+                              <select value={order.status}
                                 onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
-                                className="w-full appearance-none bg-slate-900 text-white rounded-md px-4 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-800 transition-all">
+                                className="w-full appearance-none bg-slate-900 text-white rounded-md px-4 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-800 transition-all" >
                                 {['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(s => (
-                                  <option key={s} value={s}>{s}</option>
+                                  <option key={s} value={s} 
+                                  disabled={order.status === 'Delivered' && s === 'Cancelled'}>
+                                    {s}
+                                  </option>
                                 ))}
                               </select>
                               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />

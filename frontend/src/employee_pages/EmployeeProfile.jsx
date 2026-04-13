@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash, RefreshCw } from 'lucide-react';
+import { Menu, User, Lock, Mail, Eye, EyeOff, ShieldCheck, Save, LogOut, Camera, Phone, Briefcase, Hash, RefreshCw, Users, ChevronDown } from 'lucide-react';
 import Sidebar from './EmployeeSidebar';
 import { theme } from '../components/Theme';
 import axios from 'axios';
@@ -55,12 +55,8 @@ const Settings = () => {
         return;
       }
 
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/check-role`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`,
+        { headers: { Authorization: `Bearer ${token}` } });
 
       setFormData({
         profile: res.data.user.profile ?? null,
@@ -112,9 +108,7 @@ const Settings = () => {
         data.append("file", formData.profile.file);
       }
       const token = sessionStorage.getItem("token");
-      await axios.put(
-        `${import.meta.env.VITE_API_KEY}/${currentUserId}`,
-        data,
+      await axios.put(`${import.meta.env.VITE_API_KEY}/${currentUserId}`, data,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -298,18 +292,21 @@ const Settings = () => {
                 {/* Gender */}
                 <div className="flex flex-col gap-2">
                   <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Gender</label>
-                  <select
-                    name="gender"
-                    value={formData.gender || ""}
-                    onChange={handleChange}
-                    className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg px-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Non-binary">Non-binary</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                  </select>
+                  <div className="relative flex items-center">
+                    <Users size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                    <select
+                      name="gender"
+                      value={formData.gender || ""}
+                      onChange={handleChange}
+                      className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                    >
+                      <option value="" disabled hidden>Select Gender</option>
+                      {["Male", "Female", "Non-binary", "Prefer not to say"].map((opt, i) => (
+                        <option key={i} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className="absolute right-4 pointer-events-none text-slate-400" />
+                  </div>
                 </div>
 
                 {
@@ -319,36 +316,45 @@ const Settings = () => {
                     <div className="flex flex-col gap-2">
                       <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Department</label>
                       <div className="relative flex items-center">
-                        <Briefcase size={18} className={`absolute left-4 ${theme.textMuted}`} />
-                        <input
-                          type="text"
+                        <Briefcase size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                        <select
                           name="department"
-                          value={formData.department}
-                          onChange={handleChange} placeholder='Department'
-                          className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                        />
+                          value={formData.department || ""}
+                          onChange={handleChange}
+                          className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                        >
+                          <option value="" disabled hidden>Select an option</option>
+                          {["Engineering / Development","Information Technology (IT)","Human Resources (HR)","Finance / Accounting","Product Management","Business Development","Others"].map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-4 pointer-events-none text-slate-400" />
                       </div>
                     </div>
 
                     {/* Employment */}
                     <div className="flex flex-col gap-2">
                       <label className={`text-[11px] font-bold uppercase tracking-wide ${theme.textMuted}`}>Employment Type</label>
-                      <select
-                        name="employment"
-                        value={formData.employment}
-                        onChange={handleChange}
-                        className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg px-4 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
-                      >
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Internship">Internship</option>
-                      </select>
+                      <div className="relative flex items-center">
+                        <Briefcase size={18} className={`absolute left-4 ${theme.textMuted} pointer-events-none`} />
+                        <select
+                          name="employment"
+                          value={formData.employment || ""}
+                          onChange={handleChange}
+                          className={`w-full bg-zinc-50 border ${theme.border} text-slate-900 text-sm rounded-lg pl-11 pr-10 py-3 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer`}
+                        >
+                          <option value="" disabled hidden>Select Employment</option>
+                          {["Full-time", "Part-time", "Contract", "Internship"].map((opt, i) => (
+                            <option key={i} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-4 pointer-events-none text-slate-400" />
+                      </div>
                     </div>
                   </>
                 }
 
-                <div className="pt-6">
+                <div className="pt-6 sm:col-span-2 md:col-span-1">
                   <button
                     onClick={submit}
                     disabled={loading}
