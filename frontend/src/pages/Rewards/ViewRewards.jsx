@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Edit2, Trash2, Plus, Gift, Tag, Award, Mail, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Menu, Search, Edit2, Trash2, Plus, Gift, Tag, Award, Mail, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, List } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
-import axios from "axios"
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "../../ui/Toaster";
 
@@ -21,9 +21,11 @@ const ViewRewards = () => {
   const [initialRewards, setInitialRewards] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- NEW: Pagination States ---
+  // --- Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
   const [rewardsPerPage, setRewardsPerPage] = useState(10); // Default to 10
+  // --- NEW: View Mode State ---
+  const [viewMode, setViewMode] = useState("table"); // "table" or "card"
 
   const navigate = useNavigate();
   
@@ -102,6 +104,12 @@ const ViewRewards = () => {
   // Tailwind arbitrary variants for the custom scrollbar
   const customScrollbar = "[&::-webkit-scrollbar]:w-[4px] [&::-webkit-scrollbar]:h-[4px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400";
 
+  // --- NEW: Dynamically extract unique categories from the data ---
+  const uniqueCategories = [
+    "All", 
+    ...new Set(initialRewards.map(reward => reward.category).filter(Boolean))
+  ];
+
   // Filter logic
   const filteredRewards = initialRewards.filter(reward => {
     const matchesSearch = reward.title.toLowerCase().includes(searchTerm.toLowerCase()) || reward.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -155,164 +163,258 @@ const ViewRewards = () => {
           </button>
         </div>
 
-        <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
+        <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
           
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Issued Rewards</h1>
-              <p className={`text-base ${theme.textMuted} mt-2`}>Manage, update, and track employee incentives.</p>
+              <p className={`text-base ${theme.textMuted} mt-1 sm:mt-2`}>Manage, update, and track employee incentives.</p>
             </div>
-            <button onClick={()=>navigate('/rewards/add')} className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors w-full sm:w-auto">
+            <button onClick={()=>navigate('/rewards/add')} className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-black hover:bg-zinc-800 shadow-lg transition-colors w-full sm:w-auto shrink-0">
               <Plus size={18} />
               Issue Reward
             </button>
           </div>
 
-          {/* Toolbar: Search & Filter */}
-          <div className={`flex flex-col md:flex-row gap-4 mb-8 p-5 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
+          {/* Toolbar: Search, Filter & View Toggle (Fully Responsive) */}
+          <div className={`flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-md border ${theme.border} ${theme.cardBg} shadow-sm`}>
+            
             {/* Search */}
-            <div className="relative flex-1">
+            <div className="relative flex-1 w-full">
               <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
               <input type="text" value={searchTerm}
-                placeholder="Search by reward title or User ID..." 
+                placeholder="Search by title or Email..." 
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
+                className={`w-full pl-11 pr-4 py-3 bg-zinc-50 border ${theme.border} rounded-md text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
               />
             </div>
             
-            {/* Category Filter */}
-            <div className="relative md:w-64">
-              <Tag size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
-              <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
-                className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}>
-                <option value="All">All Categories</option>
-                <option value="Gift Card">Gift Card</option>
-                <option value="Merchandise">Merchandise</option>
-                <option value="Experience">Experience</option>
-                <option value="Digital">Digital</option>
-                <option value="Travel">Travel</option>
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+            {/* Grouped Controls for Mobile */}
+            <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto items-start lg:items-center">
+              
+              {/* Category Filter */}
+              <div className="relative w-full lg:w-64 shrink-0">
+                <Tag size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
+                <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+                  className={`w-full pl-11 pr-10 py-3 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none cursor-pointer transition-all`}>
+                  {uniqueCategories.map((category, idx) => (
+                    <option key={idx} value={category}>
+                      {category === "All" ? "All Categories" : category}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </div>
+              
+              {/* View Toggle (Spans full width on mobile) */}
+              <div className={`flex w-full lg:w-auto bg-zinc-50 p-1.5 rounded-md border ${theme.border} shrink-0`}>
+                <button onClick={() => setViewMode("table")}
+                  className={`flex-1 lg:flex-none px-4 py-2 sm:px-3 sm:py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "table" ? "bg-white shadow-sm text-black" : "text-slate-500 hover:text-slate-900"}`}
+                  title="Table View" >
+                  <List size={18} />
+                </button>
+                <button onClick={() => setViewMode("card")}
+                  className={`flex-1 lg:flex-none px-4 py-2 sm:px-3 sm:py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "card" ? "bg-white shadow-sm text-black" : "text-slate-500 hover:text-slate-900"}`}
+                  title="Card View" >
+                  <LayoutGrid size={18} />
+                </button>
+              </div>
+
             </div>
           </div>  
 
-          {/* Data Table Card */}
-          <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex flex-col`}>
+          {/* Data Card Container */}
+          <div className={`${theme.cardBg} border ${theme.border} rounded-lg shadow-sm overflow-hidden flex flex-col`}>
             
-            {/* Added flex-1 to push the footer down */}
-            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
-                  <tr>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Reward Details</th>
-                    <th className={`px-4 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Points</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Recipient (Email ID)</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Status</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {/* Changed to map over currentRewards */}
-                  {currentRewards.map((reward, index) => (
-                    <tr key={index} className="hover:bg-zinc-50/50 transition-colors group">
-                      
-                      {/* Reward Info */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${rewardColors[index % rewardColors.length]}`}>
-                            <Gift size={20} />
+            {
+              viewMode === "table" ? (
+              <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className={`bg-zinc-50/80 border-b ${theme.border}`}>
+                    <tr>
+                      <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Reward Details</th>
+                      <th className={`px-4 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Points</th>
+                      <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Category</th>
+                      <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Recipient (Email ID)</th>
+                      <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Status</th>
+                      <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-right`}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {currentRewards.map((reward, index) => (
+                      <tr key={index} className="hover:bg-zinc-50/50 transition-colors group">
+                        
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${rewardColors[index % rewardColors.length]}`}>
+                              <Gift size={20} />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-900 text-sm mb-0.5">{reward.title}</p>
+                              <p className={`text-xs ${theme.textMuted} truncate max-w-50`}>{reward.description}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-slate-900 text-sm mb-0.5">{reward.title}</p>
-                            <p className={`text-xs ${theme.textMuted} truncate max-w-50`}>{reward.description}</p>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
+                            {reward.points || "N/A"}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
+                            {reward.category}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          {reward.email ? (
+                            <div className="flex items-center gap-2">
+                              <Mail size={16} />
+                              <span className="font-bold text-slate-900 tracking-wide">{reward.email}</span>
+                            </div>
+                          ) : (
+                            <span className={`text-xs font-semibold ${theme.textMuted} italic`}>
+                              Not Assigned
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col items-start gap-1">
+                              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600">
+                                <Award size={14} /> {reward.status}
+                              </span>
+                            {reward.date !== "-" && (
+                              <span className={`text-[10px] ${theme.textMuted}`}>{reward.date}</span>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={()=>navigate(`/rewards/update/${reward._id}`)} className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
+                              <Edit2 size={18} />
+                            </button>
+                            <button onClick={()=>softDelete(reward._id)} className={`p-2 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Reward">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {/* Empty State */}
+                {currentRewards.length === 0 && (
+                  <div className="p-16 text-center flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
+                      <Search size={24} className={theme.textMuted} />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900">No rewards found</h3>
+                    <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>We couldn't find any rewards matching your current search or filter criteria.</p>
+                    <button 
+                      onClick={() => { setSearchTerm(""); setCategoryFilter("All"); }}
+                      className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
+              </div>
+              ) :(
+                // Responsive Card Layout Container
+                <div className={`overflow-y-auto ${customScrollbar} flex-1 p-3 sm:p-5 bg-slate-50/50`}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                    {currentRewards.map((reward, index) => (
+                      <div key={index} className="bg-white rounded-lg border border-zinc-200 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        
+                        {/* Card Header */}
+                        <div className="flex justify-between items-start mb-4 gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${rewardColors[index % rewardColors.length]}`}>
+                            <Gift size={24} />
+                          </div>
+                          <div className="text-right flex flex-col items-end gap-2">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
+                              {reward.category}
+                            </span>
+                            <span className="font-bold text-xl text-slate-900 leading-none">
+                              {reward.points || "0"} <span className="text-xs text-slate-400 font-medium">pts</span>
+                            </span>
                           </div>
                         </div>
-                      </td>
 
-                      {/* Rewards Points */}
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
-                          {reward.points || "N/A"}
-                        </span>
-                      </td>
+                        {/* Card Body */}
+                        <div className="flex-1 mb-5">
+                          <h3 className="font-bold text-slate-900 text-base mb-1 line-clamp-1" title={reward.title}>{reward.title}</h3>
+                          <p className={`text-xs ${theme.textMuted} line-clamp-2 min-h-8`}>{reward.description}</p>
+                        </div>
 
-                      {/* Category Badge */}
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-50 text-slate-700 ${theme.border}`}>
-                          {reward.category}
-                        </span>
-                      </td>
-
-                      {/* Recipient / User ID */}
-                      <td className="px-6 py-4">
-                        {reward.email ? (
-                          <div className="flex items-center gap-2">
-                            <Mail size={16} />
-                            <span className="font-bold text-slate-900 tracking-wide">{reward.email}</span>
+                        {/* Card Footer (Recipient & Status) */}
+                        <div className="pt-4 border-t border-zinc-100 flex flex-col gap-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail size={16} className="text-slate-400 shrink-0" />
+                            {reward.email ? (
+                              <span className="font-semibold text-slate-800 truncate" title={reward.email}>{reward.email}</span>
+                            ) : (
+                              <span className="italic text-slate-400 text-xs">Not Assigned</span>
+                            )}
                           </div>
-                        ) : (
-                          <span className={`text-xs font-semibold ${theme.textMuted} italic`}>
-                            Not Assigned
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600">
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
                               <Award size={14} /> {reward.status}
                             </span>
-                          {reward.date !== "-" && (
-                            <span className={`text-[10px] ${theme.textMuted}`}>{reward.date}</span>
-                          )}
+                            {reward.date !== "-" && (
+                              <span className={`text-[10px] font-medium ${theme.textMuted}`}>{reward.date}</span>
+                            )}
+                          </div>
                         </div>
-                      </td>
 
-                      {/* Actions */}
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={()=>navigate(`/rewards/update/${reward._id}`)} className={`p-2 rounded-lg hover:bg-zinc-100 text-slate-500 hover:text-black transition-colors tooltip-trigger`} title="Edit Reward">
-                            <Edit2 size={18} />
+                        {/* Always-Visible Action Buttons */}
+                        <div className="mt-5 flex items-center gap-2 pt-2">
+                          <button onClick={()=>navigate(`/rewards/update/${reward._id}`)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-zinc-50 border border-zinc-200 text-slate-700 rounded-lg hover:bg-zinc-100 hover:text-black hover:border-zinc-300 font-semibold text-xs transition-all">
+                            <Edit2 size={14} /> Edit
                           </button>
-                          <button onClick={()=>softDelete(reward._id)} className={`p-2 rounded-lg hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Reward">
-                            <Trash2 size={18} />
+                          <button onClick={()=>softDelete(reward._id)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-rose-50 border border-rose-100 text-rose-600 rounded-lg hover:bg-rose-100 hover:border-rose-200 font-semibold text-xs transition-all">
+                            <Trash2 size={14} /> Delete
                           </button>
                         </div>
-                      </td>
 
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              {/* Empty State - Using currentRewards */}
-              {currentRewards.length === 0 && (
-                <div className="p-16 text-center flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
-                    <Search size={24} className={theme.textMuted} />
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="text-base font-bold text-slate-900">No rewards found</h3>
-                  <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>We couldn't find any rewards matching your current search or filter criteria.</p>
-                  <button 
-                    onClick={() => { setSearchTerm(""); setCategoryFilter("All"); }}
-                    className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors"
-                  >
-                    Clear Filters
-                  </button>
+                  
+                  {/* Empty State for Cards */}
+                  {currentRewards.length === 0 && (
+                  <div className="p-16 text-center flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
+                      <Search size={24} className={theme.textMuted} />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900">No rewards found</h3>
+                    <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>We couldn't find any rewards matching your current search or filter criteria.</p>
+                    <button 
+                      onClick={() => { setSearchTerm(""); setCategoryFilter("All"); }}
+                      className="mt-6 px-4 py-2 text-sm font-bold text-black border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
                 </div>
-              )}
-            </div>
+              )
+            }
 
-            {/* NEW: Pagination Footer */}
+            {/* Pagination Footer - Responsive Flex Direction */}
             {filteredRewards.length > 0 && totalPages > 1 && (
-              <div className="mt-auto shrink-0 flex flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
                 
                 {/* Items per page selector */}
                 <div className="flex items-center gap-3">
