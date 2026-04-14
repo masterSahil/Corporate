@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Edit2, Trash2, UserPlus, Shield, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Menu, Search, Filter, Edit2, Trash2, UserPlus, Shield, ShieldCheck, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, List, Phone, Mail, User } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -14,6 +14,7 @@ const ViewAdmins = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [adminsPerPage, setAdminsPerPage] = useState(10); 
+  const [viewMode, setViewMode] = useState("table"); // "table" or "card"
 
   const navigate = useNavigate();
 
@@ -61,7 +62,7 @@ const ViewAdmins = () => {
   const indexOfLastAdmin = currentPage * adminsPerPage;
   const indexOfFirstAdmin = indexOfLastAdmin - adminsPerPage;
 
-  // This is the array you will actually render in the table
+  // This is the array you will actually render
   const currentAdmins = filteredAdmins.slice(indexOfFirstAdmin, indexOfLastAdmin);
   
   const getPageNumbers = () => {
@@ -153,118 +154,241 @@ const ViewAdmins = () => {
             </button>
           </div>
 
-          {/* Toolbar: Search & Filter */}
-          <div className={`flex flex-col sm:flex-row gap-4 mb-6 p-4 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
-            <div className="relative flex-1">
-              <Search size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
+          {/* Toolbar: Search, Filter & View Toggle */}
+          <div className={`flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
+            
+            {/* Search */}
+            <div className="relative flex-1 w-full">
+              <Search size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
               <input type="text" placeholder="Search by username or email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`w-full pl-10 pr-4 py-2.5 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`} />
             </div>
-            <div className="relative sm:w-48">
-              <Filter size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
-              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2.5 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black appearance-none cursor-pointer transition-all`}>
-                <option value="All">All Roles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
-              </select>
+
+            {/* Grouped Controls for Mobile */}
+            <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto items-start lg:items-center">
+              
+              {/* Role Filter */}
+              <div className="relative w-full lg:w-48 shrink-0">
+                <Filter size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted} pointer-events-none`} />
+                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black appearance-none cursor-pointer transition-all`}>
+                  <option value="All">All Roles</option>
+                  <option value="super_admin">Super Admin</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* View Toggle */}
+              <div className={`flex w-full lg:w-auto bg-zinc-50 p-1.5 rounded-md border ${theme.border} shrink-0`}>
+                <button onClick={() => setViewMode("table")}
+                  className={`flex-1 lg:flex-none px-4 py-2 sm:px-3 sm:py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "table" ? "bg-white shadow-sm text-black" : "text-slate-500 hover:text-slate-900"}`}
+                  title="Table View" >
+                  <List size={18} />
+                </button>
+                <button onClick={() => setViewMode("card")}
+                  className={`flex-1 lg:flex-none px-4 py-2 sm:px-3 sm:py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "card" ? "bg-white shadow-sm text-black" : "text-slate-500 hover:text-slate-900"}`}
+                  title="Card View" >
+                  <LayoutGrid size={18} />
+                </button>
+              </div>
+
             </div>
           </div>
 
-          {/* Data Table Container */}
+          {/* Data Container */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex flex-col`}>
             
-            {/* ADDED flex-1 here to push the pagination footer to the bottom */}
-            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className={`bg-zinc-50/50 border-b ${theme.border}`}>
-                  <tr>
-                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>User Profile</th>
-                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:table-cell ${theme.textMuted}`}>Email</th>
-                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
-                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Gender</th>
-                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
-                    <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Created At</th>
-                    <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-center`}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
+            {viewMode === "table" ? (
+              <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className={`bg-zinc-50/50 border-b ${theme.border}`}>
+                    <tr>
+                      <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>User Profile</th>
+                      <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:table-cell ${theme.textMuted}`}>Email</th>
+                      <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
+                      <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Gender</th>
+                      <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Role</th>
+                      <th className={`px-6 py-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Created At</th>
+                      <th className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-center`}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {currentAdmins.map((admin) => (
+                      <tr key={admin._id} className="hover:bg-zinc-50/80 transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {admin.profile?.imageUrl ? (
+                              <img src={admin.profile.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                                alt={admin.username} 
+                                className="w-10 h-10 rounded-full object-cover border border-zinc-200"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600">
+                                {admin.username?.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-bold text-slate-900">{admin.username}</p>
+                              <p className={`text-xs ${theme.textMuted} lg:hidden`}>{admin.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className={`px-6 py-4 text-sm font-medium hidden lg:table-cell ${theme.textMuted}`}>
+                          {admin.email}
+                        </td>
+                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                          {admin.phoneNumber || "N/A"}
+                        </td>
+                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                          {admin.gender || "N/A"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+                            admin.role === 'super_admin' 
+                              ? 'bg-black text-white border-black' 
+                              : `bg-zinc-100 text-slate-700 ${theme.border}`
+                          }`}>
+                            {admin.role === 'super_admin' ? <ShieldCheck size={13} /> : <Shield size={13} />}
+                            {admin.role.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                          {formatDate(admin.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={()=>navigate(`/admins/update/${admin._id}`)} className={`p-2 rounded-md hover:bg-zinc-200 text-slate-600 hover:text-black transition-colors tooltip-trigger`} title="Update Admin">
+                              <Edit2 size={16} />
+                            </button>
+                            <button onClick={()=>deleteAdmin(admin._id)} className={`p-2 rounded-md hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Admin">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {currentAdmins.length === 0 && (
+                      <tr>
+                        <td colSpan="7" className="p-12">
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3">
+                              <Search size={20} className={theme.textMuted} />
+                            </div>
+                            <h3 className="text-sm font-bold text-slate-900">No admins found</h3>
+                            <p className={`text-xs ${theme.textMuted} mt-1`}>
+                              Try adjusting your search or filters.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              // Card View Layout
+              <div className={`overflow-y-auto ${customScrollbar} flex-1 p-3 sm:p-5 bg-slate-50/50`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                   {currentAdmins.map((admin) => (
-                    <tr key={admin._id} className="hover:bg-zinc-50/80 transition-colors group">
-                      <td className="px-6 py-4">
+                    <div key={admin._id} className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col relative overflow-hidden">
+                      
+                      {/* Top Accent Line for Super Admins */}
+                      {admin.role === 'super_admin' && (
+                         <div className="absolute top-0 left-0 right-0 h-1 bg-black"></div>
+                      )}
+
+                      {/* Card Header */}
+                      <div className="flex items-start justify-between mb-4 gap-3">
                         <div className="flex items-center gap-3">
                           {admin.profile?.imageUrl ? (
                             <img src={admin.profile.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
                               alt={admin.username} 
-                              className="w-10 h-10 rounded-full object-cover border border-zinc-200"
+                              className="w-12 h-12 rounded-full object-cover border border-zinc-200 shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-zinc-600">
+                            <div className="w-12 h-12 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center font-bold text-lg text-zinc-600 shrink-0">
                               {admin.username?.charAt(0).toUpperCase()}
                             </div>
                           )}
                           <div>
-                            <p className="font-bold text-slate-900">{admin.username}</p>
-                            <p className={`text-xs ${theme.textMuted} lg:hidden`}>{admin.email}</p>
+                            <h3 className="font-bold text-slate-900 text-base leading-tight mb-0.5 line-clamp-1" title={admin.username}>
+                              {admin.username}
+                            </h3>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                              admin.role === 'super_admin' 
+                                ? 'bg-black text-white border-black' 
+                                : `bg-zinc-100 text-slate-700 ${theme.border}`
+                            }`}>
+                              {admin.role === 'super_admin' ? <ShieldCheck size={10} /> : <Shield size={10} />}
+                              {admin.role.replace('_', ' ')}
+                            </span>
                           </div>
                         </div>
-                      </td>
-                      <td className={`px-6 py-4 text-sm font-medium hidden lg:table-cell ${theme.textMuted}`}>
-                        {admin.email}
-                      </td>
-                      <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                        {admin.phoneNumber || "N/A"}
-                      </td>
-                      <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                        {admin.gender || "N/A"}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                          admin.role === 'super_admin' 
-                            ? 'bg-black text-white border-black' 
-                            : `bg-zinc-100 text-slate-700 ${theme.border}`
-                        }`}>
-                          {admin.role === 'super_admin' ? <ShieldCheck size={13} /> : <Shield size={13} />}
-                          {admin.role.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                        {formatDate(admin.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={()=>navigate(`/admins/update/${admin._id}`)} className={`p-2 rounded-md hover:bg-zinc-200 text-slate-600 hover:text-black transition-colors tooltip-trigger`} title="Update Admin">
-                            <Edit2 size={16} />
-                          </button>
-                          <button onClick={()=>deleteAdmin(admin._id)} className={`p-2 rounded-md hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Admin">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                      </div>
 
-                  {currentAdmins.length === 0 && (
-                    <tr>
-                      <td colSpan="7" className="p-12">
-                        <div className="flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3">
-                            <Search size={20} className={theme.textMuted} />
-                          </div>
-                          <h3 className="text-sm font-bold text-slate-900">No admins found</h3>
-                          <p className={`text-xs ${theme.textMuted} mt-1`}>
-                            Try adjusting your search or filters.
-                          </p>
+                      {/* Card Body - Contact Info */}
+                      <div className="flex-1 space-y-2.5 mb-5 mt-2">
+                        <div className="flex items-center gap-2.5 text-sm">
+                          <Mail size={15} className="text-slate-400 shrink-0" />
+                          <span className="text-slate-700 truncate" title={admin.email}>{admin.email}</span>
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        <div className="flex items-center gap-2.5 text-sm">
+                          <Phone size={15} className="text-slate-400 shrink-0" />
+                          <span className="text-slate-700">{admin.phoneNumber || <span className="italic text-slate-400 text-xs">No Phone</span>}</span>
+                        </div>
+                        <div className="flex items-center gap-2.5 text-sm">
+                          <User size={15} className="text-slate-400 shrink-0" />
+                          <span className="text-slate-700 capitalize">{admin.gender || <span className="italic text-slate-400 text-xs">Unspecified</span>}</span>
+                        </div>
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="pt-4 border-t border-zinc-100 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                           <span className={`text-[12px] font-medium ${theme.textMuted}`}>Joined {formatDate(admin.createdAt)}</span>
+                        </div>
+                      </div>
+
+                      {/* Always-Visible Action Buttons */}
+                      <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
+                        <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">Manage</p>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => navigate(`/admins/update/${admin._id}`)} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-50 border border-zinc-200 text-slate-600 hover:bg-zinc-100 hover:text-slate-900 hover:border-zinc-300 active:scale-95 transition-all duration-150" >
+                            <Edit2 size={14} />
+                          </button>
+                          <button onClick={() => deleteAdmin(admin._id)} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-200 active:scale-95 transition-all duration-150" >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+
+                {/* Empty State for Cards */}
+                {currentAdmins.length === 0 && (
+                  <div className="p-16 text-center flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-full flex items-center justify-center mb-4">
+                      <Search size={24} className={theme.textMuted} />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900">No admins found</h3>
+                    <p className={`text-sm ${theme.textMuted} mt-1 max-w-sm`}>
+                      Try adjusting your search or filters.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Pagination Controls */}
             {filteredAdmins.length > 0 && totalPages > 1 && (
-              <div className="mt-auto shrink-0 flex flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
                 
                 {/* Items per page selector */}
                 <div className="flex items-center gap-3">

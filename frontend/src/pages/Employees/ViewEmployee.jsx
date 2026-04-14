@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Search, Filter, Edit2, Trash2, UserPlus, Briefcase, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Menu, Search, Filter, Edit2, Trash2, UserPlus, Briefcase, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, LayoutGrid, List, Mail, Phone, User } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import axios from "axios";
@@ -13,9 +13,11 @@ const ViewEmployees = () => {
   const [initialEmployees, setInitialEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- NEW: Pagination States ---
+  // --- Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
-  const [employeesPerPage, setEmployeesPerPage] = useState(10); // Changed default to 10
+  const [employeesPerPage, setEmployeesPerPage] = useState(10);
+  // --- NEW: View Mode State ---
+  const [viewMode, setViewMode] = useState("table"); // "table" or "card"
 
   const navigate = useNavigate();
 
@@ -44,7 +46,7 @@ const ViewEmployees = () => {
     getData();
   }, []);
 
-  // --- NEW: Reset page to 1 when search or filter changes ---
+  // Reset page to 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, departmentFilter, employeesPerPage]);
@@ -55,12 +57,8 @@ const ViewEmployees = () => {
   // Utility function to format the date
   const formatDate = (dateInput) => {
     if (!dateInput) return "N/A";
-    
-    // Extract string if it comes as { $date: "..." } from MongoDB, otherwise use as is
     const dateString = typeof dateInput === 'object' && dateInput.$date ? dateInput.$date : dateInput;
     const date = new Date(dateString);
-    
-    // Format: "Mar 2, 2026, 05:20 AM"
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -88,10 +86,10 @@ const ViewEmployees = () => {
     }
   };
   
-  // Dynamically extract unique departments for the dropdown filter
+  // Dynamically extract unique departments
   const uniqueDepartments = ["All", ...new Set(initialEmployees.map(emp => emp.department).filter(Boolean))];
 
-  // Filter Logic: Applies both search term and department dropdown
+  // Filter Logic
   const filteredEmployees = initialEmployees.filter((employee) => {
     const matchesSearch = 
       employee.username?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -101,12 +99,10 @@ const ViewEmployees = () => {
     return matchesSearch && matchesDepartment;
   });
 
-  // --- NEW: Pagination Logic ---
+  // Pagination Logic
   const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / employeesPerPage));
   const indexOfLastEmployee = currentPage * employeesPerPage;
   const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
-  
-  // This is the array you will actually render in the table
   const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
 
   const getPageNumbers = () => {
@@ -146,7 +142,7 @@ const ViewEmployees = () => {
           </button>
         </div>
 
-        <div className="p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
+        <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col">
           
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
@@ -160,9 +156,10 @@ const ViewEmployees = () => {
             </button>
           </div>
 
-          {/* Toolbar: Search & Filter */}
-          <div className={`flex flex-col sm:flex-row gap-4 mb-6 p-4 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
-            <div className="relative flex-1">
+          {/* Toolbar: Search, Filter & View Toggle */}
+          <div className={`flex flex-col lg:flex-row gap-4 mb-6 p-4 rounded-xl border ${theme.border} ${theme.cardBg} shadow-sm`}>
+            
+            <div className="relative flex-1 w-full">
               <Search size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
               <input 
                 type="text" 
@@ -172,116 +169,209 @@ const ViewEmployees = () => {
                 className={`w-full pl-10 pr-4 py-2.5 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black focus:ring-1 focus:ring-black transition-all`}
               />
             </div>
-            <div className="relative sm:w-48">
-              <Filter size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
-              <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2.5 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black appearance-none cursor-pointer transition-all`}>
-                {uniqueDepartments.map((dept, index) => (
-                  <option key={index} value={dept}>
-                    {dept === "All" ? "All Departments" : dept}
-                  </option>
-                ))}
-              </select>
+            
+            <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto items-start lg:items-center">
+              <div className="relative w-full lg:w-48 shrink-0">
+                <Filter size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textMuted}`} />
+                <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-zinc-50 border ${theme.border} rounded-lg text-sm text-slate-900 outline-none focus:border-black appearance-none cursor-pointer transition-all`}>
+                  {uniqueDepartments.map((dept, index) => (
+                    <option key={index} value={dept}>
+                      {dept === "All" ? "All Departments" : dept}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* View Toggle */}
+              <div className={`flex w-full lg:w-auto bg-zinc-50 p-1.5 rounded-md border ${theme.border} shrink-0`}>
+                <button onClick={() => setViewMode("table")}
+                  className={`flex-1 lg:flex-none px-4 py-2 sm:px-3 sm:py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "table" ? "bg-white shadow-sm text-black" : "text-slate-500 hover:text-slate-900"}`}
+                  title="Table View" >
+                  <List size={18} />
+                </button>
+                <button onClick={() => setViewMode("card")}
+                  className={`flex-1 lg:flex-none px-4 py-2 sm:px-3 sm:py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "card" ? "bg-white shadow-sm text-black" : "text-slate-500 hover:text-slate-900"}`}
+                  title="Card View" >
+                  <LayoutGrid size={18} />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Data Table Container */}
+          {/* Data Container */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-xl shadow-sm overflow-hidden flex flex-col`}>
             
-            {/* Added flex-1 to push pagination down */}
-            <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className={`bg-zinc-50/50 border-b ${theme.border}`}>
-                  <tr>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Employee</th>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:table-cell ${theme.textMuted}`}>Email</th>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Department</th>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Type</th>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
-                    <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Created At</th>
-                    <th className={`p-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-center`}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {/* Changed to map over currentEmployees */}
+            {viewMode === "table" ? (
+              <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className={`bg-zinc-50/50 border-b ${theme.border}`}>
+                    <tr>
+                      <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Employee</th>
+                      <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider hidden lg:table-cell ${theme.textMuted}`}>Email</th>
+                      <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Department</th>
+                      <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Type</th>
+                      <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Phone Number</th>
+                      <th className={`p-4 text-center text-[11px] font-bold uppercase tracking-wider ${theme.textMuted}`}>Created At</th>
+                      <th className={`p-4 text-[11px] font-bold uppercase tracking-wider ${theme.textMuted} text-center`}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {currentEmployees.map((employee) => {
+                      const id = employee._id?.$oid || employee._id;
+
+                      return (
+                        <tr key={id} className="hover:bg-zinc-50/80 transition-colors group">
+                          
+                          {/* Employee Info (Profile Image & Username) */}
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                                <img src={employee?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                                  alt={employee.username} className="w-10 h-10 rounded-full object-cover border border-zinc-200"/>
+                                <div>
+                                <p className="font-bold text-slate-900">{employee.username || "N/A"}</p>
+                                <p className={`text-xs ${theme.textMuted} lg:hidden`}>{employee.email}</p>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Email */}
+                          <td className={`px-6 py-4 text-sm hidden lg:table-cell font-medium ${theme.textMuted}`}>
+                            {employee.email || "N/A"}
+                          </td>
+
+                          {/* Department Badge */}
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-100 text-slate-700 ${theme.border}`}>
+                              <Briefcase size={12} />
+                              {employee.department || "N/A"}
+                            </span>
+                          </td>
+
+                          {/* Employment Type */}
+                          <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                            {employee.employment || "N/A"}
+                          </td>
+
+                          {/* Phone Number */}
+                          <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                            {employee.phoneNumber || "N/A"}
+                          </td>
+
+                          {/* Created At */}
+                          <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
+                            {formatDate(employee.createdAt)}
+                          </td>
+
+                          {/* Actions (Update & Delete) */}
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2 ">
+                              <button onClick={() => updateEmployee(id)} className={`p-2 rounded-md hover:bg-zinc-200 text-slate-600 hover:text-black transition-colors tooltip-trigger`} title="Update Employee">
+                                <Edit2 size={16} />
+                              </button>
+                              <button onClick={() => deleteEmployee(id)} className={`p-2 rounded-md hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Employee">
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              // Card View Layout
+              <div className={`overflow-y-auto ${customScrollbar} flex-1 p-3 sm:p-5 bg-slate-50/50`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                   {currentEmployees.map((employee) => {
                     const id = employee._id?.$oid || employee._id;
-
+                    
                     return (
-                      <tr key={id} className="hover:bg-zinc-50/80 transition-colors group">
+                      <div key={id} className="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col">
                         
-                        {/* Employee Info (Profile Image & Username) */}
-                        <td className="px-6 py-4">
+                        {/* Card Header */}
+                        <div className="flex items-start justify-between mb-4 gap-3">
                           <div className="flex items-center gap-3">
-                              <img src={employee?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
-                                alt={employee.username} className="w-10 h-10 rounded-full object-cover border border-zinc-200"/>
-                              <div>
-                              <p className="font-bold text-slate-900">{employee.username || "N/A"}</p>
-                              <p className={`text-xs ${theme.textMuted} lg:hidden`}>{employee.email}</p>
+                            <img src={employee?.profile?.imageUrl || "https://static.vecteezy.com/system/resources/thumbnails/032/176/191/small/business-avatar-profile-black-icon-man-of-user-symbol-in-trendy-flat-style-isolated-on-male-profile-people-diverse-face-for-social-network-or-web-vector.jpg"} 
+                              alt={employee.username} 
+                              className="w-12 h-12 rounded-full object-cover border border-zinc-200 shrink-0"
+                            />
+                            <div>
+                              <h3 className="font-bold text-slate-900 text-base leading-tight mb-0.5 line-clamp-1" title={employee.username}>
+                                {employee.username || "N/A"}
+                              </h3>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-zinc-100 text-slate-700 ${theme.border}`}>
+                                <Briefcase size={10} />
+                                {employee.department || "No Dept"}
+                              </span>
                             </div>
                           </div>
-                        </td>
+                        </div>
 
-                        {/* Email */}
-                        <td className={`px-6 py-4 text-sm hidden lg:table-cell font-medium ${theme.textMuted}`}>
-                          {employee.email || "N/A"}
-                        </td>
+                        {/* Card Body - Contact Info & Details */}
+                        <div className="flex-1 space-y-2.5 mb-5 mt-2">
+                          <div className="flex items-center gap-2.5 text-sm">
+                            <Mail size={15} className="text-slate-400 shrink-0" />
+                            <span className="text-slate-700 truncate" title={employee.email}>{employee.email || "N/A"}</span>
+                          </div>
+                          <div className="flex items-center gap-2.5 text-sm">
+                            <Phone size={15} className="text-slate-400 shrink-0" />
+                            <span className="text-slate-700">{employee.phoneNumber || <span className="italic text-slate-400 text-xs">No Phone</span>}</span>
+                          </div>
+                          <div className="flex items-center gap-2.5 text-sm">
+                            <User size={15} className="text-slate-400 shrink-0" />
+                            <span className="text-slate-700 capitalize">{employee.employment || <span className="italic text-slate-400 text-xs">Unspecified Type</span>}</span>
+                          </div>
+                        </div>
 
-                        {/* Department Badge */}
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-zinc-100 text-slate-700 ${theme.border}`}>
-                            <Briefcase size={12} />
-                            {employee.department || "N/A"}
-                          </span>
-                        </td>
+                        {/* Card Footer */}
+                        <div className="pt-4 border-t border-zinc-100 flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <span className={`text-[10px] font-medium ${theme.textMuted}`}>
+                              Joined {formatDate(employee.createdAt).replace(',', ' •')}
+                            </span>
+                          </div>
+                        </div>
 
-                        {/* Employment Type */}
-                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                          {employee.employment || "N/A"}
-                        </td>
-
-                        {/* Phone Number */}
-                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                          {employee.phoneNumber || "N/A"}
-                        </td>
-
-                        {/* Created At */}
-                        <td className={`px-6 py-4 text-sm font-medium ${theme.textMuted}`}>
-                          {formatDate(employee.createdAt)}
-                        </td>
-
-                        {/* Actions (Update & Delete) */}
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2 ">
-                            <button onClick={() => updateEmployee(id)} className={`p-2 rounded-md hover:bg-zinc-200 text-slate-600 hover:text-black transition-colors tooltip-trigger`} title="Update Employee">
-                              <Edit2 size={16} />
+                        {/* Always-Visible Action Buttons */}
+                        <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
+                          <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">Manage</p>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => updateEmployee(id)} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-50 border border-zinc-200 text-slate-600 hover:bg-zinc-100 hover:text-slate-900 hover:border-zinc-300 active:scale-95 transition-all duration-150" >
+                              <Edit2 size={14} />
                             </button>
-                            <button onClick={() => deleteEmployee(id)} className={`p-2 rounded-md hover:bg-rose-100 text-slate-600 hover:text-rose-600 transition-colors tooltip-trigger`} title="Delete Employee">
-                              <Trash2 size={16} />
+                            <button onClick={() => deleteEmployee(id)} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-200 active:scale-95 transition-all duration-150" >
+                              <Trash2 size={14} />
                             </button>
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-              
-              {/* Empty State properly placed */}
-              {currentEmployees.length === 0 && (
-                <div className="p-12 text-center flex flex-col items-center justify-center">
-                  <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3">
-                    <Search size={20} className={theme.textMuted} />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-900">No employees found</h3>
-                  <p className={`text-xs ${theme.textMuted} mt-1`}>Try adjusting your search or filters.</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* NEW: Pagination Footer */}
+            {/* Empty State properly placed outside the conditional view logic so it shows in both modes */}
+            {currentEmployees.length === 0 && (
+              <div className="p-12 text-center flex flex-col items-center justify-center">
+                <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3">
+                  <Search size={20} className={theme.textMuted} />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">No employees found</h3>
+                <p className={`text-xs ${theme.textMuted} mt-1`}>Try adjusting your search or filters.</p>
+              </div>
+            )}
+
+            {/* Pagination Footer */}
             {filteredEmployees.length > 0 && totalPages > 1 && (
-              <div className="mt-auto shrink-0 flex flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
                 
                 {/* Items per page selector */}
                 <div className="flex items-center gap-3">

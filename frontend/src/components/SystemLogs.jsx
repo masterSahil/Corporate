@@ -125,7 +125,8 @@ const SystemLogs = () => {
         ratingsRes.data.rating?.forEach(r => compiledLogs.push({
           id: `rtg-${r._id}`,
           type: "Rating Submitted",
-          entity: `Product ID: ${r.productId.substring(0, 8)}...`,
+          entity: r.productId?.name ? r.productId.name : 
+          `Product ID: ${r.productId?._id?.substring(0, 8) || "N/A"}...`,
           description: `Rated ${r.rate}/5 | "${r.review?.substring(0, 30)}${r.review?.length > 30 ? '...' : ''}"`,
           timestamp: r.createdAt || new Date().toISOString(),
           icon: Star,
