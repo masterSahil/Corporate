@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { Menu, RefreshCw, MessageSquare, Star, Search, Filter, Calendar, User, Package, X, Quote, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, RefreshCw, MessageSquare, Star, Search, Filter, Calendar, User, Package, X, Quote, ChevronDown, Check, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import { theme } from "../../components/Theme";
 import { toast } from "../../ui/Toaster";
@@ -19,9 +19,10 @@ const AdminReview = () => {
   // Modal State
   const [selectedReview, setSelectedReview] = useState(null);
 
-  // --- NEW: Pagination States ---
+  // --- NEW: Pagination & View States ---
   const [currentPage, setCurrentPage] = useState(1);
   const [reviewsPerPage, setReviewsPerPage] = useState(10); // Default to 10
+  const [viewMode, setViewMode] = useState("table"); // "table" or "card"
 
   // --- DATA FETCHING ---
   const fetchReviews = async () => {
@@ -47,7 +48,7 @@ const AdminReview = () => {
     fetchReviews();
   }, []);
 
-  // --- NEW: Reset page to 1 when search or filter changes ---
+  // --- Reset page to 1 when search or filter changes ---
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedRating, reviewsPerPage]);
@@ -70,7 +71,7 @@ const AdminReview = () => {
     });
   }, [reviews, searchQuery, selectedRating]);
 
-  // --- NEW: Pagination Logic ---
+  // --- Pagination Logic ---
   const totalPages = Math.max(1, Math.ceil(filteredReviews.length / reviewsPerPage));
   const indexOfLastReview = currentPage * reviewsPerPage;
   const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
@@ -112,7 +113,7 @@ const AdminReview = () => {
     );
   };
 
-  // Stats (Calculated on ALL reviews, not filtered, so admin always knows total impact)
+  // Stats
   const totalReviews = reviews.length;
   const averageRating = totalReviews > 0 ? (reviews.reduce((acc, curr) => acc + curr.rate, 0) / totalReviews).toFixed(1) : 0;
   const fiveStarReviews = reviews.filter(r => r.rate === 5).length;
@@ -143,18 +144,18 @@ const AdminReview = () => {
           </button>
         </div>
 
-        <div className="p-6 max-w-7xl mx-auto w-full space-y-8 pb-12">
+        <div className="p-6 max-w-7xl mx-auto w-full space-y-8 pb-12 flex-1 flex flex-col">
           
           {/* Page Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Product Reviews</h1>
               <p className="text-zinc-500 text-sm mt-1">Monitor and manage customer feedback across the catalog.</p>
             </div>
             
-            <div className="flex gap-3 w-full sm:w-auto relative">
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto relative items-start sm:items-center">
               {/* Search */}
-              <div className="relative flex-1 sm:flex-none">
+              <div className="relative flex-1 w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
                 <input 
                   type="text" 
@@ -166,18 +167,20 @@ const AdminReview = () => {
               </div>
 
               {/* Filter Dropdown */}
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`px-4 py-2.5 bg-white border ${isFilterOpen ? 'border-zinc-900 ring-1 ring-zinc-900' : 'border-zinc-200'} hover:border-zinc-300 rounded-md text-sm font-semibold text-zinc-700 flex items-center justify-center gap-2 transition-all shadow-sm`}>
-                  <Filter size={18} /> 
-                  <span className="hidden sm:inline">
-                    {selectedRating === "All" ? "Filter" : `${selectedRating} Stars`}
-                  </span>
+                  className={`w-full sm:w-auto px-4 py-2.5 bg-white border ${isFilterOpen ? 'border-zinc-900 ring-1 ring-zinc-900' : 'border-zinc-200'} hover:border-zinc-300 rounded-md text-sm font-semibold text-zinc-700 flex items-center justify-between sm:justify-center gap-2 transition-all shadow-sm`}>
+                  <div className="flex items-center gap-2">
+                    <Filter size={18} /> 
+                    <span>
+                      {selectedRating === "All" ? "Filter" : `${selectedRating} Stars`}
+                    </span>
+                  </div>
                   <ChevronDown size={14} className="text-zinc-400" />
                 </button>
 
                 {isFilterOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border border-zinc-100 rounded-md shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-2 w-full sm:w-40 bg-white border border-zinc-100 rounded-md shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
                     {["All", "5", "4", "3", "2", "1"].map((rating) => (
                       <button key={rating} onClick={() => { setSelectedRating(rating); setIsFilterOpen(false); }}
                         className="w-full text-left px-4 py-2.5 text-sm hover:bg-zinc-50 flex items-center justify-between">
@@ -190,11 +193,26 @@ const AdminReview = () => {
                   </div>
                 )}
               </div>
+
+              {/* Toggle View Mode */}
+              <div className={`flex w-full sm:w-auto bg-zinc-50 p-1 rounded-md border border-zinc-200 shrink-0`}>
+                <button onClick={() => setViewMode("table")}
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "table" ? "bg-white shadow-sm text-black" : "text-zinc-500 hover:text-zinc-900"}`}
+                  title="Table View" >
+                  <List size={18} />
+                </button>
+                <button onClick={() => setViewMode("card")}
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md flex items-center justify-center transition-all ${viewMode === "card" ? "bg-white shadow-sm text-black" : "text-zinc-500 hover:text-zinc-900"}`}
+                  title="Card View" >
+                  <LayoutGrid size={18} />
+                </button>
+              </div>
+
             </div>
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 shrink-0">
             <div className={`${theme.cardBg} p-6 rounded-lg border ${theme.border} shadow-sm flex items-center gap-4`}>
               <div className="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
                 <MessageSquare size={24} />
@@ -226,9 +244,9 @@ const AdminReview = () => {
             </div>
           </div>
 
-          {/* Reviews Table Area */}
-          <div className={`${theme.cardBg} rounded-lg border ${theme.border} shadow-sm overflow-hidden flex flex-col`}>
-            <div className="p-6 flex items-center justify-between border-b border-zinc-100">
+          {/* Reviews Area */}
+          <div className={`${theme.cardBg} rounded-lg border ${theme.border} shadow-sm overflow-hidden flex flex-col `}>
+            <div className="p-6 flex items-center justify-between border-b border-zinc-100 shrink-0">
               <div>
                 <h2 className="text-lg font-bold text-zinc-900">Recent Feedback</h2>
                 <p className="text-xs text-zinc-500 mt-1">
@@ -237,104 +255,170 @@ const AdminReview = () => {
               </div>
             </div>
             
-            <div className={`overflow-x-auto ${customScrollbarClasses}`}>
-              <table className="w-full text-left">
-                <thead className="bg-zinc-50/50 border-b border-zinc-100 whitespace-nowrap">
-                  <tr>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Product</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Rating</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Review Note</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Buyer</th>
-                    <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {/* Changed to map over currentReviews */}
+            {viewMode === "table" ? (
+              <div className={`overflow-x-auto ${customScrollbarClasses} flex-1`}>
+                <table className="w-full text-left">
+                  <thead className="bg-zinc-50/50 border-b border-zinc-100 whitespace-nowrap">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Product</th>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Rating</th>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Review Note</th>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Buyer</th>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-wider uppercase text-zinc-500">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {currentReviews.length > 0 ? currentReviews.map((rev) => {
+                      const reviewId = rev._id?.$oid || rev._id || Math.random().toString();
+                      const { formattedDate, formattedTime } = formatDateTimeParts(rev.createdAt);
+                      
+                      return (
+                        <tr key={reviewId} className="hover:bg-zinc-50 transition-colors group">
+                          
+                          {/* Product Column */}
+                          <td className="px-6 py-5 align-top">
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 bg-zinc-100 rounded-lg text-zinc-500 border border-zinc-200">
+                                <Package size={16} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-zinc-900 line-clamp-1">
+                                  {rev.productId?.name || "Product Item"}
+                                </p>
+                                <p className="text-xs font-mono text-zinc-500 mt-0.5">
+                                  ID: {typeof rev.productId === 'string' ? rev.productId : (rev.productId?._id || "N/A")}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Rating Column */}
+                          <td className="px-6 py-5 align-top whitespace-nowrap">
+                            {renderStars(rev.rate)}
+                            <span className="block mt-1.5 text-xs font-bold text-zinc-700">{rev.rate}.0</span>
+                          </td>
+                          
+                          {/* Review Column */}
+                          <td className="px-6 py-5 min-w-75 max-w-md align-top">
+                            <p className="text-sm text-zinc-700 leading-relaxed font-medium line-clamp-2">
+                              "{rev.review}"
+                            </p>
+                            {rev.review.length > 70 && (
+                              <button onClick={() => setSelectedReview(rev)} 
+                                className="text-xs text-blue-600 font-semibold mt-1 hover:underline flex items-center gap-1">
+                                Read Full Review
+                              </button>
+                            )}
+                          </td>
+                          
+                          {/* Buyer Column */}
+                          <td className="px-6 py-5 align-top whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-600">
+                                {(rev.buyerId?.username?.[0] || "U").toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-zinc-900">{rev.buyerId?.username || "Unknown"}</p>
+                              </div>
+                            </div>
+                          </td>
+                          
+                          {/* Date Column */}
+                          <td className="px-6 py-5 align-top whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-zinc-600">
+                              <Calendar size={14} className="text-zinc-400" />
+                              <span className="text-sm font-semibold">{formattedDate}</span>
+                            </div>
+                            <p className="text-xs text-zinc-400 mt-1 ml-5">{formattedTime}</p>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
+                      <tr>
+                        <td colSpan="5" className="px-6 py-12 text-center">
+                          <MessageSquare size={32} className="mx-auto text-zinc-300 mb-3" />
+                          <p className="text-sm font-medium text-zinc-900">No reviews found</p>
+                          <p className="text-xs text-zinc-500 mt-1">
+                            {searchQuery || selectedRating !== "All" 
+                              ? "Try adjusting your search or filters." 
+                              : "When users review products, they will appear here."}
+                          </p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              // --- CARD VIEW MODE ---
+              <div className={`overflow-y-auto ${customScrollbarClasses} flex-1 p-4 sm:p-6 bg-slate-50/50`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                   {currentReviews.length > 0 ? currentReviews.map((rev) => {
                     const reviewId = rev._id?.$oid || rev._id || Math.random().toString();
                     const { formattedDate, formattedTime } = formatDateTimeParts(rev.createdAt);
-                    
-                    return (
-                      <tr key={reviewId} className="hover:bg-zinc-50 transition-colors group">
-                        
-                        {/* Product Column */}
-                        <td className="px-6 py-5 align-top">
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 bg-zinc-100 rounded-lg text-zinc-500 border border-zinc-200">
-                              <Package size={16} />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-zinc-900 line-clamp-1">
-                                {rev.productId?.name || "Product Item"}
-                              </p>
-                              <p className="text-xs font-mono text-zinc-500 mt-0.5">
-                                ID: {typeof rev.productId === 'string' ? rev.productId : (rev.productId?._id?.slice(-6) || "N/A")}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
 
-                        {/* Rating Column */}
-                        <td className="px-6 py-5 align-top whitespace-nowrap">
-                          {renderStars(rev.rate)}
-                          <span className="block mt-1.5 text-xs font-bold text-zinc-700">{rev.rate}.0</span>
-                        </td>
+                    return (
+                      <div key={reviewId} className="bg-white rounded-lg border border-zinc-200 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col">
                         
-                        {/* Review Column */}
-                        <td className="px-6 py-5 min-w-75 max-w-md align-top">
-                          <p className="text-sm text-zinc-700 leading-relaxed font-medium line-clamp-2">
-                            "{rev.review}"
-                          </p>
-                          {rev.review.length > 70 && (
-                            <button onClick={() => setSelectedReview(rev)} 
-                              className="text-xs text-blue-600 font-semibold mt-1 hover:underline flex items-center gap-1">
-                              Read Full Review
-                            </button>
-                          )}
-                        </td>
-                        
-                        {/* Buyer Column */}
-                        <td className="px-6 py-5 align-top whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-600">
+                        {/* Card Header */}
+                        <div className="flex justify-between items-start mb-4 gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center text-sm font-bold text-zinc-600 shrink-0">
                               {(rev.buyerId?.username?.[0] || "U").toUpperCase()}
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-zinc-900">{rev.buyerId?.username || "Unknown"}</p>
+                              <p className="text-sm font-semibold text-zinc-900 line-clamp-1">{rev.buyerId?.username || "Unknown"}</p>
+                              <p className="text-[10px] text-zinc-500 mt-0.5">{formattedDate}</p>
                             </div>
                           </div>
-                        </td>
-                        
-                        {/* Date Column */}
-                        <td className="px-6 py-5 align-top whitespace-nowrap">
-                          <div className="flex items-center gap-1.5 text-zinc-600">
-                            <Calendar size={14} className="text-zinc-400" />
-                            <span className="text-sm font-semibold">{formattedDate}</span>
+                          <div className="text-right flex flex-col items-end gap-1">
+                            {renderStars(rev.rate)}
+                            <span className="text-xs font-bold text-zinc-700">{rev.rate}.0</span>
                           </div>
-                          <p className="text-xs text-zinc-400 mt-1 ml-5">{formattedTime}</p>
-                        </td>
-                      </tr>
+                        </div>
+
+                        {/* Card Body */}
+                        <div className="flex-1 mb-2">
+                          <div className="flex items-center gap-1.5 mb-2.5">
+                            <Package size={14} className="text-zinc-400 shrink-0" />
+                            <span className="text-xs font-semibold text-zinc-900 line-clamp-1" title={rev.productId?.name || "Product Item"}>
+                              {rev.productId?.name || "Product Item"}
+                            </span>
+                          </div>
+                          <p className="text-sm text-zinc-700 leading-relaxed font-medium line-clamp-3">
+                            "{rev.review}"
+                          </p>
+                        </div>
+
+                        {/* Card Footer (Action) */}
+                        {rev.review.length > 70 && (
+                          <div className="mt-auto pt-3 flex justify-start">
+                            <button onClick={() => setSelectedReview(rev)} 
+                              className="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1">
+                              Read Full Review
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     );
                   }) : (
-                    <tr>
-                      <td colSpan="5" className="px-6 py-12 text-center">
-                        <MessageSquare size={32} className="mx-auto text-zinc-300 mb-3" />
-                        <p className="text-sm font-medium text-zinc-900">No reviews found</p>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          {searchQuery || selectedRating !== "All" 
-                            ? "Try adjusting your search or filters." 
-                            : "When users review products, they will appear here."}
-                        </p>
-                      </td>
-                    </tr>
+                    <div className="col-span-full p-16 text-center flex flex-col items-center justify-center">
+                      <MessageSquare size={32} className="mx-auto text-zinc-300 mb-3" />
+                      <p className="text-sm font-medium text-zinc-900">No reviews found</p>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        {searchQuery || selectedRating !== "All" 
+                          ? "Try adjusting your search or filters." 
+                          : "When users review products, they will appear here."}
+                      </p>
+                    </div>
                   )}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </div>
+            )}
 
-            {/* NEW: Pagination Footer */}
+            {/* Pagination Footer */}
             {filteredReviews.length > 0 && totalPages > 1 && (
-              <div className="mt-auto shrink-0 flex flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
+              <div className="mt-auto shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-center p-4 border-t border-zinc-100 bg-white">
                 
                 {/* Items per page selector */}
                 <div className="flex items-center gap-3">
@@ -388,7 +472,7 @@ const AdminReview = () => {
           </div>
         </div>
 
-        {/* --- GLOBAL MODAL (Moved Outside Table) --- */}
+        {/* --- GLOBAL MODAL --- */}
         {selectedReview && (
           <div className="fixed inset-0 z-999 flex items-center justify-center p-4 sm:p-6" onClick={() => setSelectedReview(null)}>
 
@@ -430,13 +514,16 @@ const AdminReview = () => {
                   </div>
                   
                   <div className="flex flex-col gap-1.5 p-3.5 rounded-xl bg-zinc-50/80 border">
-                    <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
-                      <Package size={14} /> Product
-                    </span>
-                    <span className="text-xs font-semibold truncate" title={selectedReview.productId}>
-                      {selectedReview.productId}
-                    </span>
-                  </div>
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
+                    <Package size={14} /> Product
+                  </span>
+                  <span className="text-xs font-semibold truncate" 
+                    title={typeof selectedReview.productId === 'object' ? selectedReview.productId.name : selectedReview.productId}>
+                    {typeof selectedReview.productId === 'object' 
+                      ? (selectedReview.productId.name || selectedReview.productId._id) 
+                      : selectedReview.productId}
+                  </span>
+                </div>
                 </div>
               </div>
             </div>

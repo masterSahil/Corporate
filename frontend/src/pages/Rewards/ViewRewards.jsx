@@ -230,7 +230,6 @@ const ViewRewards = () => {
 
           {/* Data Card Container */}
           <div className={`${theme.cardBg} border ${theme.border} rounded-lg shadow-sm overflow-hidden flex flex-col`}>
-            
             {
               viewMode === "table" ? (
               <div className={`overflow-x-auto ${customScrollbar} flex-1`}>
@@ -379,15 +378,19 @@ const ViewRewards = () => {
                         </div>
 
                         {/* Always-Visible Action Buttons */}
-                        <div className="mt-5 flex items-center gap-2 pt-2">
-                          <button onClick={()=>navigate(`/rewards/update/${reward._id}`)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-zinc-50 border border-zinc-200 text-slate-700 rounded-lg hover:bg-zinc-100 hover:text-black hover:border-zinc-300 font-semibold text-xs transition-all">
-                            <Edit2 size={14} /> Edit
-                          </button>
-                          <button onClick={()=>softDelete(reward._id)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-rose-50 border border-rose-100 text-rose-600 rounded-lg hover:bg-rose-100 hover:border-rose-200 font-semibold text-xs transition-all">
-                            <Trash2 size={14} /> Delete
-                          </button>
-                        </div>
+                        <div className="mt-5 pt-3 border-t border-zinc-100 flex items-center justify-between">
+                          <p className="text-[12px] font-semibold tracking-wide text-slate-400 uppercase">Actions</p>
 
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => navigate(`/rewards/update/${reward._id}`)} className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-zinc-50 border border-zinc-200 text-slate-600 hover:bg-zinc-100 hover:text-slate-900 hover:border-zinc-300 active:scale-95 transition-all duration-150" >
+                              <Edit2 size={14} />
+                            </button>
+
+                            <button onClick={() => softDelete(reward._id)} className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-200 active:scale-95 transition-all duration-150" >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
