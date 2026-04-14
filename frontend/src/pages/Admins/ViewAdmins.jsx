@@ -388,7 +388,7 @@ const ViewAdmins = () => {
 
             {/* Pagination Controls */}
             {filteredAdmins.length > 0 && totalPages > 1 && (
-              <div className="mt-auto shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
+              <div className="mt-auto shrink-0 flex flex-row items-center justify-between gap-4 p-4 border-t border-zinc-100 bg-white">
                 
                 {/* Items per page selector */}
                 <div className="flex items-center gap-3">
