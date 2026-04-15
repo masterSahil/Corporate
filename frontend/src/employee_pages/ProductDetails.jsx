@@ -60,7 +60,7 @@ const ProductDetails = () => {
             setCurrentUserName(user.username);
 
             const productReviews = reviewRes.data.rating
-                .filter(r => r.productId === id)
+                .filter(r =>  r.productId?._id === id)
                 .map(r => ({
                     id: r._id,
                     buyerId: r.buyerId?._id || r.buyerId,
