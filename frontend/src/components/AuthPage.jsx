@@ -126,7 +126,7 @@ const CorporateLogin = () => {
       )}
 
       {/* Left Side: Auth Form */}
-      <div className="flex flex-col w-full lg:w-1/2 p-8 lg:p-12 overflow-y-auto lg:overflow-y-hidden h-dvh">
+      <div className="flex flex-col w-full lg:w-1/2 p-8 lg:p-12 overflow-y-auto h-dvh">
         
         {/* Header/Logo */}
         <div className="flex items-center gap-2.5">
@@ -258,7 +258,7 @@ const CorporateLogin = () => {
         <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-white/5 rounded-full blur-[100px]"></div>
 
         {/* Glassmorphic Panel */}
-        <div className="relative z-10 w-full max-w-lg bg-white/5 border border-white/10 backdrop-blur-2xl p-10 rounded-lg shadow-2xl">
+        <div className="relative z-10 w-full max-w-lg bg-white/5 border border-white/10 p-10 rounded-lg shadow-2xl">
           
           <div className="mb-8">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-white/10 border border-white/20 text-white text-[10px] font-bold tracking-widest uppercase mb-6">
