@@ -205,7 +205,7 @@ const EmployeeCart = () => {
             toast.success("Payment successful! Order placed.");
             setPointsInput("");
             setApplyPoints(false);
-            fetchData(); 
+            setCartItems([]);
           } catch (error) {
             toast.error(error.response?.data?.message || "Payment verification failed.");
             console.error(error);
