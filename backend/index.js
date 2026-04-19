@@ -22,8 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: [process.env.FRONTEND, process.env.CUSTOM_DOMAIN ],
-    methods: ["GET", "POST", "OPTIONS"],
+    origin: [process.env.FRONTEND, process.env.CUSTOM_DOMAIN ]
 }));
 app.use('/', userRoutes); 
 app.use('/', rewardRoutes); 
