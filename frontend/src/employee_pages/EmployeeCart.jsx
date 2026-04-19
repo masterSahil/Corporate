@@ -148,7 +148,6 @@ const EmployeeCart = () => {
       toast.error("Please fix the points error before checking out."); return;
     }
     try {
-      setIsLoading(true);
       const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
       const token = sessionStorage.getItem("token");
 
@@ -224,8 +223,6 @@ const EmployeeCart = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to initialize payment.");
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   }
 
