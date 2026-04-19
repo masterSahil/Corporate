@@ -192,6 +192,7 @@ const EmployeeCart = () => {
           
           // Step C: Send success data back to backend for verification and DB insertion
           try {
+            setIsLoading(true);
             await axios.post(`${API}/verify-payment-and-checkout`, {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
@@ -208,6 +209,8 @@ const EmployeeCart = () => {
           } catch (error) {
             toast.error(error.response?.data?.message || "Payment verification failed.");
             console.error(error);
+          } finally {
+            setIsLoading(false);
           }
         },
         theme: { color: "#000000" } // Matches your UI
