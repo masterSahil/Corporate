@@ -142,10 +142,11 @@ const EmployeeCart = () => {
   const discountRs = pointsError ? 0 : parsedPoints;
   const finalTotalRs = cartTotalRs - discountRs;
 
-  // --- UPDATED CHECKOUT FUNCTION WITH RAZORPAY ---
+  // --- CHECKOUT FUNCTION WITH OPTIMISTIC UI ---
   const checkout = async () => {
     if (pointsError) {
-      toast.error("Please fix the points error before checking out."); return;
+      toast.error("Please fix the points error before checking out."); 
+      return;
     }
     try {
       const cleanItems = cartItems.map(item => ({productId: item.productId, quantity: item.quantity}));
@@ -153,16 +154,23 @@ const EmployeeCart = () => {
 
       // SCENARIO 1: The user applied points that cover the 100% full amount (Free order)
       if (finalTotalRs === 0) {
-        await axios.post(`${API}/checkout`, {
+        setCartItems([]);
+        setPointsInput("");
+        setApplyPoints(false);
+        toast.success("Checkout successful using points!");
+
+        // Process backend in the background without awaiting it for the UI
+        axios.post(`${API}/checkout`, {
           userId: currentUserId,
           items: cleanItems,
           pointsUsed: discountRs
-        }, { headers: { Authorization: `Bearer ${token}` } });
+        }, { headers: { Authorization: `Bearer ${token}` } })
+        .then(() => fetchData()) // Silent sync
+        .catch(() => {
+          toast.error("Background sync failed. Restoring cart.");
+          fetchData(); // Rollback if backend fails
+        });
         
-        toast.success("Checkout successful using points!");
-        setPointsInput("");
-        setApplyPoints(false);
-        fetchData(); 
         return;
       }
 
@@ -173,10 +181,12 @@ const EmployeeCart = () => {
         return;
       }
 
-      // Step A: Create order on backend
+      // Step A: Create order on backend (Must wait for this to get order_id)
+      setIsLoading(true);
       const orderData = await axios.post(`${API}/create-razorpay-order`, {
         amount: finalTotalRs
       }, { headers: { Authorization: `Bearer ${token}` } });
+      setIsLoading(false);
 
       const { id: order_id, currency, amount } = orderData.data.order;
 
@@ -188,32 +198,31 @@ const EmployeeCart = () => {
         name: "Corporate Store",
         description: "Cart Checkout",
         order_id: order_id, 
-        handler: async function (response) {
+        handler: function (response) {
+          setCartItems([]);
+          setPointsInput("");
+          setApplyPoints(false);
+          toast.success("Payment verified! Processing your order...");
           
-          // Step C: Send success data back to backend for verification and DB insertion
-          try {
-            setIsLoading(true);
-            await axios.post(`${API}/verify-payment-and-checkout`, {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              userId: currentUserId,
-              items: cleanItems,
-              pointsUsed: discountRs,
-            }, { headers: { Authorization: `Bearer ${token}` } });
-
-            toast.success("Payment successful! Order placed.");
-            setPointsInput("");
-            setApplyPoints(false);
-            setCartItems([]);
-          } catch (error) {
+          // Step C: Send success data back to backend for verification and DB insertion silently
+          axios.post(`${API}/verify-payment-and-checkout`, {
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            userId: currentUserId,
+            items: cleanItems,
+            pointsUsed: discountRs,
+          }, { headers: { Authorization: `Bearer ${token}` } })
+          .then(() => {
+            fetchData(); 
+          })
+          .catch((error) => {
             toast.error(error.response?.data?.message || "Payment verification failed.");
             console.error(error);
-          } finally {
-            setIsLoading(false);
-          }
+            fetchData(); 
+          });
         },
-        theme: { color: "#000000" } // Matches your UI
+        theme: { color: "#000000" } 
       };
 
       // Step D: Open the payment window
@@ -224,6 +233,7 @@ const EmployeeCart = () => {
       paymentObject.open();
 
     } catch (error) {
+      setIsLoading(false);
       toast.error(error.response?.data?.message || "Failed to initialize payment.");
       console.error(error);
     }
