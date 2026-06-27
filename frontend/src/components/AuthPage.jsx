@@ -185,11 +185,6 @@ const CorporateLogin = () => {
                 <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
                   Password
                 </label>
-                {isLogin && (
-                  <p className="text-[11px] font-bold text-slate-400 hover:text-slate-900 cursor-pointer transition-colors">
-                    Forgot password?
-                  </p>
-                )}
               </div>
               <div className="relative flex items-center">
                 <Lock size={18} className="absolute left-4 text-black pointer-events-none" />
