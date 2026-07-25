@@ -26,8 +26,8 @@ router.get('/check-role', userController.verifyRole);
 router.patch('/password-change', verifyUser, userController.changePassword);
 
 router.get('/fetch-all-user', verifyUser, userController.FetchUser); // fetch all users
-router.get('/fetch-deleted', verifyUser, userController.FetchDeletedOnly); // fetch deleted
-router.get('/', verifyUser, userController.FetchUser); // fetch all not soft deleted users
+router.get('/fetch-deleted', verifyUser, userController.FetchDeletedOnly); // fetch deleted (inActive)
+router.get('/', verifyUser, userController.FetchUser); // fetch all active users
 router.get('/fetch-user/:id', verifyUser, userController.FetchSingleUser); // fetch single user
 
 router.post('/create-user', verifyUser, upload.single('file'), userController.CreateUser); // Create User
