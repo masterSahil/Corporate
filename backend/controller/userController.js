@@ -295,7 +295,7 @@ module.exports.DeleteUser = async (req, res) => {
     }
 }
 
-// Register, Login, Authorization, Logout, New Password
+// Register, Login, Authorization, New Password
 module.exports.RegisterUser = async (req, res) => {
     try {
         const {email, password, role} = req.body;
