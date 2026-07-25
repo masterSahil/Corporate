@@ -23,23 +23,23 @@ router.post('/login-auth', userController.LoginUser);
 router.get('/check-role', userController.verifyRole);
 
 // Change Password
-router.patch('/password-change', userController.changePassword);
+router.patch('/password-change', verifyUser, userController.changePassword);
 
-router.get('/fetch-all-user', userController.FetchUser); // fetch all users
-router.get('/fetch-deleted', userController.FetchDeletedOnly); // fetch deleted
-router.get('/', userController.FetchUser); // fetch all not soft deleted users
-router.get('/fetch-user/:id', userController.FetchSingleUser); // fetch single user
+router.get('/fetch-all-user', verifyUser, userController.FetchUser); // fetch all users
+router.get('/fetch-deleted', verifyUser, userController.FetchDeletedOnly); // fetch deleted
+router.get('/', verifyUser, userController.FetchUser); // fetch all not soft deleted users
+router.get('/fetch-user/:id', verifyUser, userController.FetchSingleUser); // fetch single user
 
-router.post('/create-user', upload.single('file'), userController.CreateUser); // Create User
-router.put('/:id', upload.single('file'), userController.UpdatedUser);// update user
+router.post('/create-user', verifyUser, upload.single('file'), userController.CreateUser); // Create User
+router.put('/:id', verifyUser, upload.single('file'), userController.UpdatedUser);// update user
 
 // Permanent Delete
-router.post('/permanent-delete/:id', userController.PermanentDelete);
+router.post('/permanent-delete/:id', verifyUser, userController.PermanentDelete);
 
-router.put('/delete/:id', userController.SoftDeletedUser); // soft delete
-router.put('/restore/:id', userController.RestoreUser); // restore soft-deleted user
-router.delete('/:id', userController.DeleteUser); // hard delete
+router.put('/delete/:id', verifyUser, userController.SoftDeletedUser); // soft delete
+router.put('/restore/:id', verifyUser, userController.RestoreUser); // restore soft-deleted user
+router.delete('/:id', verifyUser, userController.DeleteUser); // hard delete
 
-router.delete('/image/:id', userController.DeleteImage); // delete image
+router.delete('/image/:id', verifyUser, userController.DeleteImage); // delete image
 
 module.exports = router;
