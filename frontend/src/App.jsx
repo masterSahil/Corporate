@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/ContextApi";
 import { useEffect, useState } from "react";
-import { checkLoginApi } from "./auth/Auth";
 import axios from "axios";
-import { toast, Toaster } from "./ui/Toaster";
+import { Toaster } from "./ui/Toaster";
 import { RefreshCw } from "lucide-react";
 import MainRoutes from "./MainRoutes";
 import { GoogleOAuthProvider } from '@react-oauth/google';
