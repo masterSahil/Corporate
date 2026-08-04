@@ -6,11 +6,24 @@ const bcrypt = require("bcrypt");
 // not soft deleted
 module.exports.getReward = async (req, res) => {
     try {
-        const fetched = await rewardSchema.find({ isDeleted: false});
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [fetched, totalItems] = await Promise.all([
+            rewardSchema.find({ isDeleted: false}).sort({createdAt: -1}).skip(skip).limit(limit),
+            rewardSchema.countDocuments({ isDeleted: false})
+        ]);
 
         res.status(200).json({
             success: true,
             reward: fetched,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -23,11 +36,24 @@ module.exports.getReward = async (req, res) => {
 // fetching soft deleted data
 module.exports.getSoftDeletedReward = async (req, res) => {
     try {
-        const fetched = await rewardSchema.find({ isDeleted: true});
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [fetched, totalItems] = await Promise.all([
+            rewardSchema.find({ isDeleted: true}).sort({createdAt: -1}).skip(skip).limit(limit),
+            rewardSchema.countDocuments({ isDeleted: true})
+        ]);
 
         res.status(200).json({
             success: true,
             reward: fetched,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -64,11 +90,24 @@ module.exports.restoringReward = async (req, res) => {
 
 module.exports.getAllReward = async (req, res) => {
     try {
-        const fetched = await rewardSchema.find();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [fetched, totalItems] = await Promise.all([
+            rewardSchema.find().sort({createdAt: -1}).skip(skip).limit(limit),
+            rewardSchema.countDocuments()
+        ]);
 
         res.status(200).json({
             success: true,
             reward: fetched,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({

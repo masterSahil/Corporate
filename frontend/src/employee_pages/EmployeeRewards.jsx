@@ -19,6 +19,7 @@ const EmployeeRewards = () => {
   // --- NEW: PAGINATION STATES FOR GLOBAL GALLERY ---
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
 
   const getRewards = async () => {
     try {
@@ -35,7 +36,7 @@ const EmployeeRewards = () => {
       };
 
       const res = await axios.get(
-        `${import.meta.env.VITE_API_KEY}/reward`,
+        `${import.meta.env.VITE_API_KEY}/reward?page=${currentPage}&limit=${itemsPerPage}`,
         config
       );
 
@@ -48,6 +49,7 @@ const EmployeeRewards = () => {
       const user = role_check.data.user;
 
       setRewards(allRewards);
+      setTotalPages(res.data.pagination?.totalPages || 1);
       setMyRewards(allRewards.filter(r => r.email === user.email));
       setUserPoints(user.points || 0);
       setCurrentUserId(user._id);
@@ -65,7 +67,7 @@ const EmployeeRewards = () => {
 
   useEffect(() => {
     getRewards();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   // --- NEW: Reset page to 1 when search or category changes ---
   useEffect(() => {
@@ -148,10 +150,7 @@ const EmployeeRewards = () => {
   const myTotalCount = myAcceptedRewards.length;
 
   // --- NEW: PAGINATION LOGIC ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentGlobalRewards = filteredAllRewards.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredAllRewards.length / itemsPerPage);
+  const currentGlobalRewards = filteredAllRewards;
 
   const getPageNumbers = () => {
     const pages = [];

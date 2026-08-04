@@ -2,11 +2,24 @@ const ratingSchema = require("../model/rating")
 
 module.exports.getAllRatings = async(req, res) => {
     try {
-        const rating = await ratingSchema.find().populate("buyerId", "username").populate("productId", "name");
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const [rating, totalItems] = await Promise.all([
+            ratingSchema.find().populate("buyerId", "username").populate("productId", "name").sort({createdAt: -1}).skip(skip).limit(limit),
+            ratingSchema.countDocuments()
+        ]);
 
         res.status(200).json({
             success: true,
             rating,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(501).json({

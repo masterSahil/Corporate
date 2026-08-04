@@ -7,11 +7,24 @@ const jwt = require("jsonwebtoken");
 // Only Show Soft Deleted Products
 module.exports.softDeletedView = async(req, res) => {
     try {
-        const fetched = await productSchema.find({isDeleted: true});
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [fetched, totalItems] = await Promise.all([
+            productSchema.find({isDeleted: true}).sort({createdAt: -1}).skip(skip).limit(limit),
+            productSchema.countDocuments({isDeleted: true})
+        ]);
 
         res.status(200).json({
             success: true,
             product: fetched,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -113,11 +126,24 @@ module.exports.getSingleProduct = async(req, res) => {
 
 module.exports.getProduct = async(req, res) => {
     try {
-        const fetched = await productSchema.find({isDeleted: false});
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [fetched, totalItems] = await Promise.all([
+            productSchema.find({isDeleted: false}).sort({createdAt: -1}).skip(skip).limit(limit),
+            productSchema.countDocuments({isDeleted: false})
+        ]);
 
         res.status(200).json({
             success: true,
             product: fetched,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -129,11 +155,24 @@ module.exports.getProduct = async(req, res) => {
 
 module.exports.getAllProduct = async(req, res) => {
     try {
-        const fetchedAll = await productSchema.find();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [fetchedAll, totalItems] = await Promise.all([
+            productSchema.find().sort({createdAt: -1}).skip(skip).limit(limit),
+            productSchema.countDocuments()
+        ]);
 
         res.status(200).json({
             success: true,
             product: fetchedAll,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({

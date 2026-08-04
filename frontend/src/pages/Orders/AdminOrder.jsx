@@ -13,6 +13,7 @@ const AdminOrders = () => {
   // --- NEW: Pagination States ---
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(3); // Default to 3 for large cards
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchData = async () => {
     const token = sessionStorage.getItem("token");
@@ -21,7 +22,7 @@ const AdminOrders = () => {
       setIsLoading(true);
 
       const [resOrders, resProducts, resUsers] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_KEY}/orders`, {
+        axios.get(`${import.meta.env.VITE_API_KEY}/orders?page=${currentPage}&limit=${ordersPerPage}`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         axios.get(`${import.meta.env.VITE_API_KEY}/product`, {
@@ -35,6 +36,7 @@ const AdminOrders = () => {
       const allOrders = (resOrders.data.orders || []).sort(
         (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
       );
+      setTotalPages(resOrders.data.pagination?.totalPages || 1);
 
       const allProducts = resProducts.data.product || [];
       const allUsers = resUsers.data.users || [];
@@ -75,7 +77,7 @@ const AdminOrders = () => {
     }
   };
 
-  useEffect(() => { fetchData() }, []);
+  useEffect(() => { fetchData() }, [currentPage, ordersPerPage]);
 
   // --- NEW: Reset page to 1 when search or items per page changes ---
   useEffect(() => {
@@ -114,12 +116,7 @@ const AdminOrders = () => {
   );
 
   // --- NEW: Pagination Logic ---
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ordersPerPage));
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  
-  // This is the array you will actually render in the grid
-  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = filteredOrders;
 
   const getPageNumbers = () => {
     const pages = [];

@@ -22,6 +22,7 @@ const AdminReview = () => {
   // --- NEW: Pagination & View States ---
   const [currentPage, setCurrentPage] = useState(1);
   const [reviewsPerPage, setReviewsPerPage] = useState(10); // Default to 10
+  const [totalPages, setTotalPages] = useState(1);
   const [viewMode, setViewMode] = useState("table"); // "table" or "card"
 
   // --- DATA FETCHING ---
@@ -30,12 +31,13 @@ const AdminReview = () => {
       setLoading(true);
       const token = sessionStorage.getItem("token");
 
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/rating-all`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/rating-all?page=${currentPage}&limit=${reviewsPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       setReviews(res.data.rating || []);
+      setTotalPages(res.data.pagination?.totalPages || 1);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to Fetch Reviews");
       console.error(error);
@@ -46,7 +48,7 @@ const AdminReview = () => {
 
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [currentPage, reviewsPerPage]);
 
   // --- Reset page to 1 when search or filter changes ---
   useEffect(() => {
@@ -72,10 +74,7 @@ const AdminReview = () => {
   }, [reviews, searchQuery, selectedRating]);
 
   // --- Pagination Logic ---
-  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / reviewsPerPage));
-  const indexOfLastReview = currentPage * reviewsPerPage;
-  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
-  const currentReviews = filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
+  const currentReviews = filteredReviews;
 
   const getPageNumbers = () => {
     const pages = [];

@@ -217,8 +217,25 @@ module.exports.verifyPaymentAndCheckout = async (req, res) => {
 // 4. FETCH ALL ORDERS
 module.exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find();
-        res.status(200).json({ success: true, orders });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const [orders, totalItems] = await Promise.all([
+            Order.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+            Order.countDocuments()
+        ]);
+
+        res.status(200).json({
+            success: true,
+            orders,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -228,8 +245,25 @@ module.exports.getAllOrders = async (req, res) => {
 module.exports.getUserOrders = async (req, res) => {
     try {
         const { id } = req.params;
-        const orders = await Order.find({ userId: id }).sort({ createdAt: -1 });
-        res.status(200).json({ success: true, orders });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const [orders, totalItems] = await Promise.all([
+            Order.find({ userId: id }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+            Order.countDocuments({ userId: id })
+        ]);
+
+        res.status(200).json({
+            success: true,
+            orders,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

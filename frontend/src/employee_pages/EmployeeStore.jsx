@@ -24,6 +24,7 @@ const EmployeeStore = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
 
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -42,10 +43,11 @@ const EmployeeStore = () => {
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product`, config);
+      const res = await axios.get(`${import.meta.env.VITE_API_KEY}/product?page=${currentPage}&limit=${itemsPerPage}`, config);
       const res2 = await axios.get(`${import.meta.env.VITE_API_KEY}/check-role`, config);
 
       setProducts(res.data.product);
+      setTotalPages(res.data.pagination?.totalPages || 1);
       const user = res2.data.user;
       setCurrentUserId(user._id);
 
@@ -66,7 +68,7 @@ const EmployeeStore = () => {
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -138,10 +140,7 @@ const EmployeeStore = () => {
   });
 
   // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = filteredProducts;
 
   const getPageNumbers = () => {
     const pages = [];

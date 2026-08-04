@@ -29,11 +29,24 @@ module.exports.FetchSingleUser = async (req, res) => {
 // get each user
 module.exports.FetchAllUsers = async (req, res) => {
     try {
-        const getUser = await UserSchema.find();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const [getUser, totalItems] = await Promise.all([
+            UserSchema.find().sort({createdAt: -1}).skip(skip).limit(limit),
+            UserSchema.countDocuments()
+        ]);
 
         res.status(200).json({
             success: true,
             users: getUser,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -46,11 +59,24 @@ module.exports.FetchAllUsers = async (req, res) => {
 // Crud on Users
 module.exports.FetchDeletedOnly = async (req, res) => {
     try {
-        const getUser = await UserSchema.find({ isDeleted: true });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const [getUser, totalItems] = await Promise.all([
+            UserSchema.find({ isDeleted: true }).sort({createdAt: -1}).skip(skip).limit(limit),
+            UserSchema.countDocuments({ isDeleted: true })
+        ]);
 
         res.status(200).json({
             success: true,
             users: getUser,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({
@@ -135,11 +161,24 @@ module.exports.PermanentDelete = async (req, res) => {
 // Crud on Users
 module.exports.FetchUser = async (req, res) => {
     try {
-        const getUser = await UserSchema.find({ isDeleted: false });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const [getUser, totalItems] = await Promise.all([
+            UserSchema.find({ isDeleted: false }).sort({createdAt: -1}).skip(skip).limit(limit),
+            UserSchema.countDocuments({ isDeleted: false })
+        ]);
 
         res.status(200).json({
             success: true,
             users: getUser,
+            pagination: {
+                totalItems,
+                currentPage: page,
+                totalPages: Math.ceil(totalItems / limit),
+                pageSize: limit,
+            }
         })
     } catch (error) {
         res.status(500).json({

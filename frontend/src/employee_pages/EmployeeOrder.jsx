@@ -17,6 +17,7 @@ const EmployeeOrder = () => {
   // --- NEW: PAGINATION STATES ---
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5); // Default to 5 for orders
+  const [totalPages, setTotalPages] = useState(1);
 
   const navigate = useNavigate();
 
@@ -46,7 +47,7 @@ const EmployeeOrder = () => {
       // 2. Fetch orders + products
       const [ordersRes, productsRes] = await Promise.all([
         axios.post(
-          `${import.meta.env.VITE_API_KEY}/orders-user/${userId}`,
+          `${import.meta.env.VITE_API_KEY}/orders-user/${userId}?page=${currentPage}&limit=${itemsPerPage}`,
           {},
           config
         ),
@@ -55,6 +56,7 @@ const EmployeeOrder = () => {
 
       const myOrders = ordersRes.data.orders || [];
       const allProducts = productsRes.data.product || [];
+      setTotalPages(ordersRes.data.pagination?.totalPages || 1);
 
       const enrichedOrders = myOrders.map(order => ({
         ...order,
@@ -86,7 +88,7 @@ const EmployeeOrder = () => {
     }
   };
 
-  useEffect(() => { fetchMyOrders() }, []);
+  useEffect(() => { fetchMyOrders() }, [currentPage, itemsPerPage]);
 
   // --- NEW: Reset page to 1 if itemsPerPage changes ---
   useEffect(() => {
@@ -115,10 +117,7 @@ const EmployeeOrder = () => {
   };
 
   // --- NEW: PAGINATION LOGIC ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const currentOrders = orders;
 
   const getPageNumbers = () => {
     const pages = [];
