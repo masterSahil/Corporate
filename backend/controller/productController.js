@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 module.exports.softDeletedView = async(req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [fetched, totalItems] = await Promise.all([
@@ -127,7 +127,7 @@ module.exports.getSingleProduct = async(req, res) => {
 module.exports.getProduct = async(req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [fetched, totalItems] = await Promise.all([
@@ -156,7 +156,7 @@ module.exports.getProduct = async(req, res) => {
 module.exports.getAllProduct = async(req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [fetchedAll, totalItems] = await Promise.all([

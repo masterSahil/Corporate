@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 module.exports.getReward = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [fetched, totalItems] = await Promise.all([
@@ -37,7 +37,7 @@ module.exports.getReward = async (req, res) => {
 module.exports.getSoftDeletedReward = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [fetched, totalItems] = await Promise.all([
@@ -91,7 +91,7 @@ module.exports.restoringReward = async (req, res) => {
 module.exports.getAllReward = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [fetched, totalItems] = await Promise.all([

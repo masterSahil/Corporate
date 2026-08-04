@@ -3,7 +3,7 @@ const ratingSchema = require("../model/rating")
 module.exports.getAllRatings = async(req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [rating, totalItems] = await Promise.all([

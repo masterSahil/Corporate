@@ -30,7 +30,7 @@ module.exports.FetchSingleUser = async (req, res) => {
 module.exports.FetchAllUsers = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [getUser, totalItems] = await Promise.all([
@@ -60,7 +60,7 @@ module.exports.FetchAllUsers = async (req, res) => {
 module.exports.FetchDeletedOnly = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [getUser, totalItems] = await Promise.all([
@@ -162,7 +162,7 @@ module.exports.PermanentDelete = async (req, res) => {
 module.exports.FetchUser = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [getUser, totalItems] = await Promise.all([

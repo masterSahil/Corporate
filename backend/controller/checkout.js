@@ -218,7 +218,7 @@ module.exports.verifyPaymentAndCheckout = async (req, res) => {
 module.exports.getAllOrders = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [orders, totalItems] = await Promise.all([
@@ -246,7 +246,7 @@ module.exports.getUserOrders = async (req, res) => {
     try {
         const { id } = req.params;
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const skip = (page - 1) * limit;
 
         const [orders, totalItems] = await Promise.all([
